@@ -36,7 +36,7 @@ function HeroSection() {
                     transition={{ duration: 0.5, delay: 0.4 }}
                     className="mt-10 sm:flex sm:justify-center lg:justify-start"
                   >
-                    <div className="rounded-md shadow">
+                    <div className="rounded-md shadow mb-2">
                       <Link
                         to="/learning"
                         className="w-full flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-primary-500 hover:bg-primary-600 md:py-4 md:text-lg md:px-10"
