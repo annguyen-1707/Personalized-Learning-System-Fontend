@@ -1,14 +1,22 @@
-import { Routes, Route } from 'react-router-dom'
-import Layout from './components/layout/Layout'
+import { Routes, Route } from "react-router-dom";
+import Layout from "./components/layout/Layout";
+import Dashboard from "./pages/adminPages/Dashboard";
+import MainLayout from "./components/adminLayouts/MainLayout";
 
 function App() {
   return (
     <Routes>
-      <Route path="/" element={<Layout />}>
-        <Route index element={<h1>Welcom FU.OHAYO</h1>} />
+      <Route>
+        <Route path="/" element={<Layout />}>
+          <Route index element={<h1>Welcom FU.OHAYO</h1>} />
+        </Route>
+      </Route>
+      <Route>
+        <Route path="dashboard" element={<MainLayout />}>
+        </Route>
       </Route>
     </Routes>
-  )
+  );
 }
 
-export default App
+export default App;
