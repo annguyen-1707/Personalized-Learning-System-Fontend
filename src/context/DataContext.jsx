@@ -1,4 +1,4 @@
-import { createContext, useContext, useState } from 'react';
+import { createContext, useContext, useState, useEffect } from 'react';
 import { 
   mockAdmins, 
   mockUsers, 
@@ -27,6 +27,26 @@ export function DataProvider({ children }) {
   const [grammar, setGrammar] = useState(mockGrammar);
   const [exercises, setExercises] = useState(mockExercises);
   const [resources, setResources] = useState(mockResources);
+  const [subjects, setSubjects] = useState([]);
+
+  // api for fetching subjects "/subjects"
+    useEffect(() => {
+    const fetchSubjects = async () => {
+      try {
+        const response = await fetch('/api/subjects');
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
+        setSubjects(data.data);
+      } catch (error) {
+        console.error('Error fetching subjects:', error);
+      }
+    };
+
+    fetchSubjects();
+  }, []);
+
 
   // Admin CRUD operations
   const addAdmin = (admin) => {
@@ -189,6 +209,7 @@ export function DataProvider({ children }) {
     grammar,
     exercises,
     resources,
+    subjects,
     addAdmin,
     updateAdmin,
     deleteAdmin,

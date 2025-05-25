@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-// import { useData } from '../context/DataContext';
+import { useData } from '../../context/DataContext';
 import { Link } from 'react-router-dom';
 import { 
   Users, 
@@ -40,7 +40,7 @@ ChartJS.register(
 );
 
 function Dashboard() {
-  // const { users, courses, lessons, logs } = useData();
+  const { users, courses, lessons, logs } = useData();
   const [stats, setStats] = useState({
     totalUsers: 0,
     activeUsers: 0,
@@ -53,15 +53,15 @@ function Dashboard() {
   // Calculate statistics when data changes
   useEffect(() => {
     setStats({
-      // totalUsers: users.length,
-      // activeUsers: users.filter(user => user.status === 'active').length,
-      // totalCourses: courses.length,
-      // activeCourses: courses.filter(course => course.status === 'active').length,
-      // totalLessons: lessons.length,
-      // recentActivity: logs.slice(0, 5)
+      totalUsers: users.length,
+      activeUsers: users.filter(user => user.status === 'active').length,
+      totalCourses: courses.length,
+      activeCourses: courses.filter(course => course.status === 'active').length,
+      totalLessons: lessons.length,
+      recentActivity: logs.slice(0, 5)
     });
-  // }, [users, courses, lessons, logs]);
-  }, []);
+  }, [users, courses, lessons, logs]);
+
 
   // Sample data for charts
   const userProgressData = {

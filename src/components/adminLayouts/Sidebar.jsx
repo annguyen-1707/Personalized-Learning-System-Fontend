@@ -36,7 +36,7 @@ function Sidebar({ open, setOpen }) {
       name: "Content Management",
       icon: BookOpen,
       children: [
-        { name: "Learning", href: "/learning", icon: Book },
+        { name: "Learning", href: "/admin/courses", icon: Book },
         {
           name: "Practice",
           icon: Activity,
