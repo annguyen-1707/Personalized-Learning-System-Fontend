@@ -10,7 +10,7 @@ import {
   mockExercises,
   mockResources
 } from '../data/mockData';
-import { s } from 'framer-motion/client';
+import { data } from 'autoprefixer';
 
 const DataContext = createContext();
 
@@ -21,7 +21,6 @@ export function useData() {
 export function DataProvider({ children }) {
   const [admins, setAdmins] = useState(mockAdmins);
   const [users, setUsers] = useState(mockUsers);
-  const [courses, setCourses] = useState(mockCourses);
   const [lessons, setLessons] = useState(mockLessons);
   const [logs, setLogs] = useState(mockSystemLogs);
   const [vocabulary, setVocabulary] = useState(mockVocabulary);
@@ -49,7 +48,7 @@ export function DataProvider({ children }) {
     fetchSubjects();
   }, []);
 
-  // Course CRUD operations
+  // Subject CRUD operations
   const  addSubject = async(subject) => {
     try{
       const response = await fetch('/api/subjects', {
@@ -61,8 +60,8 @@ export function DataProvider({ children }) {
       });
       const data = await response.json();
       if (!response.ok) {
-        setErrorMessage(data.message || "Thêm môn học thất bại.");
-        throw new Error(data.message || "Thêm môn học thất bại.");
+        setErrorMessage(data.message || "failed to add subject");
+        throw new Error(data.message || "failed to add subject");
       }
       setSubjects([...subjects, data.data]); // Update state with new subject
       setErrorMessage('');
@@ -73,7 +72,47 @@ export function DataProvider({ children }) {
     }
   };
 
+  const updateSubject = async (id, subject) => {
+    try {
+      const response = await fetch(`/api/subjects/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(subject)
+      });
+      const data = await response.json();
+      if (!response.ok) {
+         setErrorMessage(data.message);
+        throw new Error(data.message || "failed to update subject.");
+      }
+      // Refresh subjects after update
+      setSubjects(subjects.map(subject => subject.subjectId === id ? data.data : subject));
+    } catch (error) {
+      console.error('Error updating subject:', error);
+       throw error;
+    }
+  };
 
+  const deleteSubject = async (id) => {
+    try {
+      const response = await fetch(`/api/subjects/${id}`, {
+        method: 'DELETE'
+      });
+      
+      if (!response.ok) {
+        const data = await response.json();
+        setErrorMessage(data.message);
+        throw new Error(data.message ||`HTTP error! status: ${response.status}`);
+      }
+      // Remove subject from state
+      setSubjects(subjects.filter(subject => subject.subjectId !== id));
+      setErrorMessage('');
+    } catch (error) {
+      console.error('Error deleting subject:', error);
+      throw error;
+    }
+  };
   // Admin CRUD operations
   const addAdmin = (admin) => {
     const newAdmin = { 
@@ -117,18 +156,6 @@ export function DataProvider({ children }) {
 
   const deleteUser = (id) => {
     setUsers(users.filter(user => user.id !== id));
-  };
-
-  // Subject CRUD operations
-
-  const updateSubject = (id, updatedSubject) => {
-    setSubjects(subjects.map(subject => subject.id === id ? { ...subject, ...updatedSubject } : subject));
-  };
-
-  const deleteSubject = (id) => {
-    setSubjects(subjects.filter(subject => subject.id !== id));
-    // Also delete related lessons
-    setLessons(lessons.filter(lesson => lesson.subjectId !== id));
   };
 
   // Lesson CRUD operations
@@ -223,11 +250,9 @@ export function DataProvider({ children }) {
   const value = {
     admins,
     users,
-    courses,
     lessons,
     logs,
     vocabulary,
-    grammar,
     exercises,
     resources,
     subjects,

@@ -26,6 +26,7 @@ import {
   ArcElement
 } from 'chart.js';
 import { Bar, Line, Pie } from 'react-chartjs-2';
+import { sub } from 'framer-motion/client';
 
 ChartJS.register(
   CategoryScale,
@@ -40,12 +41,12 @@ ChartJS.register(
 );
 
 function Dashboard() {
-  const { users, courses, lessons, logs } = useData();
+  const { users, lessons, logs, subjects } = useData();
   const [stats, setStats] = useState({
     totalUsers: 0,
     activeUsers: 0,
-    totalCourses: 0,
-    activeCourses: 0,
+    totalSubjects: 0,
+    activeSubjects: 0,
     totalLessons: 0,
     recentActivity: []
   });
@@ -55,12 +56,12 @@ function Dashboard() {
     setStats({
       totalUsers: users.length,
       activeUsers: users.filter(user => user.status === 'active').length,
-      totalCourses: courses.length,
-      activeCourses: courses.filter(course => course.status === 'active').length,
+      totalSubjects: subjects.length,
+      activeSubjects: subjects.filter(subject => subject.status === 'ACTIVE').length,
       totalLessons: lessons.length,
       recentActivity: logs.slice(0, 5)
     });
-  }, [users, courses, lessons, logs]);
+  }, [users, subjects, lessons, logs]);
 
 
   // Sample data for charts
@@ -76,12 +77,12 @@ function Dashboard() {
     ]
   };
 
-  const courseCompletionData = {
-    labels: courses.slice(0, 5).map(course => course.title),
+  const subjectCompletionData = {
+    labels: subjects.slice(0, 5).map(subject => subject.subjectCode),
     datasets: [
       {
         label: 'Completion Rate (%)',
-        data: courses.slice(0, 5).map(course => course.completion),
+        data: subjects.slice(0, 5).map(subject => subject.completion),
         backgroundColor: [
           'rgba(59, 130, 246, 0.6)',
           'rgba(79, 70, 229, 0.6)',
@@ -146,8 +147,8 @@ function Dashboard() {
             <Book className="h-6 w-6 text-secondary-600" />
           </div>
           <div>
-            <p className="text-sm font-medium text-gray-500">Active Courses</p>
-            <p className="text-2xl font-bold text-gray-900">{stats.activeCourses}</p>
+            <p className="text-sm font-medium text-gray-500">Active Subjects</p>
+            <p className="text-2xl font-bold text-gray-900">{stats.activeSubjects}</p>
             <div className="flex items-center mt-1 text-xs">
               <ArrowUp className="h-4 w-4 text-success-500 mr-1" />
               <span className="text-success-700">3 new</span>
@@ -228,10 +229,10 @@ function Dashboard() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
         <div className="card p-6">
-          <h2 className="text-lg font-medium text-gray-900 mb-4">Course Completion Rates</h2>
+          <h2 className="text-lg font-medium text-gray-900 mb-4">Subject Completion Rates</h2>
           <div className="h-80">
             <Bar 
-              data={courseCompletionData} 
+              data={subjectCompletionData} 
               options={{
                 responsive: true,
                 maintainAspectRatio: false,

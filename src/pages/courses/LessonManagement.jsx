@@ -17,7 +17,7 @@ import {
 function LessonManagement() {
   const { courseId } = useParams();
   const { 
-    courses, 
+    subjects,
     lessons, 
     addLesson, 
     updateLesson, 
@@ -39,9 +39,9 @@ function LessonManagement() {
 
   // Get course and its lessons
   useEffect(() => {
-    const foundCourse = courses.find(c => c.id === courseId);
-    if (foundCourse) {
-      setCourse(foundCourse);
+    const foundSubject = subjects.find(c => c.id === courseId);
+    if (foundSubject) {
+      setCourse(foundSubject);
     }
 
     const filteredLessons = lessons
@@ -49,7 +49,7 @@ function LessonManagement() {
       .sort((a, b) => a.order - b.order);
     
     setCourseLessons(filteredLessons);
-  }, [courseId, courses, lessons]);
+  }, [courseId, subjects, lessons]);
 
   const handleAddSubmit = (e) => {
     e.preventDefault();

@@ -1,4 +1,6 @@
 import { Routes, Route } from "react-router-dom";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import Layout from "./components/layout/Layout";
 import Login from "./pages/auth/Login";
 import Register from "./pages/auth/Register";
@@ -49,6 +51,18 @@ function App() {
             />
           </Route>
         </Routes>
+        <ToastContainer
+            position="top-right"
+            autoClose={5000}
+            hideProgressBar={false}
+            newestOnTop={false}
+            closeOnClick={false}
+            rtl={false}
+            pauseOnFocusLoss
+            draggable
+            pauseOnHover
+            theme="light"
+          />
       </DataProvider>
     </AuthProvider>
   );
