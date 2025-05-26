@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useData } from '../../context/DataContext';
-import { Edit, Trash2, Plus, Search, Book, Layers, Users, Check, X, ExternalLink } from 'lucide-react';
+import { Edit, Trash2, Plus, Search, Book, Layers, Users, Check, X } from 'lucide-react';
 
 function CourseManagement() {
   // Replace courses with subjects and update methods accordingly
@@ -19,15 +19,22 @@ function CourseManagement() {
   });
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(null);
 
-  const levels = ['Beginner', 'Intermediate', 'Advanced'];
+ 
+  const status = ['ACTIVE', 'DRAFT'];
+  
 
-  // Filter subjects based on search and level
+  // Filter subjects based on search and status
   const filteredSubjects = subjects.filter(subject => {
-    const searchMatch =
-      subject.subjectName.toLowerCase().includes(search.toLowerCase()) ||
-      subject.description.toLowerCase().includes(search.toLowerCase());
-    const levelMatch = filter === 'all' || subject.level === filter;
-    return searchMatch && levelMatch;
+    // Search filter (case insensitive)
+    const searchMatch = search === '' || 
+      subject.subjectName?.toLowerCase().includes(search.toLowerCase()) || 
+      subject.description?.toLowerCase().includes(search.toLowerCase()) ||
+      subject.subjectCode?.toLowerCase().includes(search.toLowerCase());
+
+    // Status filter
+    const statusMatch = filter === 'all' || subject.status === filter;
+
+    return searchMatch && statusMatch;
   });
 
   const handleAddSubmit = (e) => {
@@ -130,9 +137,9 @@ function CourseManagement() {
               value={filter}
               onChange={(e) => setFilter(e.target.value)}
             >
-              <option value="all">All Levels</option>
-              {levels.map(level => (
-                <option key={level} value={level}>{level}</option>
+              <option value="all">All Status</option>
+              {status.map(status => (
+                <option key={status} value={status}>{status}</option>
               ))}
             </select>
           </div>
@@ -300,11 +307,11 @@ function CourseManagement() {
                       ) : (
                         <div className="flex items-center space-x-2">
                           <Link
-                            to={`/admin/subjects/${subject.subjectId}/details`}
+                            to={`/admin/courses/${subject.subjectId}/lessons`}
                             className="text-secondary-600 hover:text-secondary-800"
-                            title="View Details"
+                            title="Manage Lessons"
                           >
-                            <ExternalLink size={16} />
+                            <Layers size={16} />
                           </Link>
                           <button 
                             onClick={() => startEdit(subject)} 
