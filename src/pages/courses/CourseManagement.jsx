@@ -1,71 +1,99 @@
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { useData } from '../../context/DataContext';
-import { Edit, Trash2, Plus, Search, Book, Layers, Users, Check, X } from 'lucide-react';
+import { useState } from "react";
+import { Link } from "react-router-dom";
+import { useData } from "../../context/DataContext";
+import {
+  Edit,
+  Trash2,
+  Plus,
+  Search,
+  Book,
+  Layers,
+  Users,
+  Check,
+  X,
+} from "lucide-react";
 
 function CourseManagement() {
   // Replace courses with subjects and update methods accordingly
-  const { subjects, addSubject, updateSubject, deleteSubject, addLog } = useData();
+  const { subjects, addSubject, updateSubject, deleteSubject, addLog} =
+    useData();
   const [isAdding, setIsAdding] = useState(false);
   const [isEditing, setIsEditing] = useState(null);
-  const [search, setSearch] = useState('');
-  const [filter, setFilter] = useState('all');
+  const [search, setSearch] = useState("");
+  const [filter, setFilter] = useState("all");
+  const [errorMessage, setErrorMessage] = useState("");
   const [formData, setFormData] = useState({
-    title: '',
-    description: '',
-    level: 'Beginner',
-    duration: '',
-    status: 'active'
+    subjectCode: "",
+    subjectName: "",
+    description: "",
+    status: "ACTIVE",
   });
+
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(null);
 
- 
-  const status = ['ACTIVE', 'DRAFT'];
-  
+  const status = ["ACTIVE", "DRAFT"];
 
   // Filter subjects based on search and status
-  const filteredSubjects = subjects.filter(subject => {
+  const filteredSubjects = subjects.filter((subject) => {
     // Search filter (case insensitive)
-    const searchMatch = search === '' || 
-      subject.subjectName?.toLowerCase().includes(search.toLowerCase()) || 
+    const searchMatch =
+      search === "" ||
+      subject.subjectName?.toLowerCase().includes(search.toLowerCase()) ||
       subject.description?.toLowerCase().includes(search.toLowerCase()) ||
       subject.subjectCode?.toLowerCase().includes(search.toLowerCase());
 
     // Status filter
-    const statusMatch = filter === 'all' || subject.status === filter;
+    const statusMatch = filter === "all" || subject.status === filter;
 
     return searchMatch && statusMatch;
   });
 
-  const handleAddSubmit = (e) => {
+  const handleAddSubmit = async (e) => {
     e.preventDefault();
-    const newSubject = addSubject({
+    const subjectPayload = {
       ...formData,
-      enrolledStudents: 0,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      completion: 0
-    });
-    addLog('Subject Created', `New subject "${formData.title}" was created`);
-    setFormData({ title: '', description: '', level: 'Beginner', duration: '', status: 'active' });
-    setIsAdding(false);
+    };
+
+    try {
+      const newSubject = await addSubject(subjectPayload);
+      addLog(
+        "Subject Created",
+        `New subject "${newSubject.subjectCode}" was created`
+      );
+      setFormData({
+        subjectCode: "",
+        subjectName: "",
+        description: "",
+        status: "ACTIVE",
+      }); // Reset form
+      setIsAdding(false);
+      setErrorMessage(""); 
+    } catch (error) {
+      console.error("Failed to add subject:", error);
+      setErrorMessage(error.message || "Thêm môn học thất bại.");
+    }
   };
 
   const handleEditSubmit = (e) => {
     e.preventDefault();
     updateSubject(isEditing, {
       ...formData,
-      updatedAt: new Date().toISOString()
+      updatedAt: new Date().toISOString(),
     });
-    addLog('Subject Updated', `Subject "${formData.title}" was updated`);
-    setFormData({ title: '', description: '', level: 'Beginner', duration: '', status: 'active' });
+    addLog("Subject Updated", `Subject "${formData.subjectCode}" was updated`);
+    setFormData({
+      subjectCode: "",
+      subjectName: "",
+      description: "",
+      status: "ACTIVE",
+    });
     setIsEditing(null);
   };
 
   const handleDelete = (id) => {
-    const subjectToDelete = subjects.find(subject => subject.id === id);
+    const subjectToDelete = subjects.find((subject) => subject.id === id);
     deleteSubject(id);
-    addLog('Subject Deleted', `Subject "${subjectToDelete.title}" was deleted`);
+    addLog("Subject Deleted", `Subject "${subjectToDelete.title}" was deleted`);
     setShowDeleteConfirm(null);
   };
 
@@ -75,7 +103,7 @@ function CourseManagement() {
       description: subject.description,
       level: subject.level,
       duration: subject.duration,
-      status: subject.status
+      status: subject.status,
     });
     setIsEditing(subject.id);
     setIsAdding(false);
@@ -84,27 +112,37 @@ function CourseManagement() {
   const cancelAction = () => {
     setIsAdding(false);
     setIsEditing(null);
-    setFormData({ title: '', description: '', level: 'Beginner', duration: '', status: 'active' });
+    setFormData({
+       subjectCode: "",
+        subjectName: "",
+        description: "",
+        status: "ACTIVE",
+    });
   };
 
   // Helper to get status badge color
   const getStatusBadgeClass = (status) => {
     switch (status) {
-      case 'ACTIVE':
-        return 'bg-success-50 text-success-700';
-      case 'DRAFT':
-        return 'bg-warning-50 text-warning-700';
+      case "ACTIVE":
+        return "bg-success-50 text-success-700";
+      case "DRAFT":
+        return "bg-warning-50 text-warning-700";
       default:
-        return 'bg-gray-100 text-gray-700';
+        return "bg-gray-100 text-gray-700";
     }
   };
 
   return (
     <div className="animate-fade-in">
       <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between">
-        <h1 className="text-2xl font-bold text-gray-900 mb-2 sm:mb-0">Subject Management</h1>
-        <button 
-          onClick={() => { setIsAdding(true); setIsEditing(null); }}
+        <h1 className="text-2xl font-bold text-gray-900 mb-2 sm:mb-0">
+          Subject Management
+        </h1>
+        <button
+          onClick={() => {
+            setIsAdding(true);
+            setIsEditing(null);
+          }}
           className="btn-primary flex items-center"
           disabled={isAdding || isEditing}
         >
@@ -130,7 +168,7 @@ function CourseManagement() {
               />
             </div>
           </div>
-          
+
           <div>
             <select
               className="rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 w-full"
@@ -138,8 +176,10 @@ function CourseManagement() {
               onChange={(e) => setFilter(e.target.value)}
             >
               <option value="all">All Status</option>
-              {status.map(status => (
-                <option key={status} value={status}>{status}</option>
+              {status.map((status) => (
+                <option key={status} value={status}>
+                  {status}
+                </option>
               ))}
             </select>
           </div>
@@ -150,25 +190,55 @@ function CourseManagement() {
       {(isAdding || isEditing) && (
         <div className="card p-6 mb-6">
           <h2 className="text-xl font-medium mb-4">
-            {isAdding ? 'Add New Subject' : 'Edit Subject'}
+            {isAdding ? "Add New Subject" : "Edit Subject"}
           </h2>
+          {errorMessage && (
+            <div className="mb-4 p-3 rounded bg-red-100 text-red-700 text-sm">
+              {errorMessage}
+            </div>
+          )}
           <form onSubmit={isAdding ? handleAddSubmit : handleEditSubmit}>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
               <div className="md:col-span-2">
-                <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-1">
-                  Subject Title
+                <label
+                  htmlFor="subjectCode"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
+                  Subject Code
                 </label>
                 <input
-                  id="title"
+                  id="subjectCode"
                   type="text"
                   required
-                  value={formData.title}
-                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                  value={formData.subjectCode}
+                  onChange={(e) =>
+                    setFormData({ ...formData, subjectCode: e.target.value })
+                  }
                 />
               </div>
-              
               <div className="md:col-span-2">
-                <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
+                <label
+                  htmlFor="subjectName"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
+                  Subject Name
+                </label>
+                <input
+                  id="subjectName"
+                  type="text"
+                  required
+                  value={formData.subjectName}
+                  onChange={(e) =>
+                    setFormData({ ...formData, subjectName: e.target.value })
+                  }
+                />
+              </div>
+
+              <div className="md:col-span-2">
+                <label
+                  htmlFor="description"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
                   Description
                 </label>
                 <textarea
@@ -176,69 +246,48 @@ function CourseManagement() {
                   rows={3}
                   required
                   value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, description: e.target.value })
+                  }
                   className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
                 />
               </div>
 
               <div>
-                <label htmlFor="level" className="block text-sm font-medium text-gray-700 mb-1">
-                  Level
-                </label>
-                <select
-                  id="level"
-                  value={formData.level}
-                  onChange={(e) => setFormData({ ...formData, level: e.target.value })}
-                  className="rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 w-full"
+                <label
+                  htmlFor="status"
+                  className="block text-sm font-medium text-gray-700 mb-1"
                 >
-                  {levels.map(level => (
-                    <option key={level} value={level}>{level}</option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label htmlFor="duration" className="block text-sm font-medium text-gray-700 mb-1">
-                  Duration (e.g., "8 weeks")
-                </label>
-                <input
-                  id="duration"
-                  type="text"
-                  required
-                  value={formData.duration}
-                  onChange={(e) => setFormData({ ...formData, duration: e.target.value })}
-                />
-              </div>
-
-              <div>
-                <label htmlFor="status" className="block text-sm font-medium text-gray-700 mb-1">
                   Status
                 </label>
                 <select
                   id="status"
                   value={formData.status}
-                  onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, status: e.target.value })
+                  }
                   className="rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 w-full"
                 >
-                  <option value="active">Active</option>
-                  <option value="draft">Draft</option>
+                  {Array.isArray(status) &&
+                    status.map((s) => (
+                      <option key={s} value={s}>
+                        {s}
+                      </option>
+                    ))}
                 </select>
               </div>
             </div>
 
             <div className="flex justify-end space-x-3">
-              <button 
-                type="button" 
+              <button
+                type="button"
                 onClick={cancelAction}
                 className="btn-outline"
               >
                 Cancel
               </button>
-              <button 
-                type="submit" 
-                className="btn-primary"
-              >
-                {isAdding ? 'Add Subject' : 'Save Changes'}
+              <button type="submit" className="btn-primary">
+                {isAdding ? "Add Subject" : "Save Changes"}
               </button>
             </div>
           </form>
@@ -269,8 +318,12 @@ function CourseManagement() {
                           <Book className="h-5 w-5 text-primary-600" />
                         </div>
                         <div className="ml-4">
-                          <div className="font-medium text-gray-900">{subject.subjectName}</div>
-                          <div className="text-sm text-gray-500 line-clamp-1">{subject.description}</div>
+                          <div className="font-medium text-gray-900">
+                            {subject.subjectName}
+                          </div>
+                          <div className="text-sm text-gray-500 line-clamp-1">
+                            {subject.description}
+                          </div>
                         </div>
                       </div>
                     </td>
@@ -282,12 +335,18 @@ function CourseManagement() {
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
                         <Users size={16} className="text-gray-400 mr-1" />
-                        <span className="text-sm text-gray-500">{subject.countUsers}</span>
+                        <span className="text-sm text-gray-500">
+                          {subject.countUsers}
+                        </span>
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`badge ${getStatusBadgeClass(subject.status)}`}>
-                        {subject.status.charAt(0).toUpperCase() + subject.status.slice(1)}
+                      <span
+                        className={`badge ${getStatusBadgeClass(
+                          subject.status
+                        )}`}
+                      >
+                        {subject.status}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
@@ -296,11 +355,19 @@ function CourseManagement() {
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       {showDeleteConfirm === subject.subjectId ? (
                         <div className="flex items-center space-x-2">
-                          <span className="text-xs text-gray-500">Confirm?</span>
-                          <button onClick={() => handleDelete(subject.subjectId)} className="text-error-500 hover:text-error-700">
+                          <span className="text-xs text-gray-500">
+                            Confirm?
+                          </span>
+                          <button
+                            onClick={() => handleDelete(subject.subjectId)}
+                            className="text-error-500 hover:text-error-700"
+                          >
                             <Check size={16} />
                           </button>
-                          <button onClick={() => setShowDeleteConfirm(null)} className="text-gray-500 hover:text-gray-700">
+                          <button
+                            onClick={() => setShowDeleteConfirm(null)}
+                            className="text-gray-500 hover:text-gray-700"
+                          >
                             <X size={16} />
                           </button>
                         </div>
@@ -313,16 +380,18 @@ function CourseManagement() {
                           >
                             <Layers size={16} />
                           </Link>
-                          <button 
-                            onClick={() => startEdit(subject)} 
+                          <button
+                            onClick={() => startEdit(subject)}
                             className="text-primary-600 hover:text-primary-800"
                             disabled={isAdding || isEditing}
                             title="Edit Subject"
                           >
                             <Edit size={16} />
                           </button>
-                          <button 
-                            onClick={() => setShowDeleteConfirm(subject.subjectId)} 
+                          <button
+                            onClick={() =>
+                              setShowDeleteConfirm(subject.subjectId)
+                            }
                             className="text-error-500 hover:text-error-700"
                             disabled={isAdding || isEditing}
                             title="Delete Subject"
@@ -336,8 +405,12 @@ function CourseManagement() {
                 ))
               ) : (
                 <tr>
-                  <td colSpan="7" className="px-6 py-4 text-center text-gray-500">
-                    No subjects found. {search && 'Try a different search term.'}
+                  <td
+                    colSpan="7"
+                    className="px-6 py-4 text-center text-gray-500"
+                  >
+                    No subjects found.{" "}
+                    {search && "Try a different search term."}
                   </td>
                 </tr>
               )}

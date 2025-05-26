@@ -10,6 +10,7 @@ import {
   mockExercises,
   mockResources
 } from '../data/mockData';
+import { s } from 'framer-motion/client';
 
 const DataContext = createContext();
 
@@ -28,6 +29,7 @@ export function DataProvider({ children }) {
   const [exercises, setExercises] = useState(mockExercises);
   const [resources, setResources] = useState(mockResources);
   const [subjects, setSubjects] = useState([]);
+  const [errorMessage, setErrorMessage] = useState('');
 
   // api for fetching subjects "/subjects"
     useEffect(() => {
@@ -46,6 +48,30 @@ export function DataProvider({ children }) {
 
     fetchSubjects();
   }, []);
+
+  // Course CRUD operations
+  const  addSubject = async(subject) => {
+    try{
+      const response = await fetch('/api/subjects', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(subject)
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        setErrorMessage(data.message || "Thêm môn học thất bại.");
+        throw new Error(data.message || "Thêm môn học thất bại.");
+      }
+      setSubjects([...subjects, data.data]); // Update state with new subject
+      setErrorMessage('');
+      return data.data;
+    } catch (error) {
+      console.error('Error adding subject:', error);
+       throw error;
+    }
+  };
 
 
   // Admin CRUD operations
@@ -93,21 +119,16 @@ export function DataProvider({ children }) {
     setUsers(users.filter(user => user.id !== id));
   };
 
-  // Course CRUD operations
-  const addCourse = (course) => {
-    const newCourse = { ...course, id: Date.now().toString() };
-    setCourses([...courses, newCourse]);
-    return newCourse;
+  // Subject CRUD operations
+
+  const updateSubject = (id, updatedSubject) => {
+    setSubjects(subjects.map(subject => subject.id === id ? { ...subject, ...updatedSubject } : subject));
   };
 
-  const updateCourse = (id, updatedCourse) => {
-    setCourses(courses.map(course => course.id === id ? { ...course, ...updatedCourse } : course));
-  };
-
-  const deleteCourse = (id) => {
-    setCourses(courses.filter(course => course.id !== id));
+  const deleteSubject = (id) => {
+    setSubjects(subjects.filter(subject => subject.id !== id));
     // Also delete related lessons
-    setLessons(lessons.filter(lesson => lesson.courseId !== id));
+    setLessons(lessons.filter(lesson => lesson.subjectId !== id));
   };
 
   // Lesson CRUD operations
@@ -210,6 +231,7 @@ export function DataProvider({ children }) {
     exercises,
     resources,
     subjects,
+    errorMessage,
     addAdmin,
     updateAdmin,
     deleteAdmin,
@@ -217,9 +239,9 @@ export function DataProvider({ children }) {
     addUser,
     updateUser,
     deleteUser,
-    addCourse,
-    updateCourse,
-    deleteCourse,
+    addSubject,
+    updateSubject,
+    deleteSubject,
     addLesson,
     updateLesson,
     deleteLesson,
