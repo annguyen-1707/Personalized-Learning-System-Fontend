@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
 function ChangePasswordPage() {
   const navigate = useNavigate();
@@ -9,12 +10,13 @@ function ChangePasswordPage() {
     confirm: "",
   });
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
 
   const handleChange = (e) => {
     setPasswords({ ...passwords, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!passwords.current.trim() || !passwords.new.trim() || !passwords.confirm.trim()) {
       setError("All password fields are required.");
@@ -25,9 +27,20 @@ function ChangePasswordPage() {
       return;
     }
     setError("");
-    // TODO: Add password change logic here (API call)
-    alert("Password changed successfully! (Demo only)");
-    navigate("/profile/edit");
+    setSuccess("");
+    try {
+      await axios.post("http://localhost:8080/api/user/change-password", {
+        currentPassword: passwords.current,
+        newPassword: passwords.new,
+        confirmPassword: passwords.confirm,
+      });
+      setSuccess("Password changed successfully!");
+      setTimeout(() => navigate("/profile/edit"), 1500);
+    } catch (err) {
+      setError(
+        err.response?.data?.message || "Failed to change password"
+      );
+    }
   };
 
   return (
@@ -77,6 +90,7 @@ function ChangePasswordPage() {
           />
         </div>
         {error && <div className="text-red-500 text-sm">{error}</div>}
+        {success && <div className="text-green-600 text-sm">{success}</div>}
         <div className="flex gap-2 mt-4">
           <button type="submit" className="btn btn-primary w-full">
             Change Password

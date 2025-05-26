@@ -1,26 +1,35 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContext';
 import { BookOpen, Mail, ArrowLeft } from 'lucide-react';
+import axios from "axios";
 
 function ForgotPassword() {
-  const { forgotPassword, loading } = useAuth();
   const [email, setEmail] = useState('');
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-
-    try {
-      setMessage('');
-      setError('');
-      await forgotPassword(email);
-      setMessage('Check your email for password reset instructions');
-    } catch (err) {
-      setError('Failed to reset password');
-    }
-  };
+  e.preventDefault();
+  setLoading(true);
+  setMessage('');
+  setError('');
+  try {
+    await axios.post(
+      'http://localhost:8080/api/auth/forgot-password',
+      { email },
+      { withCredentials: true }
+    );
+    setMessage('Check your email for password reset instructions');
+  } catch (err) {
+  let msg = err.response?.data?.message || 'Failed to reset password';
+  if (msg === 'Email not found.') {
+    msg = 'Email address not found. Please check and try again.';
+  }
+  setError(msg);
+}
+  setLoading(false);
+};
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
@@ -86,7 +95,7 @@ function ForgotPassword() {
                     <span className="ml-2">Sending reset link...</span>
                   </div>
                 ) : (
-                  'Send reset link'
+                  'Send reset code'
                 )}
               </button>
             </div>
