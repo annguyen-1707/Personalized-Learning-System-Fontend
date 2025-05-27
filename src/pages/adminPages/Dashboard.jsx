@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-// import { useData } from '../context/DataContext';
+import { useData } from '../../context/DataContext';
 import { Link } from 'react-router-dom';
 import { 
   Users, 
@@ -26,6 +26,7 @@ import {
   ArcElement
 } from 'chart.js';
 import { Bar, Line, Pie } from 'react-chartjs-2';
+import { sub } from 'framer-motion/client';
 
 ChartJS.register(
   CategoryScale,
@@ -40,12 +41,12 @@ ChartJS.register(
 );
 
 function Dashboard() {
-  // const { users, courses, lessons, logs } = useData();
+  const { users, lessons, logs, subjects } = useData();
   const [stats, setStats] = useState({
     totalUsers: 0,
     activeUsers: 0,
-    totalCourses: 0,
-    activeCourses: 0,
+    totalSubjects: 0,
+    activeSubjects: 0,
     totalLessons: 0,
     recentActivity: []
   });
@@ -53,15 +54,15 @@ function Dashboard() {
   // Calculate statistics when data changes
   useEffect(() => {
     setStats({
-      // totalUsers: users.length,
-      // activeUsers: users.filter(user => user.status === 'active').length,
-      // totalCourses: courses.length,
-      // activeCourses: courses.filter(course => course.status === 'active').length,
-      // totalLessons: lessons.length,
-      // recentActivity: logs.slice(0, 5)
+      totalUsers: users.length,
+      activeUsers: users.filter(user => user.status === 'active').length,
+      totalSubjects: subjects.length,
+      activeSubjects: subjects.filter(subject => subject.status === 'ACTIVE').length,
+      totalLessons: lessons.length,
+      recentActivity: logs.slice(0, 5)
     });
-  // }, [users, courses, lessons, logs]);
-  }, []);
+  }, [users, subjects, lessons, logs]);
+
 
   // Sample data for charts
   const userProgressData = {
@@ -76,12 +77,12 @@ function Dashboard() {
     ]
   };
 
-  const courseCompletionData = {
-    labels: courses.slice(0, 5).map(course => course.title),
+  const subjectCompletionData = {
+    labels: subjects.slice(0, 5).map(subject => subject.subjectCode),
     datasets: [
       {
         label: 'Completion Rate (%)',
-        data: courses.slice(0, 5).map(course => course.completion),
+        data: subjects.slice(0, 5).map(subject => subject.completion),
         backgroundColor: [
           'rgba(59, 130, 246, 0.6)',
           'rgba(79, 70, 229, 0.6)',
@@ -120,12 +121,12 @@ function Dashboard() {
         <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
         <div className="flex items-center gap-2">
           <Clock size={18} className="text-gray-500" />
-          <span className="text-sm text-gray-500">Last updated: {new Date().toLocaleString()}</span>
+          {/* <span className="text-sm text-gray-500">Last updated: {new Date().toLocaleString()}</span> */}
         </div>
       </div>
 
       {/* Stats Overview */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      {/* <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         <div className="card p-6 flex items-start">
           <div className="rounded-md bg-primary-100 p-3 mr-4">
             <Users className="h-6 w-6 text-primary-600" />
@@ -146,8 +147,8 @@ function Dashboard() {
             <Book className="h-6 w-6 text-secondary-600" />
           </div>
           <div>
-            <p className="text-sm font-medium text-gray-500">Active Courses</p>
-            <p className="text-2xl font-bold text-gray-900">{stats.activeCourses}</p>
+            <p className="text-sm font-medium text-gray-500">Active Subjects</p>
+            <p className="text-2xl font-bold text-gray-900">{stats.activeSubjects}</p>
             <div className="flex items-center mt-1 text-xs">
               <ArrowUp className="h-4 w-4 text-success-500 mr-1" />
               <span className="text-success-700">3 new</span>
@@ -185,10 +186,10 @@ function Dashboard() {
             </div>
           </div>
         </div>
-      </div>
+      </div> */}
 
       {/* Charts and Analytics */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+      {/* <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
         <div className="card p-6 lg:col-span-2">
           <h2 className="text-lg font-medium text-gray-900 mb-4">User Activity Trends</h2>
           <div className="h-80">
@@ -224,14 +225,14 @@ function Dashboard() {
             />
           </div>
         </div>
-      </div>
-
+      </div> */}
+{/* 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
         <div className="card p-6">
-          <h2 className="text-lg font-medium text-gray-900 mb-4">Course Completion Rates</h2>
+          <h2 className="text-lg font-medium text-gray-900 mb-4">Subject Completion Rates</h2>
           <div className="h-80">
             <Bar 
-              data={courseCompletionData} 
+              data={subjectCompletionData} 
               options={{
                 responsive: true,
                 maintainAspectRatio: false,
@@ -276,10 +277,10 @@ function Dashboard() {
             ))}
           </div>
         </div>
-      </div>
+      </div> */}
 
       {/* Quick Access */}
-      <div className="card p-6">
+      {/* <div className="card p-6">
         <h2 className="text-lg font-medium text-gray-900 mb-4">Quick Access</h2>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <Link to="/users" className="card p-4 hover:shadow-md transition-shadow flex flex-col items-center justify-center text-center">
@@ -299,7 +300,7 @@ function Dashboard() {
             <span className="text-sm font-medium text-gray-900">System Logs</span>
           </Link>
         </div>
-      </div>
+      </div> */}
     </div>
   );
 }

@@ -1,4 +1,4 @@
-import { createContext, useContext, useState } from 'react';
+import { createContext, useContext, useState, useEffect } from 'react';
 import { 
   mockAdmins, 
   mockUsers, 
@@ -10,6 +10,7 @@ import {
   mockExercises,
   mockResources
 } from '../data/mockData';
+import { data } from 'autoprefixer';
 
 const DataContext = createContext();
 
@@ -20,14 +21,98 @@ export function useData() {
 export function DataProvider({ children }) {
   const [admins, setAdmins] = useState(mockAdmins);
   const [users, setUsers] = useState(mockUsers);
-  const [courses, setCourses] = useState(mockCourses);
   const [lessons, setLessons] = useState(mockLessons);
   const [logs, setLogs] = useState(mockSystemLogs);
   const [vocabulary, setVocabulary] = useState(mockVocabulary);
   const [grammar, setGrammar] = useState(mockGrammar);
   const [exercises, setExercises] = useState(mockExercises);
   const [resources, setResources] = useState(mockResources);
+  const [subjects, setSubjects] = useState([]);
+  const [errorMessage, setErrorMessage] = useState('');
 
+  // api for fetching subjects "/subjects"
+    useEffect(() => {
+    const fetchSubjects = async () => {
+      try {
+        const response = await fetch('/api/subjects');
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
+        setSubjects(data.data);
+      } catch (error) {
+        console.error('Error fetching subjects:', error);
+      }
+    };
+
+    fetchSubjects();
+  }, []);
+
+  // Subject CRUD operations
+  const  addSubject = async(subject) => {
+    try{
+      const response = await fetch('/api/subjects', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(subject)
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        setErrorMessage(data.message || "failed to add subject");
+        throw new Error(data.message || "failed to add subject");
+      }
+      setSubjects([...subjects, data.data]); // Update state with new subject
+      setErrorMessage('');
+      return data.data;
+    } catch (error) {
+      console.error('Error adding subject:', error);
+       throw error;
+    }
+  };
+
+  const updateSubject = async (id, subject) => {
+    try {
+      const response = await fetch(`/api/subjects/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(subject)
+      });
+      const data = await response.json();
+      if (!response.ok) {
+         setErrorMessage(data.message);
+        throw new Error(data.message || "failed to update subject.");
+      }
+      // Refresh subjects after update
+      setSubjects(subjects.map(subject => subject.subjectId === id ? data.data : subject));
+    } catch (error) {
+      console.error('Error updating subject:', error);
+       throw error;
+    }
+  };
+
+  const deleteSubject = async (id) => {
+    try {
+      const response = await fetch(`/api/subjects/${id}`, {
+        method: 'DELETE'
+      });
+      
+      if (!response.ok) {
+        const data = await response.json();
+        setErrorMessage(data.message);
+        throw new Error(data.message ||`HTTP error! status: ${response.status}`);
+      }
+      // Remove subject from state
+      setSubjects(subjects.filter(subject => subject.subjectId !== id));
+      setErrorMessage('');
+    } catch (error) {
+      console.error('Error deleting subject:', error);
+      throw error;
+    }
+  };
   // Admin CRUD operations
   const addAdmin = (admin) => {
     const newAdmin = { 
@@ -71,23 +156,6 @@ export function DataProvider({ children }) {
 
   const deleteUser = (id) => {
     setUsers(users.filter(user => user.id !== id));
-  };
-
-  // Course CRUD operations
-  const addCourse = (course) => {
-    const newCourse = { ...course, id: Date.now().toString() };
-    setCourses([...courses, newCourse]);
-    return newCourse;
-  };
-
-  const updateCourse = (id, updatedCourse) => {
-    setCourses(courses.map(course => course.id === id ? { ...course, ...updatedCourse } : course));
-  };
-
-  const deleteCourse = (id) => {
-    setCourses(courses.filter(course => course.id !== id));
-    // Also delete related lessons
-    setLessons(lessons.filter(lesson => lesson.courseId !== id));
   };
 
   // Lesson CRUD operations
@@ -182,13 +250,13 @@ export function DataProvider({ children }) {
   const value = {
     admins,
     users,
-    courses,
     lessons,
     logs,
     vocabulary,
-    grammar,
     exercises,
     resources,
+    subjects,
+    errorMessage,
     addAdmin,
     updateAdmin,
     deleteAdmin,
@@ -196,9 +264,9 @@ export function DataProvider({ children }) {
     addUser,
     updateUser,
     deleteUser,
-    addCourse,
-    updateCourse,
-    deleteCourse,
+    addSubject,
+    updateSubject,
+    deleteSubject,
     addLesson,
     updateLesson,
     deleteLesson,
