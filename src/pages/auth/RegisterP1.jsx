@@ -3,10 +3,9 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { BookOpen, User, Mail, Lock, Github, ToggleLeft as Google, Facebook } from 'lucide-react';
 
-function Register() {
+function RegisterP1() {
   const navigate = useNavigate();
-  const { register, loginWithProvider, loading } = useAuth();
-  const [name, setName] = useState('');
+  const { register1, loginWithProvider, loading } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -14,6 +13,8 @@ function Register() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+      console.log("✅ SUBMIT CALLED");
+
 
     if (password !== confirmPassword) {
       return setError('Passwords do not match');
@@ -21,8 +22,8 @@ function Register() {
 
     try {
       setError('');
-      await register(name, email, password);
-      navigate('/learn');
+      await register1(email, password);
+      navigate(`/await-confirmation?email=${encodeURIComponent(email)}`);
     } catch (err) {
       setError('Failed to create an account');
     }
@@ -66,26 +67,6 @@ function Register() {
           )}
 
           <form className="space-y-6" onSubmit={handleSubmit}>
-            <div>
-              <label htmlFor="name" className="block text-sm font-medium text-gray-700">
-                Full name
-              </label>
-              <div className="mt-1 relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <User className="h-5 w-5 text-gray-400" />
-                </div>
-                <input
-                  id="name"
-                  name="name"
-                  type="text"
-                  required
-                  className="pl-10"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                />
-              </div>
-            </div>
-
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700">
                 Email address
@@ -202,4 +183,4 @@ function Register() {
   );
 }
 
-export default Register;
+export default RegisterP1;
