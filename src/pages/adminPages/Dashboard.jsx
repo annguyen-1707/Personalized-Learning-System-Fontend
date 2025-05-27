@@ -121,12 +121,12 @@ function Dashboard() {
         <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
         <div className="flex items-center gap-2">
           <Clock size={18} className="text-gray-500" />
-          <span className="text-sm text-gray-500">Last updated: {new Date().toLocaleString()}</span>
+          {/* <span className="text-sm text-gray-500">Last updated: {new Date().toLocaleString()}</span> */}
         </div>
       </div>
 
       {/* Stats Overview */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      {/* <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         <div className="card p-6 flex items-start">
           <div className="rounded-md bg-primary-100 p-3 mr-4">
             <Users className="h-6 w-6 text-primary-600" />
@@ -186,10 +186,10 @@ function Dashboard() {
             </div>
           </div>
         </div>
-      </div>
+      </div> */}
 
       {/* Charts and Analytics */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+      {/* <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
         <div className="card p-6 lg:col-span-2">
           <h2 className="text-lg font-medium text-gray-900 mb-4">User Activity Trends</h2>
           <div className="h-80">
@@ -225,8 +225,8 @@ function Dashboard() {
             />
           </div>
         </div>
-      </div>
-
+      </div> */}
+{/* 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
         <div className="card p-6">
           <h2 className="text-lg font-medium text-gray-900 mb-4">Subject Completion Rates</h2>
@@ -277,10 +277,10 @@ function Dashboard() {
             ))}
           </div>
         </div>
-      </div>
+      </div> */}
 
       {/* Quick Access */}
-      <div className="card p-6">
+      {/* <div className="card p-6">
         <h2 className="text-lg font-medium text-gray-900 mb-4">Quick Access</h2>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <Link to="/users" className="card p-4 hover:shadow-md transition-shadow flex flex-col items-center justify-center text-center">
@@ -300,7 +300,7 @@ function Dashboard() {
             <span className="text-sm font-medium text-gray-900">System Logs</span>
           </Link>
         </div>
-      </div>
+      </div> */}
     </div>
   );
 }
