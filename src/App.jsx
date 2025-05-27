@@ -16,6 +16,8 @@ import Dashboard from "./pages/adminPages/Dashboard";
 
 import { DataProvider } from "./context/DataContext";
 import { AuthProvider } from "./context/AuthContext";
+import SpeakingContentManagement from "./pages/content/SpeakingContentManagement";
+import DialogueManagement from "./pages/content/DialogueManagement";
 
 function App() {
   return (
@@ -33,6 +35,9 @@ function App() {
           </Route>
 
           {/* Admin routes */}
+          <Route path="admin" element={<MainLayout />}>
+            <Route path="content_speaking" element={<SpeakingContentManagement />} />
+            <Route path="content_speaking/:contentSpeakingId/dialogue" element={<DialogueManagement />} />
           <Route element={<MainLayout />}>
             <Route path="/admin" element={<Dashboard />} />
             <Route path="/admin/courses" element={<CourseManagement />} />
