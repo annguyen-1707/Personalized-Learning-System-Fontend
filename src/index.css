@@ -46,7 +46,7 @@ body {
   }
   
   .btn-primary {
-    @apply bg-primary-500 text-white hover:bg-primary-600 focus:ring-primary-500;
+    @apply bg-primary-600 text-white hover:bg-primary-600 focus:ring-primary-500 px-4 py-2 rounded-md;
   }
   
   .btn-secondary {
