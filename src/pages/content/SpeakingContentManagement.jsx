@@ -58,6 +58,11 @@ function SpeakingContentManagement() {
         await getContents();                  // Lấy lại danh sách mới
         setIsAdding(false);
         setIsEditing(null);
+        setFormData({
+          title: "",
+          image: null,
+          category: "", // <-- thêm giá trị mặc định
+        });
       } catch (error) {
         console.error("Error updating content:", error);
       }
@@ -164,7 +169,7 @@ function SpeakingContentManagement() {
                   onChange={(e) => setFormData({ ...formData, category: e.target.value })}
                   className="w-full"
                 >
-                  <option value="" disabled selected hidden>Select a category</option>
+                  <option value="" disabled hidden>Select a category</option>
                   {listContentCategory?.length > 0 && listContentCategory.map((category) => (
                     <option key={category} value={category}>
                       {category}
@@ -273,8 +278,6 @@ function SpeakingContentManagement() {
                         <button
                           onClick={() => {
                             setFormData(contentSpeaking);
-                            console.log("contentSpeaking", contentSpeaking);
-                            console.log("formData", formData);
                             setIsEditing(contentSpeaking.contentSpeakingId);
                             setIsAdding(false);
                           }}

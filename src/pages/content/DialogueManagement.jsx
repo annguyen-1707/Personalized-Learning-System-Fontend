@@ -23,11 +23,10 @@ function DialogueManagement() {
     const [isEditing, setIsEditing] = useState(null);
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(null);
     const [formData, setFormData] = useState({
-        question: '',
-        questionTranslation: '',
-        answer: '',
-        answerTranslation: '',
-        type: 'general'
+        questionJd: '',
+        questionVn: '',
+        answerJd: '',
+        answerVn: ''
     });
     const { contentSpeakingId } = useParams();
     const dialogueTypes = [
@@ -40,40 +39,45 @@ function DialogueManagement() {
         'business'
     ];
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-
         if (isEditing) {
-            setDialogues(dialogues.map(d =>
-                d.id === isEditing
-                    ? { ...formData, id: isEditing }
-                    : d
-            ));
-            setIsEditing(null);
+            try {
+                await handleUpdateDialogue(isEditing, formData);
+                await getDialogues();
+                setIsEditing(null);
+                setIsAdding(false);
+            } catch (error) {
+                console.error("Error updating dialogue:", error);
+            }
         } else {
-            setDialogues([
-                ...dialogues,
-                {
-                    ...formData,
-                    id: Date.now().toString()
+            try {
+                await handleCreateDialogue(formData);
+                await getDialogues();
+                setIsAdding(false);
+                setIsEditing(null);
+            } catch (error) {
+                console.error("Error creating dialogue:", error);
+                if (error.response && error.response.data) {
+                    alert(error.response.data.message || "Failed to create dialogue");
+                } else {
+                    alert("An unexpected error occurred");
                 }
-            ]);
-            setIsAdding(false);
+            }
         }
-
         setFormData({
-            question: '',
-            questionTranslation: '',
-            answer: '',
-            answerTranslation: '',
-            type: 'general'
+            questionJp: '',
+            questionVn: '',
+            answerJp: '',
+            answerVn: '',
+            contentSpeakingId: contentSpeakingId
         });
     };
 
-    const handleDelete = (id) => {
-        setDialogues(dialogues.filter(d => d.id !== id));
-        setShowDeleteConfirm(null);
-        handleDeleteDialogue(id);
+    const handleDelete = async (id) => {
+        console.log("Deleting dialogue with ID:", id);
+        await handleDeleteDialogue(id);
+        await getDialogues();
     };
 
     const startEdit = (dialogue) => {
@@ -134,8 +138,8 @@ function DialogueManagement() {
                                 <input
                                     type="text"
                                     required
-                                    value={formData.question}
-                                    onChange={(e) => setFormData({ ...formData, question: e.target.value })}
+                                    value={formData.questionJp}
+                                    onChange={(e) => setFormData({ ...formData, questionJp: e.target.value })}
                                     className="w-full"
                                     placeholder="お名前は何ですか？"
                                 />
@@ -148,8 +152,8 @@ function DialogueManagement() {
                                 <input
                                     type="text"
                                     required
-                                    value={formData.questionTranslation}
-                                    onChange={(e) => setFormData({ ...formData, questionTranslation: e.target.value })}
+                                    value={formData.questionVn}
+                                    onChange={(e) => setFormData({ ...formData, questionVn: e.target.value })}
                                     className="w-full"
                                     placeholder="Tên bạn là gì?"
                                 />
@@ -162,8 +166,8 @@ function DialogueManagement() {
                                 <input
                                     type="text"
                                     required
-                                    value={formData.answer}
-                                    onChange={(e) => setFormData({ ...formData, answer: e.target.value })}
+                                    value={formData.answerJp}
+                                    onChange={(e) => setFormData({ ...formData, answerJp: e.target.value })}
                                     className="w-full"
                                     placeholder="私の名前は田中です。"
                                 />
@@ -176,29 +180,11 @@ function DialogueManagement() {
                                 <input
                                     type="text"
                                     required
-                                    value={formData.answerTranslation}
-                                    onChange={(e) => setFormData({ ...formData, answerTranslation: e.target.value })}
+                                    value={formData.answerTVn}
+                                    onChange={(e) => setFormData({ ...formData, answerVn: e.target.value })}
                                     className="w-full"
                                     placeholder="Tên tôi là Tanaka."
                                 />
-                            </div>
-
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
-                                    Dialogue Type
-                                </label>
-                                <select
-                                    value={formData.type}
-                                    onChange={(e) => setFormData({ ...formData, type: e.target.value })}
-                                    className="w-full"
-                                    required
-                                >
-                                    {dialogueTypes.map(type => (
-                                        <option key={type} value={type}>
-                                            {type.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
-                                        </option>
-                                    ))}
-                                </select>
                             </div>
                         </div>
 
@@ -234,8 +220,8 @@ function DialogueManagement() {
             {/* Dialogues List */}
             <div className="card">
                 <div className="divide-y divide-gray-200">
-                    {dialogues.map((dialogue) => (
-                        <div key={dialogue.id} className="p-6 hover:bg-gray-50">
+                    {dialogues.map((dialogue, index) => (
+                        <div key={dialogue.id || index} className="p-6 hover:bg-gray-50">
                             <div className="flex justify-between items-start">
                                 <div className="flex-1">
                                     <div className="flex items-center mb-4">
@@ -312,5 +298,4 @@ function DialogueManagement() {
         </div>
     );
 }
-
 export default DialogueManagement;

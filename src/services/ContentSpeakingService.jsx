@@ -20,7 +20,6 @@ const handleCreateContent = async (data) => {
             image: imageUrl,
             category: data.category,
         };
-        console.log("formData", formData);
         const response = axios.post(`/api/content_speaking`, formData);
         alert("Tạo content thành công!");
         return response;
@@ -60,7 +59,7 @@ const handleUpdateContent = async (id, data) => {
         alert("Cập nhật content thành công!");
         return response;
     } catch (error) {
-        console.error(error);
+        console.error(error.response?.data || error.message);
         alert("Cập nhật content thất bại!");
     }
 }
