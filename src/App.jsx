@@ -35,10 +35,12 @@ function App() {
           </Route>
 
           {/* Admin routes */}
-          <Route path="admin" element={<MainLayout />}>
-            <Route path="content_speaking" element={<SpeakingContentManagement />} />
-            <Route path="content_speaking/:contentSpeakingId/dialogue" element={<DialogueManagement />} />
+          {/* <Route path="admin" element={<MainLayout />}>
+             */}
+          
           <Route element={<MainLayout />}>
+          <Route path="/admin/content_speaking" element={<SpeakingContentManagement />} />
+            <Route path="/admin/content_speaking/:contentSpeakingId/dialogue" element={<DialogueManagement />} />
             <Route path="/admin" element={<Dashboard />} />
             <Route path="/admin/courses" element={<CourseManagement />} />
             <Route
