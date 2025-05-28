@@ -13,8 +13,9 @@ import {
   X,
   ExternalLink,
 } from "lucide-react";
-import { sub } from "framer-motion/client";
+import { s, sub } from "framer-motion/client";
 import { GiOpenBook } from "react-icons/gi";
+import { toast } from "react-toastify";
 
 function LessonManagement() {
   const { subjectId } = useParams();
@@ -26,6 +27,7 @@ function LessonManagement() {
     deleteLesson,
     addLog,
     lessonsFetch,
+    lessonStatus,
   } = useData();
 
   const [subject, setSubject] = useState(null);
@@ -35,9 +37,16 @@ function LessonManagement() {
   const [formData, setFormData] = useState({
     name: "",
     description: "",
-    status: "published",
+    status: "PUBLIC",
+    subjectId: subjectId,
   });
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(null);
+
+  const statusOptions = lessonStatus.map((status) => ({
+    data: status,
+  }));
+
+  console.log('statusOptions', statusOptions);
 
   // Get subject and its lessons
  useEffect(() => {
@@ -45,13 +54,11 @@ function LessonManagement() {
   if (!subjectId) return;
 
   const foundSubject = subjects.find((s) => s.subjectId == subjectId);
-  console.log("Found Subject:", foundSubject);
 
   if (foundSubject) {
     setSubject(foundSubject);
     lessonsFetch(subjectId);
   }
-
 
 }, [subjects, subjectId]);
 
@@ -64,28 +71,31 @@ useEffect(() => {
 
 
 
-  const handleAddSubmit = (e) => {
+  const handleAddSubmit = async (e) => {
     e.preventDefault();
-    const newLesson = addLesson({
-      ...formData,
-      subjectId,
-      order: subjectLessons.length + 1,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
+    const newLesson = await addLesson({
+      ...formData
     });
 
-    addLog(
-      "Lesson Created",
-      `New lesson "${formData.title}" was created for subject "${subject.title}"`
-    );
-    setSubjectLessons([...subjectLessons, newLesson]);
+    if(newLesson.error) {
+      toast.error(newLesson.message || "Failed to create lesson");
+      return;
+    } else {
+      const message = `New lesson "${formData.name}" was created successfully!`;
+      toast.success(message);
+
+      addLog(
+        "Lesson Created",
+        `New lesson "${formData.name}" was created for subject "${subject.name}"`
+      );
+      setSubjectLessons([...subjectLessons, newLesson]);
+    }
     setFormData({
-      title: "",
+      name: "",
       description: "",
-      duration: "",
-      status: "published",
+      status: "PUBLIC",
+      subjectId: subjectId,
     });
-
     setIsAdding(false);
   };
 
@@ -103,6 +113,7 @@ useEffect(() => {
       description: "",
       duration: "",
       status: "PUBLIC",
+      subjectId: subjectId,
     });
 
     setIsEditing(null);
@@ -123,6 +134,7 @@ useEffect(() => {
       title: lesson.name,
       description: lesson.description,
       status: lesson.status,
+      subjectId: lesson.subjectId,
     });
     setIsEditing(lesson.lessonId);
     setIsAdding(false);
@@ -136,6 +148,7 @@ useEffect(() => {
       description: "",
       duration: "",
       status: "published",
+      subjectId: subjectId,
     });
   };
 
@@ -216,15 +229,15 @@ useEffect(() => {
                   htmlFor="title"
                   className="block text-sm font-medium text-gray-700 mb-1"
                 >
-                  Lesson Title
+                  Lesson Name
                 </label>
                 <input
-                  id="title"
+                  id="name"
                   type="text"
                   required
-                  value={formData.title}
+                  value={formData.name}
                   onChange={(e) =>
-                    setFormData({ ...formData, title: e.target.value })
+                    setFormData({ ...formData, name: e.target.value })
                   }
                 />
               </div>
@@ -250,24 +263,6 @@ useEffect(() => {
 
               <div>
                 <label
-                  htmlFor="duration"
-                  className="block text-sm font-medium text-gray-700 mb-1"
-                >
-                  Duration (e.g., "45 minutes")
-                </label>
-                <input
-                  id="duration"
-                  type="text"
-                  required
-                  value={formData.duration}
-                  onChange={(e) =>
-                    setFormData({ ...formData, duration: e.target.value })
-                  }
-                />
-              </div>
-
-              <div>
-                <label
                   htmlFor="status"
                   className="block text-sm font-medium text-gray-700 mb-1"
                 >
@@ -281,8 +276,11 @@ useEffect(() => {
                   }
                   className="rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 w-full"
                 >
-                  <option value="published">Published</option>
-                  <option value="draft">Draft</option>
+                  {statusOptions.map((option) => (
+                    <option key={option.data} value={option.data}>
+                      {option.data}
+                    </option>
+                  ))}
                 </select>
               </div>
             </div>

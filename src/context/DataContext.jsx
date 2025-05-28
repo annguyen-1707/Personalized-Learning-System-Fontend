@@ -28,10 +28,12 @@ export function DataProvider({ children }) {
   const [resources, setResources] = useState(mockResources);
   const [subjects, setSubjects] = useState([]);
   const [errorMessage, setErrorMessage] = useState('');
+  const [lessonStatus, setLessonStatus] = useState([]);
 
   // api for fetching days "/api/subjects" and "/api/lessons?subjectId={subjectId}"
   useEffect(() => {
     fetchSubjects();
+    fetchLessonStatus();
   }, []);
 
   const fetchSubjects = async () => {
@@ -55,6 +57,17 @@ export function DataProvider({ children }) {
       setLessons(data.data);
     } catch (error) {
       console.error('Error fetching lessons:', error);
+    }
+  };
+
+  const fetchLessonStatus = async() => {
+    try {
+      const response = await fetch('/api/lessons/status');
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+      const data = await response.json();
+      setLessonStatus(data.data);
+    } catch (error) {
+      console.error('Error fetching lesson status:', error);
     }
   };
 
@@ -288,6 +301,7 @@ export function DataProvider({ children }) {
     resources,
     subjects,
     errorMessage,
+    lessonStatus,
     addAdmin,
     updateAdmin,
     deleteAdmin,
