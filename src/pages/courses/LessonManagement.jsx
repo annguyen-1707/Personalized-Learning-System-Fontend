@@ -33,9 +33,8 @@ function LessonManagement() {
   const [isAdding, setIsAdding] = useState(false);
   const [isEditing, setIsEditing] = useState(null);
   const [formData, setFormData] = useState({
-    title: "",
+    name: "",
     description: "",
-    duration: "",
     status: "published",
   });
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(null);
@@ -67,7 +66,6 @@ useEffect(() => {
 
   const handleAddSubmit = (e) => {
     e.preventDefault();
-
     const newLesson = addLesson({
       ...formData,
       subjectId,
