@@ -3,10 +3,9 @@ import { useNavigate } from "react-router-dom";
 
 function EditProfilePage() {
   const navigate = useNavigate();
-  // Load from localStorage if available, else use defaults
   const storedUser = JSON.parse(localStorage.getItem("user")) || {
     name: "",
-    email: "alex@example.com",
+    email: "",
     phone: "",
     addressLine: "",
     // city: "",
@@ -39,7 +38,6 @@ function EditProfilePage() {
     }
     setError("");
 
-    // Password change validation (optional)
     if (showPasswordFields && (passwords.new || passwords.confirm || passwords.current)) {
       if (!passwords.current || !passwords.new || !passwords.confirm) {
         setPasswordError("Please fill in all password fields.");
@@ -49,14 +47,10 @@ function EditProfilePage() {
         setPasswordError("New passwords do not match.");
         return;
       }
-      // TODO: Add password change logic here (API call)
       setPasswordError("");
       alert("Password changed successfully! (Demo only)");
     }
 
-    // Save to localStorage
-    localStorage.setItem("user", JSON.stringify(form));
-    navigate("/profile");
   };
 
   return (

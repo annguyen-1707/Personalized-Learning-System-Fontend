@@ -27,6 +27,10 @@ function ChangePasswordPage() {
       setError("New passwords do not match.");
       return;
     }
+    if (passwords.new.length < 8) {
+      setError("New password must be at least 8 characters long.");
+      return;
+    }
     setError("");
     setSuccess("");
     try {
