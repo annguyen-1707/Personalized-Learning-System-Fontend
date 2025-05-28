@@ -27,7 +27,7 @@ const handleCreateContent = async (data) => {
     } catch (error) {
         const allErrors = error.response?.data?.data?.map(e => `${e.message}`).join(", ");
         console.error("All error", allErrors)
-        throw new Error(allErrors || "can not find error");
+        throw new Error(allErrors || "Chọn chủ đề");
     }
 };
 
