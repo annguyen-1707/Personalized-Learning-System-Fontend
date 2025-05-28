@@ -60,8 +60,8 @@ export function DataProvider({ children }) {
 
 
   // Subject CRUD operations
-  const  addSubject = async(subject) => {
-    try{
+  const addSubject = async (subject) => {
+    try {
       const response = await fetch('/api/subjects', {
         method: 'POST',
         headers: {
@@ -79,7 +79,7 @@ export function DataProvider({ children }) {
       return data.data;
     } catch (error) {
       console.error('Error adding subject:', error);
-       throw error;
+      throw error;
     }
   };
 
@@ -93,15 +93,11 @@ export function DataProvider({ children }) {
         body: JSON.stringify(subject)
       });
       const data = await response.json();
-      if (!response.ok) {
-         setErrorMessage(data.message);
-        throw new Error(data.message || "failed to update subject.");
-      }
       // Refresh subjects after update
       setSubjects(subjects.map(subject => subject.subjectId === id ? data.data : subject));
     } catch (error) {
       console.error('Error updating subject:', error);
-       throw error;
+      throw error;
     }
   };
 
@@ -110,11 +106,11 @@ export function DataProvider({ children }) {
       const response = await fetch(`/api/subjects/${id}`, {
         method: 'DELETE'
       });
-      
+
       if (!response.ok) {
         const data = await response.json();
         setErrorMessage(data.message);
-        throw new Error(data.message ||`HTTP error! status: ${response.status}`);
+        throw new Error(data.message || `HTTP error! status: ${response.status}`);
       }
       // Remove subject from state
       setSubjects(subjects.filter(subject => subject.subjectId !== id));
@@ -167,8 +163,8 @@ export function DataProvider({ children }) {
 
   // Admin CRUD operations
   const addAdmin = (admin) => {
-    const newAdmin = { 
-      ...admin, 
+    const newAdmin = {
+      ...admin,
       id: Date.now().toString(),
       permissions: {
         manageUsers: true,
@@ -190,7 +186,7 @@ export function DataProvider({ children }) {
   };
 
   const updateAdminPermissions = (id, permissions) => {
-    setAdmins(admins.map(admin => 
+    setAdmins(admins.map(admin =>
       admin.id === id ? { ...admin, permissions: { ...admin.permissions, ...permissions } } : admin
     ));
   };

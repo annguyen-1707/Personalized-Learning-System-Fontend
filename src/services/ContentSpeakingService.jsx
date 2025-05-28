@@ -1,5 +1,7 @@
 import axios from "./customixe-axios";
 import uploadFile from './UploadFileService';
+import { toast } from "react-toastify";
+// const [errorMessage, setErrorMessage] = useState('');
 
 
 const fetchAllContentSpeaking = () => {
@@ -20,26 +22,26 @@ const handleCreateContent = async (data) => {
             image: imageUrl,
             category: data.category,
         };
-        console.log("formData", formData);
-        const response = axios.post(`/api/content_speaking`, formData);
-        alert("Tạo content thành công!");
+        const response = await axios.post(`/api/content_speaking`, formData);
         return response;
     } catch (error) {
-        console.error(error);
-        alert("Tạo content thất bại!");
+        const allErrors = error.response?.data?.data?.map(e => `${e.message}`).join(", ");
+        console.error("All error", allErrors)
+        throw new Error(allErrors || "can not find error");
     }
-}
+};
 
-const handleDeleteConrent = async (id) => {
+
+async function handleDeleteContent(id) {
     const confirmDelete = window.confirm('Bạn có chắc muốn xóa nội dung này không?');
     if (!confirmDelete) return;
     try {
         const response = await axios.delete(`/api/content_speaking/${id}`);
-        alert("Xoá content thành công!");
+        toast.success("Xoá content thành công!");
         return response;
     } catch (error) {
         console.error(error);
-        alert("Xoá content thất bại!");
+        toast.error("Xoá content thất bại!");
     }
 }
 
@@ -57,13 +59,16 @@ const handleUpdateContent = async (id, data) => {
             category: data.category,
         };
         const response = await axios.patch(`/api/content_speaking/${id}`, formData);
-        alert("Cập nhật content thành công!");
         return response;
     } catch (error) {
-        console.error(error);
-        alert("Cập nhật content thất bại!");
+        const allErrors = error.response?.data?.data?.map(e => `${e.message}`).join(", ");
+        console.error("All error", allErrors)
+        throw new Error(allErrors || "Can not create ");
     }
 }
 
+const getPageContentSpeaking = async (page, size) => {
+    return axios.get(`/api/content_speaking?page=${page}&size=${size}`)
+}
 
-export { handleUpdateContent, fetchAllContentSpeaking, fetchAllContentCategorySpeaking, handleCreateContent, handleDeleteConrent }
+export { getPageContentSpeaking, handleUpdateContent, fetchAllContentSpeaking, fetchAllContentCategorySpeaking, handleCreateContent, handleDeleteContent }

@@ -8,8 +8,6 @@ const uploadFile = async (file) => {
             "Content-Type": "multipart/form-data",
         },
     });
-
-    console.log("response", response.data);
     return response.data.data
 };
 

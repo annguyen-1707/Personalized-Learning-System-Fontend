@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react';
 import { Plus, Search, Edit, Trash2, Check, X, MessageSquare } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { handleUpdateContent, fetchAllContentCategorySpeaking, fetchAllContentSpeaking, handleCreateContent, handleDeleteConrent } from '../../services/ContentSpeakingService';
-
+import { getPageContentSpeaking, handleUpdateContent, fetchAllContentCategorySpeaking, handleCreateContent, handleDeleteContent } from '../../services/ContentSpeakingService';
+import ReactPaginate from 'react-paginate';
+import 'bootstrap/dist/css/bootstrap.min.css';
+import { toast } from "react-toastify";
 
 function SpeakingContentManagement() {
   const [isAdding, setIsAdding] = useState(false);
@@ -12,6 +14,11 @@ function SpeakingContentManagement() {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(null);
   const [listContentSpeakings, setListContentSpeakings] = useState([]);
   const [listContentCategory, setlistContentCategory] = useState([]);
+  const [pageCount, setPageCount] = useState(0);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [size, setSize] = useState(5); // 1trang bn phan tu
+  const [totalElements, setTotalElements] = useState(); // tong phan tu
+  const [errorMessage, setErrorMessage] = useState("");
   const [formData, setFormData] = useState({
     title: '',
     image: '',
@@ -19,14 +26,16 @@ function SpeakingContentManagement() {
     contentType: 'speaking'
   });
   useEffect(() => {
-    getContents();
+    getContentPage(1);
     getContentCategorys();
-  }, [])
+  }, [size])
 
-  const getContents = async () => {
-    let res = await fetchAllContentSpeaking();
-    if (res && res.data) {
-      setListContentSpeakings(res.data)
+  const getContentPage = async (page) => {
+    let res = await getPageContentSpeaking(page, size);
+    if (res && res.data && res.data.content) {
+      setListContentSpeakings(res.data.content)
+      setPageCount(res.data.totalPages)
+      setTotalElements(res.data.totalElements)
     }
   }
 
@@ -38,31 +47,55 @@ function SpeakingContentManagement() {
   }
 
   const handeDelete = async (id) => {
-    await handleDeleteConrent(id);
-    await getContents();                  // Lấy lại danh sách mới
+    await handleDeleteContent(id);
+    await getContentPage(1);
   }
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (isAdding) {
       try {
-        await handleCreateContent(formData);  // Đợi upload và tạo content xong
-        await getContents();                  // Lấy lại danh sách mới
+        await handleCreateContent(formData);
+        await getContentPage(currentPage);
+        // Reset form
+        setFormData({
+          title: '',
+          image: '',
+          category: '',
+          contentType: 'speaking'
+        });
         setIsAdding(false);
-        setIsEditing(null);
+        setErrorMessage("");
+        toast.success("Tạo content thành công!");
       } catch (error) {
-        console.error("Error creating content:", error);
+        toast.error("Tạo content thất bại!");
+        setErrorMessage(error.message || "Failed to add content Speaking.");
       }
     } else if (isEditing) {
       try {
-        await handleUpdateContent(isEditing, formData); // Đợi upload và cập nhật content xong
-        await getContents();                  // Lấy lại danh sách mới
-        setIsAdding(false);
+        await handleUpdateContent(isEditing, formData);
+        await getContentPage(currentPage);
+        // Reset form
+        setFormData({
+          title: '',
+          image: '',
+          category: '',
+          contentType: 'speaking'
+        });
         setIsEditing(null);
+        setErrorMessage("");
+        toast.success("Cập nhật content thành công!");
       } catch (error) {
         console.error("Error updating content:", error);
+        setErrorMessage(error.message || "Failed to update content Speaking.");
+        toast.error("Cập nhật content thất bại!");
       }
     }
+
   };
+
+  const handleChangeSize = async (newSize) => {
+    setSize(newSize)
+  }
 
   const filteredContents = listContentSpeakings.filter((content) => {
     // Search filter (case insensitive)
@@ -74,8 +107,23 @@ function SpeakingContentManagement() {
     return searchMatch && categoryMatch;
   });
 
+  const startUpdate = (contentSpeaking) => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    setFormData(contentSpeaking);
+    setIsEditing(contentSpeaking.contentSpeakingId);
+    setIsAdding(false);
+    setErrorMessage("");
+  }
+
+  const handlePageClick = (event) => {
+    const selectedPage = +event.selected + 1;
+    setCurrentPage(selectedPage);
+    getContentPage(selectedPage);
+  }
+
   return (
     <div className="animate-fade-in">
+      {/* Header */}
       <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between">
         <h1 className="text-2xl font-bold text-gray-900 mb-2 sm:mb-0">Speaking Content Management</h1>
         <button
@@ -90,22 +138,35 @@ function SpeakingContentManagement() {
 
       {/* Search Bar */}
       <div className="card p-4 mb-6">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="md:col-span-2">
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <Search size={18} className="text-gray-400" />
-              </div>
-              <input
-                type="text"
-                placeholder="Search speaking content..."
-                className="pl-10"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-              />
-            </div>
+        <div className="flex items-center gap-4">
+          {/* split search and filter */}
+          <div className="w-1/5">
+            <select
+              className="w-full border border-gray-300 rounded-md py-2 px-2"
+              value={size}
+              onChange={(e) => handleChangeSize(e.target.value)
+              }
+            >
+              <option value="5">5</option>
+              <option value="10">10</option>
+              <option value="20">20</option>
+              <option value="50">50</option>
+              <option value={totalElements} >All </option>
+            </select>
           </div>
-          <div>
+          <div className="relative w-3/5">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <Search size={18} className="text-gray-400" />
+            </div>
+            <input
+              type="text"
+              placeholder="Search speaking content..."
+              className="pl-10"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+          </div>
+          <div className='w-1/5' >
             <select
               className="rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 w-full"
               value={filter}
@@ -128,15 +189,20 @@ function SpeakingContentManagement() {
           <h2 className="text-xl font-medium mb-4">
             {isAdding ? 'Add New Speaking Content' : 'Edit Speaking Content'}
           </h2>
+          {errorMessage && (
+            <div className="mb-4 p-3 rounded bg-red-100 text-red-700 text-sm flex items-center justify-between">
+              <p className="mb-2">{errorMessage}</p>
+              <button className="text-red-700 hover:text-red-900" onClick={() => setErrorMessage("")}>X</button>
+            </div>
+          )}
           <form onSubmit={handleSubmit}>
             <div className="grid grid-cols-1 gap-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1" required>
+                <label className="block text-sm font-medium text-gray-700 mb-1" >
                   Title
                 </label>
                 <input
                   type="text"
-                  required
                   value={formData.title}
                   onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                   className="w-full"
@@ -158,13 +224,14 @@ function SpeakingContentManagement() {
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Content category
                 </label>
+              </div>
+              <div>
                 <select
-                  required
+
                   value={formData.category}
                   onChange={(e) => setFormData({ ...formData, category: e.target.value })}
                   className="w-full"
                 >
-                  <option value="" disabled selected hidden>Select a category</option>
                   {listContentCategory?.length > 0 && listContentCategory.map((category) => (
                     <option key={category} value={category}>
                       {category}
@@ -198,7 +265,7 @@ function SpeakingContentManagement() {
       )}
 
       {/* Content List */}
-      <div className="card">
+      <div className="card mb-4">
         <div className="divide-y divide-gray-200">
           {filteredContents?.length > 0 ? (
             filteredContents.map((contentSpeaking) => (
@@ -208,7 +275,7 @@ function SpeakingContentManagement() {
                     <div className="flex items-center mb-2">
                       <h3 className="text-lg font-medium text-gray-900">{contentSpeaking.title}</h3>
                       <span className="ml-2 badge bg-primary-50 text-primary-700">
-                        {contentSpeaking.content.contentType}
+                        {contentSpeaking?.content?.contentType}
                       </span>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
@@ -271,13 +338,7 @@ function SpeakingContentManagement() {
                     ) : (
                       <>
                         <button
-                          onClick={() => {
-                            setFormData(contentSpeaking);
-                            console.log("contentSpeaking", contentSpeaking);
-                            console.log("formData", formData);
-                            setIsEditing(contentSpeaking.contentSpeakingId);
-                            setIsAdding(false);
-                          }}
+                          onClick={() => startUpdate(contentSpeaking)}
                           className="text-primary-600 hover:text-primary-800 mr-2"
                         >
                           <Edit size={16} />
@@ -300,6 +361,28 @@ function SpeakingContentManagement() {
           )}
         </div>
       </div>
+
+      {/* Phan Trang */}
+      <ReactPaginate
+        nextLabel="next >"
+        onPageChange={handlePageClick}
+        pageRangeDisplayed={3} // giới hạn trang bên trái 1 2 3 .... 99 100
+        marginPagesDisplayed={2} // giới hạn trang bên phải 1 2 3 .... 99 100
+        pageCount={pageCount}
+        previousLabel="< previous"
+        pageClassName="page-item"
+        pageLinkClassName="page-link"
+        previousClassName="page-item"
+        previousLinkClassName="page-link"
+        nextClassName="page-item"
+        nextLinkClassName="page-link"
+        breakLabel="..."
+        breakClassName="page-item"
+        breakLinkClassName="page-link"
+        containerClassName="pagination"
+        activeClassName="active"
+        renderOnZeroPageCount={null}
+      />
     </div>
   );
 }
