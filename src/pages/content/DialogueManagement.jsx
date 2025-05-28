@@ -1,59 +1,50 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { ArrowLeft, Plus, Edit, Trash2, Check, X, MessageSquare, Languages } from 'lucide-react';
+import { ArrowLeft, Plus, Edit, Trash2, Check, X, MessageSquare, Languages, Search } from 'lucide-react';
 import {
-    fetchDialogueByContentSpeakingId,
+    getDialoguePageByContentSpeakingId,
     handleCreateDialogue,
     handleDeleteDialogue,
     handleUpdateDialogue
 } from '../../services/DialogueService';
+import ReactPaginate from 'react-paginate';
 
 function DialogueManagement() {
-    const [dialogues, setDialogues] = useState([
-        {
-            id: '1',
-            question: 'お名前は何ですか？',
-            questionTranslation: 'Tên bạn là gì?',
-            answer: '私の名前は田中です。',
-            answerTranslation: 'Tên tôi là Tanaka.',
-            type: 'introduction'
-        }
-    ]);
+    const [dialogues, setDialogues] = useState([]);
+    const [search, setSearch] = useState('');
     const [isAdding, setIsAdding] = useState(false);
     const [isEditing, setIsEditing] = useState(null);
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(null);
-    const [formData, setFormData] = useState({
-        questionJd: '',
-        questionVn: '',
-        answerJd: '',
-        answerVn: ''
-    });
     const { contentSpeakingId } = useParams();
-    const dialogueTypes = [
-        'general',
-        'introduction',
-        'personal-info',
-        'shopping',
-        'restaurant',
-        'travel',
-        'business'
-    ];
-
+    const [pageCount, setPageCount] = useState(0); // so luong trang page
+    const [currentPage, setCurrentPage] = useState(1); // trang page hien tai
+    const [size, setSize] = useState(5); // 1trang bn phan tu
+    const [totalElements, setTotalElements] = useState(); // tong phan tu
+    const [formData, setFormData] = useState({
+        questionJp: '',
+        questionVn: '',
+        answerJp: '',
+        answerVn: '',
+        contentSpeakingId: contentSpeakingId
+    });
+    useEffect(() => {
+        getDialoguePage(1);
+    }, [size]);
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (isEditing) {
             try {
                 await handleUpdateDialogue(isEditing, formData);
-                await getDialogues();
-                setIsEditing(null);
+                await getDialoguePage(currentPage);
                 setIsAdding(false);
+                setIsEditing(null);
             } catch (error) {
                 console.error("Error updating dialogue:", error);
             }
         } else {
             try {
                 await handleCreateDialogue(formData);
-                await getDialogues();
+                await getDialoguePage(1);
                 setIsAdding(false);
                 setIsEditing(null);
             } catch (error) {
@@ -75,29 +66,49 @@ function DialogueManagement() {
     };
 
     const handleDelete = async (id) => {
-        console.log("Deleting dialogue with ID:", id);
         await handleDeleteDialogue(id);
-        await getDialogues();
+        await getDialoguePage(currentPage);
     };
 
-    const startEdit = (dialogue) => {
+    const startUpdate = (dialogue) => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
         setFormData(dialogue);
-        setIsEditing(dialogue.id);
+        setIsEditing(dialogue.dialogueId);
         setIsAdding(false);
     };
 
-    const getDialogues = async () => {
-        let res = await fetchDialogueByContentSpeakingId(contentSpeakingId);
-        if (res && res.data) {
-            setDialogues(res.data);
-            console.log("Fetched dialogues:", res.data);
+    const getDialoguePage = async (page) => {
+        let res = await getDialoguePageByContentSpeakingId(page, contentSpeakingId, size);
+        console.log("Data page", res)
+        if (res && res.data && res.data.content) {
+            setDialogues(res.data.content);
+            setPageCount(res.data.totalPages);
+            setTotalElements(res.data.totalElements)
         } else {
             console.error("Failed to fetch dialogues");
         }
     }
-    useEffect(() => {
-        getDialogues();
-    }, [contentSpeakingId]);
+
+    const handleChangeSize = async (newSize) => {
+        setSize(newSize)
+    }
+    const filteredDialogues = dialogues.filter((dialogue) => {
+        // Search filter (case insensitive)
+        const searchMatch =
+            search === "" ||
+            dialogue.questionJp?.toLowerCase().includes(search.toLowerCase()) ||
+            dialogue.questionVn?.toLowerCase().includes(search.toLowerCase()) ||
+            dialogue.answerJp?.toLowerCase().includes(search.toLowerCase()) ||
+            dialogue.answerVn?.toLowerCase().includes(search.toLowerCase());
+        return searchMatch;
+    });
+
+    const handlePageClick = (event) => {
+        const selectedPage = +event.selected + 1;
+        setCurrentPage(selectedPage);
+        getDialoguePage(selectedPage);
+    }
+
 
     return (
         <div className="animate-fade-in">
@@ -120,6 +131,38 @@ function DialogueManagement() {
                         <Plus size={16} className="mr-1" />
                         Add Dialogue
                     </button>
+                </div>
+            </div>
+
+            {/* Search Bar */}
+            <div className="card p-4 mb-6">
+                <div className="flex items-center gap-4">
+                    <div className="w-1/5">
+                        <select
+                            className="w-full border border-gray-300 rounded-md py-2 px-2"
+                            value={size}
+                            onChange={(e) => handleChangeSize(e.target.value)
+                            }
+                        >
+                            <option value="5">5</option>
+                            <option value="10">10</option>
+                            <option value="20">20</option>
+                            <option value="50">50</option>
+                            <option value={totalElements} >All </option>
+                        </select>
+                    </div>
+                    <div className="relative w-4/5">
+                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <Search size={18} className="text-gray-400" />
+                        </div>
+                        <input
+                            type="text"
+                            placeholder="Search speaking content..."
+                            className="pl-10"
+                            value={search}
+                            onChange={(e) => setSearch(e.target.value)}
+                        />
+                    </div>
                 </div>
             </div>
 
@@ -180,7 +223,7 @@ function DialogueManagement() {
                                 <input
                                     type="text"
                                     required
-                                    value={formData.answerTVn}
+                                    value={formData.answerVn}
                                     onChange={(e) => setFormData({ ...formData, answerVn: e.target.value })}
                                     className="w-full"
                                     placeholder="Tên tôi là Tanaka."
@@ -195,11 +238,11 @@ function DialogueManagement() {
                                     setIsAdding(false);
                                     setIsEditing(null);
                                     setFormData({
-                                        question: '',
-                                        questionTranslation: '',
-                                        answer: '',
-                                        answerTranslation: '',
-                                        type: 'general'
+                                        questionJp: '',
+                                        questionVn: '',
+                                        answerJp: '',
+                                        answerVn: '',
+                                        contentSpeakingId: contentSpeakingId
                                     });
                                 }}
                                 className="btn-outline"
@@ -218,83 +261,110 @@ function DialogueManagement() {
             )}
 
             {/* Dialogues List */}
-            <div className="card">
+            <div className="card mb-4">
                 <div className="divide-y divide-gray-200">
-                    {dialogues.map((dialogue, index) => (
-                        <div key={dialogue.id || index} className="p-6 hover:bg-gray-50">
-                            <div className="flex justify-between items-start">
-                                <div className="flex-1">
-                                    <div className="flex items-center mb-4">
-                                        <MessageSquare className="h-5 w-5 text-primary-600 mr-2" />
-                                        <span className="badge bg-primary-50 text-primary-700">
-                                            {dialogue?.contentSpeaking?.category}
-                                        </span>
+                    {filteredDialogues?.length > 0 ? (
+                        filteredDialogues.map((dialogue, index) => (
+                            <div key={dialogue.dialogueId || index} className="p-6 hover:bg-gray-50">
+                                <div className="flex justify-between items-start">
+                                    <div className="flex-1">
+                                        <div className="flex items-center mb-4">
+                                            <MessageSquare className="h-5 w-5 text-primary-600 mr-2" />
+                                            <span className="badge bg-primary-50 text-primary-700">
+                                                {dialogue?.contentSpeaking?.category}
+                                            </span>
+                                        </div>
+
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            <div className="space-y-2">
+                                                <div>
+                                                    <p className="text-sm font-medium text-gray-500">Question (Japanese)</p>
+                                                    <p className="text-gray-900">{dialogue.questionJp}</p>
+                                                </div>
+                                                <div>
+                                                    <p className="text-sm font-medium text-gray-500">Question (Vietnamese)</p>
+                                                    <p className="text-gray-700">{dialogue.questionVn}</p>
+                                                </div>
+                                            </div>
+
+                                            <div className="space-y-2">
+                                                <div>
+                                                    <p className="text-sm font-medium text-gray-500">Answer (Japanese)</p>
+                                                    <p className="text-gray-900">{dialogue.answerJp}</p>
+                                                </div>
+                                                <div>
+                                                    <p className="text-sm font-medium text-gray-500">Answer (Vietnamese)</p>
+                                                    <p className="text-gray-700">{dialogue.answerVn}</p>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
 
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        <div className="space-y-2">
-                                            <div>
-                                                <p className="text-sm font-medium text-gray-500">Question (Japanese)</p>
-                                                <p className="text-gray-900">{dialogue.questiontJp}</p>
-                                            </div>
-                                            <div>
-                                                <p className="text-sm font-medium text-gray-500">Question (Vietnamese)</p>
-                                                <p className="text-gray-700">{dialogue.questiontVn}</p>
-                                            </div>
-                                        </div>
+                                    <div className="ml-4 flex items-center">
+                                        {showDeleteConfirm === dialogue.dialogueId ? (
+                                            <div className="flex items-center space-x-2">
+                                                <span className="text-xs text-gray-500">Delete?</span>
 
-                                        <div className="space-y-2">
-                                            <div>
-                                                <p className="text-sm font-medium text-gray-500">Answer (Japanese)</p>
-                                                <p className="text-gray-900">{dialogue.answerJp}</p>
+                                                <button
+                                                    onClick={() => handleDelete(dialogue.dialogueId)}
+                                                    className="text-error-500 hover:text-error-700"
+                                                >
+                                                    <Check size={16} />
+                                                </button>
+                                                <button
+                                                    onClick={() => setShowDeleteConfirm(null)}
+                                                    className="text-gray-500 hover:text-gray-700"
+                                                >
+                                                    <X size={16} />
+                                                </button>
                                             </div>
-                                            <div>
-                                                <p className="text-sm font-medium text-gray-500">Answer (Vietnamese)</p>
-                                                <p className="text-gray-700">{dialogue.answerVn}</p>
-                                            </div>
-                                        </div>
+                                        ) : (
+                                            <>
+                                                <button
+                                                    onClick={() => startUpdate(dialogue)}
+                                                    className="text-primary-600 hover:text-primary-800 mr-2"
+                                                >
+                                                    <Edit size={16} />
+                                                </button>
+                                                <button
+                                                    onClick={() => setShowDeleteConfirm(dialogue.dialogueId)}
+                                                    className="text-error-500 hover:text-error-700"
+                                                >
+                                                    <Trash2 size={16} />
+                                                </button>
+                                            </>
+                                        )}
                                     </div>
-                                </div>
-
-                                <div className="ml-4 flex items-center">
-                                    {showDeleteConfirm === dialogue.id ? (
-                                        <div className="flex items-center space-x-2">
-                                            <span className="text-xs text-gray-500">Delete?</span>
-                                            <button
-                                                onClick={() => handleDelete(dialogue.id)}
-                                                className="text-error-500 hover:text-error-700"
-                                            >
-                                                <Check size={16} />
-                                            </button>
-                                            <button
-                                                onClick={() => setShowDeleteConfirm(null)}
-                                                className="text-gray-500 hover:text-gray-700"
-                                            >
-                                                <X size={16} />
-                                            </button>
-                                        </div>
-                                    ) : (
-                                        <>
-                                            <button
-                                                onClick={() => startEdit(dialogue)}
-                                                className="text-primary-600 hover:text-primary-800 mr-2"
-                                            >
-                                                <Edit size={16} />
-                                            </button>
-                                            <button
-                                                onClick={() => setShowDeleteConfirm(dialogue.id)}
-                                                className="text-error-500 hover:text-error-700"
-                                            >
-                                                <Trash2 size={16} />
-                                            </button>
-                                        </>
-                                    )}
                                 </div>
                             </div>
+                        ))) : (
+                        <div className="p-6 text-center text-gray-500">
+                            <p>No dialogues found. Please add a new dialogue.</p>
                         </div>
-                    ))}
+                    )}
                 </div>
             </div>
+            {/* Phan trang */}
+            <ReactPaginate
+                nextLabel="next >"
+                onPageChange={handlePageClick}
+                pageRangeDisplayed={3} // giới hạn trang bên trái 1 2 3 .... 99 100
+                marginPagesDisplayed={2} // giới hạn trang bên phải 1 2 3 .... 99 100
+                pageCount={pageCount}
+                previousLabel="< previous"
+                pageClassName="page-item"
+                pageLinkClassName="page-link"
+                previousClassName="page-item"
+                previousLinkClassName="page-link"
+                nextClassName="page-item"
+                nextLinkClassName="page-link"
+                breakLabel="..."
+                breakClassName="page-item"
+                breakLinkClassName="page-link"
+                containerClassName="pagination"
+                activeClassName="active"
+                renderOnZeroPageCount={null}
+            />
         </div>
     );
 }

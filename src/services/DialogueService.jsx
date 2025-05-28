@@ -1,17 +1,18 @@
 import axios from "./customixe-axios";
+import { toast } from "react-toastify";
 
-const fetchDialogueByContentSpeakingId = (id) => {
-    return axios.get(`/api/dialogue/content_speaking/${id}`);
+const fetchDialogueAllByContentSpeakingId = (id) => {
+    return axios.get(`/api/dialogue/content_speakingAll/${id}`);
 }
 
 const handleCreateDialogue = async (data) => {
     try {
         const response = await axios.post(`/api/dialogue`, data);
-        alert("Tạo đoạn hội thoại thành công!");
+        toast.success("Tạo đoạn hội thoại thành công!");
         return response;
     } catch (error) {
         console.error(error);
-        alert("Tạo đoạn hội thoại thất bại!");
+        toast.error("Tạo đoạn hội thoại thất bại!");
     }
 }
 
@@ -20,27 +21,32 @@ const handleDeleteDialogue = async (id) => {
     if (!confirmDelete) return;
     try {
         const response = await axios.delete(`/api/dialogue/${id}`);
-        alert("Xoá đoạn hội thoại thành công!");
+        toast.success("Xoá đoạn hội thoại thành công!");
         return response;
     } catch (error) {
         console.error(error);
-        alert("Xoá đoạn hội thoại thất bại!");
+        toast.error("Xoá đoạn hội thoại thất bại!");
     }
 }
 
 const handleUpdateDialogue = async (id, data) => {
     try {
         const response = await axios.patch(`/api/dialogue/${id}`, data);
-        alert("Cập nhật đoạn hội thoại thành công!");
+        toast.success("Cập nhật đoạn hội thoại thành công!");
         return response;
     } catch (error) {
         console.error(error);
-        alert("Cập nhật đoạn hội thoại thất bại!");
+        toast.error("Cập nhật đoạn hội thoại thất bại!");
     }
 }
 
+const getDialoguePageByContentSpeakingId = async (page, id, size) => {
+    return axios.get(`/api/dialogue/content_speaking/${id}?page=${page}&size=${size}`);
+}
+
 export {
-    fetchDialogueByContentSpeakingId,
+    fetchDialogueAllByContentSpeakingId,
+    getDialoguePageByContentSpeakingId,
     handleCreateDialogue,
     handleDeleteDialogue,
     handleUpdateDialogue
