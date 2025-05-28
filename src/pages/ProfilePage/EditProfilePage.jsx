@@ -9,8 +9,8 @@ function EditProfilePage() {
     email: "alex@example.com",
     phone: "",
     addressLine: "",
-    city: "",
-    region: "",
+    // city: "",
+    // region: "",
   };
 
   const [form, setForm] = useState(storedUser);
@@ -111,7 +111,7 @@ function EditProfilePage() {
             placeholder="Address Line"
           />
         </div>
-        <div>
+        {/* <div>
           <label className="block font-medium mb-1">City</label>
           <input
             type="text"
@@ -121,8 +121,8 @@ function EditProfilePage() {
             className="input input-bordered w-full"
             placeholder="City"
           />
-        </div>
-        <div>
+        </div> */}
+        {/* <div>
           <label className="block font-medium mb-1">Region</label>
           <input
             type="text"
@@ -132,7 +132,7 @@ function EditProfilePage() {
             className="input input-bordered w-full"
             placeholder="Region"
           />
-        </div>
+        </div> */}
 
         {/* Change Password Button and Section */}
 <div className="pt-6 border-t border-gray-200">

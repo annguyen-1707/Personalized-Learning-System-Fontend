@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { User } from "lucide-react";
 
 function ChangePasswordPage() {
   const navigate = useNavigate();
@@ -30,6 +31,7 @@ function ChangePasswordPage() {
     setSuccess("");
     try {
       await axios.post("http://localhost:8080/api/user/change-password", {
+        email: useremail,
         currentPassword: passwords.current,
         newPassword: passwords.new,
         confirmPassword: passwords.confirm,
