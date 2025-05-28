@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useData } from "../../context/DataContext";
 import { toast } from "react-toastify";
@@ -16,7 +16,7 @@ import {
 
 function CourseManagement() {
   // Replace courses with subjects and update methods accordingly
-  const { subjects, addSubject, updateSubject, deleteSubject, addLog} =
+  const { subjects, addSubject, updateSubject, deleteSubject, addLog, fetchSubjects } =
     useData();
   const [isAdding, setIsAdding] = useState(false);
   const [isEditing, setIsEditing] = useState(null);
@@ -33,6 +33,11 @@ function CourseManagement() {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(null);
 
   const status = ["ACTIVE", "DRAFT"];
+
+  // Fetch subjects on component mount
+  useEffect(() => {
+    fetchSubjects();
+  }, []);
 
   // Filter subjects based on search and status
   const filteredSubjects = subjects.filter((subject) => {
