@@ -2,8 +2,6 @@ import { createContext, useContext, useState, useEffect } from 'react';
 import { 
   mockAdmins, 
   mockUsers, 
-  mockCourses, 
-  mockLessons, 
   mockSystemLogs,
   mockVocabulary,
   mockGrammar,
@@ -11,6 +9,7 @@ import {
   mockResources
 } from '../data/mockData';
 import { data } from 'autoprefixer';
+import { s } from 'framer-motion/client';
 
 const DataContext = createContext();
 
@@ -21,7 +20,7 @@ export function useData() {
 export function DataProvider({ children }) {
   const [admins, setAdmins] = useState(mockAdmins);
   const [users, setUsers] = useState(mockUsers);
-  const [lessons, setLessons] = useState(mockLessons);
+  const [lessons, setLessons] = useState([]);
   const [logs, setLogs] = useState(mockSystemLogs);
   const [vocabulary, setVocabulary] = useState(mockVocabulary);
   const [grammar, setGrammar] = useState(mockGrammar);
@@ -30,23 +29,35 @@ export function DataProvider({ children }) {
   const [subjects, setSubjects] = useState([]);
   const [errorMessage, setErrorMessage] = useState('');
 
-  // api for fetching subjects "/subjects"
-    useEffect(() => {
-    const fetchSubjects = async () => {
-      try {
-        const response = await fetch('/api/subjects');
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        const data = await response.json();
-        setSubjects(data.data);
-      } catch (error) {
-        console.error('Error fetching subjects:', error);
-      }
-    };
-
+  // api for fetching days "/api/subjects" and "/api/lessons?subjectId={subjectId}"
+  useEffect(() => {
     fetchSubjects();
   }, []);
+
+  const fetchSubjects = async () => {
+    try {
+      const response = await fetch('/api/subjects');
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+      const data = await response.json();
+      setSubjects(data.data);
+    } catch (error) {
+      console.error('Error fetching subjects:', error);
+    }
+  }
+
+// Fetch Lessons - chạy mỗi khi subjectId thay đổi
+
+  const lessonsFetch = async (subjectId) => {
+    try {
+      const response = await fetch(`/api/lessons?subjectId=${subjectId}`);
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+      const data = await response.json();
+      setLessons(data.data);
+    } catch (error) {
+      console.error('Error fetching lessons:', error);
+    }
+  };
+
 
   // Subject CRUD operations
   const  addSubject = async(subject) => {
@@ -113,6 +124,47 @@ export function DataProvider({ children }) {
       throw error;
     }
   };
+
+
+  // api for fetching lessons "/lessons"
+
+  // Lesson CRUD operations
+  const addLesson = async (lesson) => {
+    try {
+      const response = await fetch('/api/lessons', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(lesson)
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        setErrorMessage(data.message || "failed to add lesson");
+        throw new Error(data.message || "failed to add lesson");
+      }
+      setLessons([...lessons, data.data]); // Update state with new lesson
+      setErrorMessage('');
+      return data.data;
+    } catch (error) {
+      console.error('Error adding lesson:', error);
+      throw error;
+    }
+  };
+
+  const updateLesson = (id, updatedLesson) => {
+    setLessons(lessons.map(lesson => lesson.id === id ? { ...lesson, ...updatedLesson } : lesson));
+  };
+
+  const deleteLesson = (id) => {
+    setLessons(lessons.filter(lesson => lesson.id !== id));
+    // Also delete related content
+    setVocabulary(vocabulary.filter(item => item.lessonId !== id));
+    setGrammar(grammar.filter(item => item.lessonId !== id));
+    setExercises(exercises.filter(item => item.lessonId !== id));
+  };
+
+
   // Admin CRUD operations
   const addAdmin = (admin) => {
     const newAdmin = { 
@@ -158,24 +210,7 @@ export function DataProvider({ children }) {
     setUsers(users.filter(user => user.id !== id));
   };
 
-  // Lesson CRUD operations
-  const addLesson = (lesson) => {
-    const newLesson = { ...lesson, id: Date.now().toString() };
-    setLessons([...lessons, newLesson]);
-    return newLesson;
-  };
-
-  const updateLesson = (id, updatedLesson) => {
-    setLessons(lessons.map(lesson => lesson.id === id ? { ...lesson, ...updatedLesson } : lesson));
-  };
-
-  const deleteLesson = (id) => {
-    setLessons(lessons.filter(lesson => lesson.id !== id));
-    // Also delete related content
-    setVocabulary(vocabulary.filter(item => item.lessonId !== id));
-    setGrammar(grammar.filter(item => item.lessonId !== id));
-    setExercises(exercises.filter(item => item.lessonId !== id));
-  };
+  
 
   // Content management operations
   const addVocabulary = (item) => {
@@ -282,7 +317,9 @@ export function DataProvider({ children }) {
     addResource,
     updateResource,
     deleteResource,
-    addLog
+    addLog,
+    lessonsFetch,
+    fetchSubjects
   };
 
   return (

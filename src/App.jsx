@@ -44,10 +44,10 @@ function App() {
             <Route path="/admin" element={<Dashboard />} />
             <Route path="/admin/courses" element={<CourseManagement />} />
             <Route
-              path="/admin/courses/:courseId/lessons"
+              path="/admin/courses/:subjectId/lessons"
               element={<LessonManagement />}
             />
-            <Route path="/admin/courses/:courseId/lessons/:lessonId/content" element={<ContentManagement />} />
+            <Route path="/admin/courses/:subjectId/lessons/:lessonId/content" element={<ContentManagement />} />
             <Route
               path="/admin/content/reading/:contentId/vocabulary"
               element={<VocabularyManagement />}
