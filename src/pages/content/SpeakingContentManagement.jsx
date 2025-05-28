@@ -28,14 +28,15 @@ function SpeakingContentManagement() {
   useEffect(() => {
     getContentPage(1);
     getContentCategorys();
+
   }, [size])
 
   const getContentPage = async (page) => {
     let res = await getPageContentSpeaking(page, size);
     if (res && res.data && res.data.content) {
       setListContentSpeakings(res.data.content)
-      setPageCount(res.data.totalPages)
-      setTotalElements(res.data.totalElements)
+      setPageCount(res.data.page.totalPages)
+      setTotalElements(res.data.page.totalElements)
     }
   }
 
@@ -43,6 +44,8 @@ function SpeakingContentManagement() {
     let res = await fetchAllContentCategorySpeaking();
     if (res && res.data) {
       setlistContentCategory(res.data)
+      console.log("listContentCategory", res)
+
     }
   }
 
@@ -227,11 +230,11 @@ function SpeakingContentManagement() {
               </div>
               <div>
                 <select
-
                   value={formData.category}
                   onChange={(e) => setFormData({ ...formData, category: e.target.value })}
                   className="w-full"
                 >
+                  <option value="">-- Chọn chủ đề --</option>
                   {listContentCategory?.length > 0 && listContentCategory.map((category) => (
                     <option key={category} value={category}>
                       {category}
