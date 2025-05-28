@@ -15,7 +15,7 @@ function Login() {
     try {
       setError('');
       await login(email, password);
-      navigate('/learn');
+      navigate('/homePage');
     } catch (err) {
       setError('Failed to sign in');
     }
@@ -25,7 +25,7 @@ function Login() {
     try {
       setError('');
       await loginWithProvider(provider);
-      navigate('/learn');
+      navigate('/homePage');
     } catch (err) {
       setError(`Failed to sign in with ${provider}`);
     }
