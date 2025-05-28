@@ -10,23 +10,40 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(false);
 
+  //login
   const login = async (email, password) => {
     setLoading(true);
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      setUser({
-        id: '1',
-        name: 'Student User',
-        email: email,
-        role: 'student'
-      });
-    } catch (error) {
-      throw new Error('Login failed');
-    } finally {
+      const res = await fetch('http://localhost:8080/auth/login', {
+        method : 'Post',
+        header : {'Content-Type' : 'application/json'},
+        body : JSON.stringify({email, password}),
+        credentials: 'include'
+    });
+
+    const data = await res.json()
+    if(!res.ok) {
+      throw new Error(data.message || 'Login failed');
+    }
+
+    localStorage.setItem("accessToken", data.accessToken);
+
+    const userRes = await fetch('http://localhost:8080/auth/user', {
+      headers: { Authorization : `Bearer ${data.accessToken}` }
+    });
+    const userData = await userRes.json();
+    if(!userRes.ok) {
+      throw new Error(userData.message || 'Failed to fetch user data');
+    }
+    setUser(userData);
+  } catch (error) {
+    console.error('Login failed:', error);
+    throw new Error('Login failed');
+  }finally
+    {
       setLoading(false);
     }
-  };
+}
 
   const loginWithProvider = async (provider) => {
   try {
@@ -35,7 +52,7 @@ export function AuthProvider({ children }) {
 
     if (data.url) {
       // Chuyển hướng trình duyệt đến Google/Facebook/Github login page
-      window.location.href = data.url;
+      window.location.href = data.url; 
     } else {
       console.error("No URL returned from backend");
     }
