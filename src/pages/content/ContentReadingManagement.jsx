@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Plus, Search, Edit, Trash2, Check, X, Image, Clock, Book, FileText } from 'lucide-react';
+import { Plus, Search, Edit, Trash2, Check, X, Image, Clock, Book, FileText, LayoutPanelTop, WholeWord } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { getPageContentReading, handleUpdateContent, fetchAllContentCategoryReading, handleCreateContent, handleDeleteContent } from '../../services/ContentReadingService';
 import ReactPaginate from 'react-paginate';
@@ -221,7 +221,6 @@ function ReadingContentManagement() {
                 </label>
                 <input
                   type="text"
-                  required
                   value={formData.title}
                   onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                   className="w-full"
@@ -251,13 +250,11 @@ function ReadingContentManagement() {
                   }
                 />
               </div>
-
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Japanese Content
                 </label>
                 <textarea
-                  required
                   rows={5}
                   value={formData.scriptJp}
                   onChange={(e) => setFormData({ ...formData, scriptJp: e.target.value })}
@@ -270,7 +267,6 @@ function ReadingContentManagement() {
                   Vietnamese Content
                 </label>
                 <textarea
-                  required
                   rows={5}
                   value={formData.scriptVn}
                   onChange={(e) => setFormData({ ...formData, scriptVn: e.target.value })}
@@ -328,8 +324,9 @@ function ReadingContentManagement() {
               </button>
             </div>
           </form>
-        </div>
-      )}
+        </div >
+      )
+      }
 
       {/* Content List */}
       <div className="card">
@@ -368,6 +365,24 @@ function ReadingContentManagement() {
                           </audio>
                         </div>
                       )}
+                    </div>
+                    <div className="space-y-2 mb-2">
+                      <Link to={`/admin/content_reading/${content.contentReadingId}/vocabulary`}>
+                        <div className="flex items-center text-sm text-gray-500">
+                          <WholeWord size={16} className="mr-2" />
+                          <span className="mr-3">List Vocabulary relate to news</span>
+                          <Edit size={16} color='blue' />
+                        </div>
+                      </Link>
+                    </div>
+                    <div className="space-y-2">
+                      <Link to={`/admin/content_reading/${content.contentReadingId}/grammar`}>
+                        <div className="flex items-center text-sm text-gray-500">
+                          < LayoutPanelTop size={16} className="mr-2" />
+                          <span className="mr-3">List Grammar relate to news</span>
+                          <Edit size={16} color='blue' />
+                        </div>
+                      </Link>
                     </div>
                     <div className="mt-4">
                       <div className="text-sm">
