@@ -194,7 +194,6 @@ export function DataProvider({ children }) {
       body: JSON.stringify(updatedLesson),
     });
     const data = await response.json();
-    // Refresh lessons after update
     if (!response.ok) {
       return data;
     }
@@ -202,6 +201,7 @@ export function DataProvider({ children }) {
       ...prevLessons,
       content: [...prevLessons.content, data.data.content],
     }));
+    return data.data;
   };
 
   const deleteLesson = async (id) => {
