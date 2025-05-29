@@ -34,8 +34,8 @@ function SpeakingContentManagement() {
     let res = await getPageContentSpeaking(page, size);
     if (res && res.data && res.data.content) {
       setListContentSpeakings(res.data.content)
-      setPageCount(res.data.totalPages)
-      setTotalElements(res.data.totalElements)
+      setPageCount(res.data.page.totalPages)
+      setTotalElements(res.data.page.totalElements)
     }
   }
 
@@ -227,11 +227,11 @@ function SpeakingContentManagement() {
               </div>
               <div>
                 <select
-
                   value={formData.category}
                   onChange={(e) => setFormData({ ...formData, category: e.target.value })}
                   className="w-full"
                 >
+                  <option value="">All Category</option>
                   {listContentCategory?.length > 0 && listContentCategory.map((category) => (
                     <option key={category} value={category}>
                       {category}

@@ -40,27 +40,27 @@ function LessonManagement() {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(null);
 
   // Get subject and its lessons
- useEffect(() => {
-  if (!subjects || subjects.length === 0) return;
-  if (!subjectId) return;
+  useEffect(() => {
+    if (!subjects || subjects.length === 0) return;
+    if (!subjectId) return;
 
-  const foundSubject = subjects.find((s) => s.subjectId == subjectId);
-  console.log("Found Subject:", foundSubject);
+    const foundSubject = subjects.find((s) => s.subjectId == subjectId);
+    console.log("Found Subject:", foundSubject);
 
-  if (foundSubject) {
-    setSubject(foundSubject);
-    lessonsFetch(subjectId);
-  }
+    if (foundSubject) {
+      setSubject(foundSubject);
+      lessonsFetch(subjectId);
+    }
 
 
-}, [subjects, subjectId]);
+  }, [subjects, subjectId]);
 
-useEffect(() => {
-  if (lessons && lessons.content) {
-    
-    setSubjectLessons(lessons.content);
-  }
-}, [lessons]);
+  useEffect(() => {
+    if (lessons && lessons.content) {
+
+      setSubjectLessons(lessons.content);
+    }
+  }, [lessons]);
 
 
 
@@ -339,11 +339,10 @@ useEffect(() => {
                       <div className="mt-2 flex items-center space-x-4">
                         <GiOpenBook className="h-4 w-4 text-gray-400" />
                         <span
-                          className={`badge ${
-                            lesson.status === "PUBLIC"
-                              ? "bg-success-50 text-success-700"
-                              : "bg-warning-50 text-warning-700"
-                          }`}
+                          className={`badge ${lesson.status === "PUBLIC"
+                            ? "bg-success-50 text-success-700"
+                            : "bg-warning-50 text-warning-700"
+                            }`}
                         >
                           {lesson.status === "PUBLIC" ? "Published" : "Draft"}
                         </span>
