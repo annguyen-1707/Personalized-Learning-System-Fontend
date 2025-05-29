@@ -1,15 +1,18 @@
 import { Routes, Route } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+
 import Layout from "./components/layout/Layout";
 import Login from "./pages/auth/Login";
 import RegisterP1 from "./pages/auth/RegisterP1";
 import ForgotPassword from "./pages/auth/ForgotPassword";
 import MainLayout from "./components/adminLayouts/MainLayout";
 import HomePage from "./pages/HomePage/HomePage";
-
+import ProfilePage from "./pages/ProfilePage/ProfilePage";
+import EditProfilePage from "./pages/ProfilePage/EditProfilePage";
 import { DataProvider } from "./context/DataContext";
 import { AuthProvider } from "./context/AuthContext";
+import ChangePasswordPage from "./pages/ProfilePage/ChangePasswordPage";
 import RegisterP2 from "./pages/auth/RegisterP2";
 import AwaitEmailConfirmation from "./pages/auth/AwaitEmailConfirmation";
 import CourseManagement from "./pages/courses/CourseManagement";
@@ -35,6 +38,12 @@ function App() {
           <Route path="/register1" element={<RegisterP1 />} />
           <Route path="/register2" element={<RegisterP2 />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
+           {/*ProfilePage routes*/}
+          <Route path="/" element={<Layout />}>
+            <Route path="profile" element={<ProfilePage />} />
+            <Route path="/profile/edit" element={<EditProfilePage />}/>
+            <Route path="/profile/change-password" element={<ChangePasswordPage />} />
+          </Route>
           <Route path="/await-confirmation" element={<AwaitEmailConfirmation />} />
 
           {/* Public routes */}
