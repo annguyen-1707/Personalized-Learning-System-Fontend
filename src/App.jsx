@@ -18,11 +18,10 @@ import VocabularyManagement from "./pages/content/VocabularyManagement";
 import GrammarManagement from "./pages/content/GrammarManagement";
 import ContentManagement from "./pages/courses/ContentManagement";
 import Dashboard from "./pages/adminPages/Dashboard";
-
-
-import SpeakingContentManagement from "./pages/content/SpeakingContentManagement";
+import ContentSpeakingManagement from "./pages/content/ContentSpeakingManagement";
 import DialogueManagement from "./pages/content/DialogueManagement";
 import AuthInitializer from "./context/AuthInitializer";
+import ContentReadingManagement from "./pages/content/ContentReadingManagement";
 
 function App() {
 
@@ -48,8 +47,9 @@ function App() {
              */}
 
           <Route element={<MainLayout />}>
-            <Route path="/admin/content_speaking" element={<SpeakingContentManagement />} />
+            <Route path="/admin/content_speaking" element={<ContentSpeakingManagement />} />
             <Route path="/admin/content_speaking/:contentSpeakingId/dialogue" element={<DialogueManagement />} />
+            <Route path="/admin/content_reading" element={<ContentReadingManagement />} />
             <Route path="/admin" element={<Dashboard />} />
             <Route path="/admin/courses" element={<CourseManagement />} />
             <Route
