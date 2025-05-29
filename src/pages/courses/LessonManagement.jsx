@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useLocation  } from "react-router-dom";
 import { useData } from "../../context/DataContext";
 import {
   ArrowLeft,
@@ -13,129 +13,191 @@ import {
   X,
   ExternalLink,
 } from "lucide-react";
-import { sub } from "framer-motion/client";
+import { g, s, sub, u } from "framer-motion/client";
 import { GiOpenBook } from "react-icons/gi";
+import { toast } from "react-toastify";
+import ReactPaginate from "react-paginate";
+import { use } from "react";
 
 function LessonManagement() {
-  const { subjectId } = useParams();
+  const { subjectId} = useParams();
+  const location = useLocation();
+const queryParams = new URLSearchParams(location.search);
+const subjectPage = parseInt(queryParams.get("subjectPage") || "0", 10);
   const {
-    subjects,
-    lessons,
     addLesson,
     updateLesson,
     deleteLesson,
     addLog,
     lessonsFetch,
+    fetchLessonStatus,
+    fetchSubjects,
   } = useData();
 
   const [subject, setSubject] = useState(null);
   const [subjectLessons, setSubjectLessons] = useState([]);
   const [isAdding, setIsAdding] = useState(false);
   const [isEditing, setIsEditing] = useState(null);
+  const [errorMessage, setErrorMessage] = useState("");
+  const [totalPages, setTotalPages] = useState(0);
+  const [currentPage, setCurrentPage] = useState(0);
+  const [totolElements, setTotolElements] = useState(0);
   const [formData, setFormData] = useState({
     name: "",
     description: "",
-    status: "published",
+    status: "PUBLIC",
+    subjectId: subjectId,
   });
+  const [statusOptions, setStatusOptions] = useState([]);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(null);
 
-  // Get subject and its lessons
- useEffect(() => {
-  if (!subjects || subjects.length === 0) return;
-  if (!subjectId) return;
-
-  const foundSubject = subjects.find((s) => s.subjectId == subjectId);
-  console.log("Found Subject:", foundSubject);
-
-  if (foundSubject) {
-    setSubject(foundSubject);
-    lessonsFetch(subjectId);
-  }
-
-
-}, [subjects, subjectId]);
-
-useEffect(() => {
-  if (lessons && lessons.content) {
-    
-    setSubjectLessons(lessons.content);
-  }
-}, [lessons]);
-
-
-
-  const handleAddSubmit = (e) => {
-    e.preventDefault();
-    const newLesson = addLesson({
-      ...formData,
-      subjectId,
-      order: subjectLessons.length + 1,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    });
-
-    addLog(
-      "Lesson Created",
-      `New lesson "${formData.title}" was created for subject "${subject.title}"`
-    );
-    setSubjectLessons([...subjectLessons, newLesson]);
-    setFormData({
-      title: "",
-      description: "",
-      duration: "",
-      status: "published",
-    });
-
-    setIsAdding(false);
+  const getStatus = async () => {
+    let res = await fetchLessonStatus();
+    if (res) {
+      setStatusOptions(res);
+    }
   };
 
-  const handleEditSubmit = (e) => {
-    e.preventDefault();
-
-    updateLesson(isEditing, {
-      ...formData
-    });
-
-    addLog("Lesson Updated", `Lesson "${formData.title}" was updated`);
-
-    setFormData({
-      title: "",
-      description: "",
-      duration: "",
-      status: "PUBLIC",
-    });
-
-    setIsEditing(null);
+  const getLessons = async () => {
+    try {
+      const res = await lessonsFetch(subjectId, currentPage);
+      if (res) {
+        setSubjectLessons(res.content);
+        setTotalPages(res.page.totalPages);
+        setTotolElements(res.page.totalElements);
+      } else {
+        console.error("Failed to fetch lessons:", res);
+        setErrorMessage("Failed to fetch lessons.");
+      }
+    } catch (error) {
+      console.error("Error fetching lessons:", error);
+      setErrorMessage(error.message || "Failed to fetch lessons.");
+    }
   };
 
-  const handleDelete = (id) => {
-    const lessonToDelete = subjectLessons.find((lesson) => lesson.lessonId === id);
-    deleteLesson(id);
-    addLog(
-      "Lesson Deleted",
-      `Lesson "${lessonToDelete.title}" was deleted from course "${course.title}"`
-    );
+  const handlePageClick = (event) => {
+    const selectedPage = event.selected;
+    setCurrentPage(selectedPage);
+  };
+
+  const getSubject = async () => {
+    try {
+      const subjects = await fetchSubjects(subjectPage);
+      const found = subjects?.content.find((subj) => subj.subjectId == subjectId);
+      if (found) {
+        setSubject(found);
+        getLessons();
+        getStatus();
+      }
+    } catch (error) {
+      console.error("Error in getSubject:", error);
+    }
+  };
+
+  useEffect(() => {
+    getSubject();
+  }, [totolElements, currentPage, subjectId]);
+
+  const handleAddSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const newLesson = await addLesson({
+        ...formData,
+      });
+      console.log("New lesson added:", newLesson);
+      if (newLesson) {
+        setErrorMessage("");
+        const message = `New lesson "${formData.name}" was created successfully!`;
+        toast.success(message);
+        addLog(
+          "Lesson Created",
+          `New lesson "${formData.name}" was created for subject "${subject.name}"`
+        );
+        setSubjectLessons([...subjectLessons, newLesson]);
+        setFormData({
+          name: "",
+          description: "",
+          status: "PUBLIC",
+          subjectId: subjectId,
+        });
+        setIsAdding(false);
+      } else {
+        console.error("Failed to add lesson:", newLesson);
+        setErrorMessage(newLesson.message || "Failed to add lesson.");
+      }
+    } catch (error) {
+      console.error("Failed to add lesson:", error);
+      setErrorMessage(error.message || "Failed to add lesson.");
+    }
+  };
+
+  const handleEditSubmit = async (e) => {
+    e.preventDefault();
+
+    try {
+      const updatedLesson = await updateLesson(isEditing, {
+        ...formData,
+      });
+      if (updatedLesson.status === "error") {
+        setErrorMessage(updatedLesson.message);
+        return;
+      }
+      toast.success(`Lesson "${formData.name}" updated successfully!`);
+      setSubjectLessons((prevLessons) =>
+        prevLessons.map((lesson) =>
+          lesson.lessonId === isEditing ? { ...lesson, ...formData } : lesson
+        )
+      );
+      setFormData({
+        name: "",
+        description: "",
+        duration: "",
+        status: "PUBLIC",
+        subjectId: subjectId,
+      });
+      setErrorMessage("");
+      setIsEditing(null);
+    } catch (error) {
+      console.error("Error updating lesson:", error);
+      setErrorMessage(error.message || "Failed to update lesson.");
+    }
+  };
+
+  const handleDelete = async (id) => {
+    const result = await deleteLesson(id);
+    if (result.status === "error") {
+      toast.error(result.message);
+      setShowDeleteConfirm(null);
+      return;
+    }
+    toast.success("Lesson deleted successfully!");
     setShowDeleteConfirm(null);
+    setSubjectLessons((prevLessons) =>
+      prevLessons.filter((lesson) => lesson.lessonId !== id)
+    );
   };
 
   const startEdit = (lesson) => {
     setFormData({
-      title: lesson.name,
+      name: lesson.name,
       description: lesson.description,
       status: lesson.status,
+      subjectId: lesson.subjectId,
     });
     setIsEditing(lesson.lessonId);
     setIsAdding(false);
   };
 
   const cancelAction = () => {
+    setErrorMessage("");
     setIsAdding(false);
     setIsEditing(null);
     setFormData({
-      title: "",
+      name: "",
       description: "",
       duration: "",
-      status: "published",
+      status: "PUBLIC",
+      subjectId: subjectId,
     });
   };
 
@@ -209,6 +271,17 @@ useEffect(() => {
           <h2 className="text-xl font-medium mb-4">
             {isAdding ? "Add New Lesson" : "Edit Lesson"}
           </h2>
+          {errorMessage && (
+            <div className="mb-4 p-3 rounded bg-red-100 text-red-700 text-sm flex items-center justify-between">
+              <p className="mb-2">{errorMessage}</p>
+              <button
+                className="text-red-700 hover:text-red-900"
+                onClick={() => setErrorMessage("")}
+              >
+                X
+              </button>
+            </div>
+          )}
           <form onSubmit={isAdding ? handleAddSubmit : handleEditSubmit}>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
               <div className="md:col-span-2">
@@ -216,15 +289,15 @@ useEffect(() => {
                   htmlFor="title"
                   className="block text-sm font-medium text-gray-700 mb-1"
                 >
-                  Lesson Title
+                  Lesson Name
                 </label>
                 <input
-                  id="title"
+                  id="name"
                   type="text"
                   required
-                  value={formData.title}
+                  value={formData.name}
                   onChange={(e) =>
-                    setFormData({ ...formData, title: e.target.value })
+                    setFormData({ ...formData, name: e.target.value })
                   }
                 />
               </div>
@@ -250,24 +323,6 @@ useEffect(() => {
 
               <div>
                 <label
-                  htmlFor="duration"
-                  className="block text-sm font-medium text-gray-700 mb-1"
-                >
-                  Duration (e.g., "45 minutes")
-                </label>
-                <input
-                  id="duration"
-                  type="text"
-                  required
-                  value={formData.duration}
-                  onChange={(e) =>
-                    setFormData({ ...formData, duration: e.target.value })
-                  }
-                />
-              </div>
-
-              <div>
-                <label
                   htmlFor="status"
                   className="block text-sm font-medium text-gray-700 mb-1"
                 >
@@ -281,8 +336,11 @@ useEffect(() => {
                   }
                   className="rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 w-full"
                 >
-                  <option value="published">Published</option>
-                  <option value="draft">Draft</option>
+                  {statusOptions.map((option) => (
+                    <option key={option} value={option}>
+                      {option}
+                    </option>
+                  ))}
                 </select>
               </div>
             </div>
@@ -307,7 +365,8 @@ useEffect(() => {
       <div className="card">
         <div className="p-4 border-b border-gray-200">
           <h2 className="text-lg font-medium text-gray-900">
-            Subject Lessons - <span className="text-gray-900">{subjectLessons.length}</span>
+            Subject Lessons -{" "}
+            <span className="text-gray-900">{`(${subjectLessons.length})`}</span>
           </h2>
         </div>
         <div className="divide-y divide-gray-200">
@@ -352,7 +411,7 @@ useEffect(() => {
                   </div>
                   <div className="flex items-center">
                     <Link
-                      to={`/courses/${subjectId}/lessons/${lesson.lessonId}/content`}
+                      to={`/admin/courses/${subjectId}/lessons/${lesson.lessonId}/content`}
                       className="text-secondary-600 hover:text-secondary-800 mr-3"
                       title="Manage Content"
                     >
@@ -385,7 +444,7 @@ useEffect(() => {
                           <Edit size={16} />
                         </button>
                         <button
-                          onClick={() => setShowDeleteConfirm(lesson.id)}
+                          onClick={() => setShowDeleteConfirm(lesson.lessonId)}
                           className="text-error-500 hover:text-error-700"
                           disabled={isAdding || isEditing}
                           title="Delete Lesson"
@@ -416,6 +475,28 @@ useEffect(() => {
           )}
         </div>
       </div>
+      {/* Phan Trang */}
+      <ReactPaginate
+        className="pagination mt-6 justify-center"
+        nextLabel="next >"
+        onPageChange={handlePageClick}
+        pageRangeDisplayed={3} // giới hạn trang bên trái 1 2 3 .... 99 100
+        marginPagesDisplayed={2} // giới hạn trang bên phải 1 2 3 .... 99 100
+        pageCount={totalPages}
+        previousLabel="< previous"
+        pageClassName="page-item"
+        pageLinkClassName="page-link"
+        previousClassName="page-item"
+        previousLinkClassName="page-link"
+        nextClassName="page-item"
+        nextLinkClassName="page-link"
+        breakLabel="..."
+        breakClassName="page-item"
+        breakLinkClassName="page-link"
+        containerClassName="pagination"
+        activeClassName="active"
+        renderOnZeroPageCount={null}
+      />
     </div>
   );
 }
