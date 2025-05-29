@@ -1,6 +1,7 @@
 import { Routes, Route } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+
 import Layout from "./components/layout/Layout";
 import Login from "./pages/auth/Login";
 import RegisterP1 from "./pages/auth/RegisterP1";

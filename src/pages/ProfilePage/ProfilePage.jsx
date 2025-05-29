@@ -15,10 +15,10 @@ function ProfilePage() {
   const navigate = useNavigate();
   // Example user data - in a real app, this would come from your backend
   const user = {
-    name: 'Alex Johnson',
-    email: 'alex@example.com',
-    level: 'Intermediate',
-    joinDate: '2024-01-15',
+    name: '',
+    email: '',
+    level: '',
+    joinDate: '',
     avatar: 'https://images.pexels.com/photos/614810/pexels-photo-614810.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2',
     progress: {
       vocabulary: 65,
