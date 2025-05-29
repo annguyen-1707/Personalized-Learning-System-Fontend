@@ -13,103 +13,136 @@ import {
   X,
   ExternalLink,
 } from "lucide-react";
-import { s, sub } from "framer-motion/client";
+import { g, s, sub } from "framer-motion/client";
 import { GiOpenBook } from "react-icons/gi";
 import { toast } from "react-toastify";
+import ReactPaginate from "react-paginate";
+import { use } from "react";
+
+
 
 function LessonManagement() {
   const { subjectId } = useParams();
   const {
-    subjects,
-    lessons,
     addLesson,
     updateLesson,
     deleteLesson,
     addLog,
     lessonsFetch,
-    lessonStatus,
+    fetchLessonStatus,
+    fetchSubjects
   } = useData();
 
   const [subject, setSubject] = useState(null);
   const [subjectLessons, setSubjectLessons] = useState([]);
   const [isAdding, setIsAdding] = useState(false);
   const [isEditing, setIsEditing] = useState(null);
+  const [errorMessage, setErrorMessage] = useState("");
+  const [totalPages, setTotalPages] = useState(0);
+  const [currentPage, setCurrentPage] = useState(0);
+  const [totolElements, setTotolElements] = useState(0);
   const [formData, setFormData] = useState({
     name: "",
     description: "",
     status: "PUBLIC",
     subjectId: subjectId,
   });
+  const [statusOptions, setStatusOptions] = useState([]);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(null);
 
-  const statusOptions = lessonStatus.map((status) => ({
-    data: status,
-  }));
-
-  console.log('statusOptions', statusOptions);
-
-  // Get subject and its lessons
- useEffect(() => {
-  if (!subjects || subjects.length === 0) return;
-  if (!subjectId) return;
-
-  const foundSubject = subjects.find((s) => s.subjectId == subjectId);
-
-  if (foundSubject) {
-    setSubject(foundSubject);
-    lessonsFetch(subjectId);
+  const getStatus = async () => {
+    let res = await fetchLessonStatus();
+    if (res) {
+      setStatusOptions(res)
+    }
   }
 
-}, [subjects, subjectId]);
+  const getLessons = async () => {
+    try {
+      const res = await lessonsFetch(subjectId, currentPage);
+      if (res) {
+        setSubjectLessons(res.content);
+        setTotalPages(res.page.totalPages);
+        setTotolElements(res.page.totalElements);
+      } else {
+        console.error("Failed to fetch lessons:", res);
+        setErrorMessage("Failed to fetch lessons.");
+      }
+    } catch (error) {
+      console.error("Error fetching lessons:", error);
+      setErrorMessage(error.message || "Failed to fetch lessons.");
+    }
+  };
 
-useEffect(() => {
-  if (lessons && lessons.content) {
-    
-    setSubjectLessons(lessons.content);
+
+  const handlePageClick = (event) => {
+    const selectedPage = event.selected;
+    setCurrentPage(selectedPage);
+  };
+
+ const getSubject = async () => {
+  try {
+    const subjects = await fetchSubjects();
+    const found = subjects?.find((subj) => subj.subjectId == subjectId);
+    if (found) {
+      setSubject(found);
+      getLessons();
+      getStatus();
+    }
+  } catch (error) {
+    console.error("Error in getSubject:", error);
   }
-}, [lessons]);
+};
 
+    useEffect(() => {
+      getSubject();
+    }, [subjectId, currentPage, totolElements]);
 
-
+ 
   const handleAddSubmit = async (e) => {
     e.preventDefault();
-    const newLesson = await addLesson({
-      ...formData
-    });
-
-    if(newLesson.error) {
-      toast.error(newLesson.message || "Failed to create lesson");
-      return;
-    } else {
-      const message = `New lesson "${formData.name}" was created successfully!`;
-      toast.success(message);
-
-      addLog(
-        "Lesson Created",
-        `New lesson "${formData.name}" was created for subject "${subject.name}"`
-      );
-      setSubjectLessons([...subjectLessons, newLesson]);
+    try {
+      const newLesson = await addLesson({
+        ...formData,
+      });
+      console.log("New lesson added:", newLesson);
+      if (newLesson) {
+        setErrorMessage("");
+        const message = `New lesson "${formData.name}" was created successfully!`;
+        toast.success(message);
+        addLog(
+          "Lesson Created",
+          `New lesson "${formData.name}" was created for subject "${subject.name}"`
+        );
+        setSubjectLessons([...subjectLessons, newLesson]);
+        setFormData({
+          name: "",
+          description: "",
+          status: "PUBLIC",
+          subjectId: subjectId,
+        });
+        setIsAdding(false);
+      } else {
+        console.error("Failed to add lesson:", newLesson);
+        setErrorMessage(newLesson.message || "Failed to add lesson.");
+      }
+    } catch (error) {
+      console.error("Failed to add lesson:", error);
+      setErrorMessage(error.message || "Failed to add lesson.");
     }
-    setFormData({
-      name: "",
-      description: "",
-      status: "PUBLIC",
-      subjectId: subjectId,
-    });
-    setIsAdding(false);
   };
 
   const handleEditSubmit = (e) => {
     e.preventDefault();
 
     updateLesson(isEditing, {
-      ...formData
+      ...formData,
     });
 
-    addLog("Lesson Updated", `Lesson "${formData.title}" was updated`);
+    addLog("Lesson Updated", `Lesson "${formData.name}" was updated`);
 
     setFormData({
-      title: "",
+      name: "",
       description: "",
       duration: "",
       status: "PUBLIC",
@@ -120,18 +153,20 @@ useEffect(() => {
   };
 
   const handleDelete = (id) => {
-    const lessonToDelete = subjectLessons.find((lesson) => lesson.lessonId === id);
+    const lessonToDelete = subjectLessons.find(
+      (lesson) => lesson.lessonId === id
+    );
     deleteLesson(id);
     addLog(
       "Lesson Deleted",
-      `Lesson "${lessonToDelete.title}" was deleted from course "${course.title}"`
+      `Lesson "${lessonToDelete.name}" was deleted from course "${subject.subjectName}"`
     );
     setShowDeleteConfirm(null);
   };
 
   const startEdit = (lesson) => {
     setFormData({
-      title: lesson.name,
+      name: lesson.name,
       description: lesson.description,
       status: lesson.status,
       subjectId: lesson.subjectId,
@@ -141,13 +176,14 @@ useEffect(() => {
   };
 
   const cancelAction = () => {
+    setErrorMessage("");
     setIsAdding(false);
     setIsEditing(null);
     setFormData({
-      title: "",
+      name: "",
       description: "",
       duration: "",
-      status: "published",
+      status: "PUBLIC",
       subjectId: subjectId,
     });
   };
@@ -222,6 +258,17 @@ useEffect(() => {
           <h2 className="text-xl font-medium mb-4">
             {isAdding ? "Add New Lesson" : "Edit Lesson"}
           </h2>
+          {errorMessage && (
+            <div className="mb-4 p-3 rounded bg-red-100 text-red-700 text-sm flex items-center justify-between">
+              <p className="mb-2">{errorMessage}</p>
+              <button
+                className="text-red-700 hover:text-red-900"
+                onClick={() => setErrorMessage("")}
+              >
+                X
+              </button>
+            </div>
+          )}
           <form onSubmit={isAdding ? handleAddSubmit : handleEditSubmit}>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
               <div className="md:col-span-2">
@@ -277,8 +324,8 @@ useEffect(() => {
                   className="rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 w-full"
                 >
                   {statusOptions.map((option) => (
-                    <option key={option.data} value={option.data}>
-                      {option.data}
+                    <option key={option} value={option}>
+                      {option}
                     </option>
                   ))}
                 </select>
@@ -305,7 +352,8 @@ useEffect(() => {
       <div className="card">
         <div className="p-4 border-b border-gray-200">
           <h2 className="text-lg font-medium text-gray-900">
-            Subject Lessons - <span className="text-gray-900">{subjectLessons.length}</span>
+            Subject Lessons -{" "}
+            <span className="text-gray-900">{subjectLessons.length}</span>
           </h2>
         </div>
         <div className="divide-y divide-gray-200">
@@ -413,8 +461,33 @@ useEffect(() => {
             </div>
           )}
         </div>
+
+      
       </div>
+             {/* Phan Trang */}
+      <ReactPaginate 
+      className="pagination mt-6 justify-center"
+        nextLabel="next >"
+        onPageChange={handlePageClick}
+        pageRangeDisplayed={3} // giới hạn trang bên trái 1 2 3 .... 99 100
+        marginPagesDisplayed={2} // giới hạn trang bên phải 1 2 3 .... 99 100
+        pageCount={totalPages}
+        previousLabel="< previous"
+        pageClassName="page-item"
+        pageLinkClassName="page-link"
+        previousClassName="page-item"
+        previousLinkClassName="page-link"
+        nextClassName="page-item"
+        nextLinkClassName="page-link"
+        breakLabel="..."
+        breakClassName="page-item"
+        breakLinkClassName="page-link"
+        containerClassName="pagination"
+        activeClassName="active"
+        renderOnZeroPageCount={null}
+      />
     </div>
+      
   );
 }
 
