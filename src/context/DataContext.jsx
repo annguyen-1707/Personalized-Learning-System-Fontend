@@ -109,6 +109,10 @@ export function DataProvider({ children }) {
       });
       const data = await response.json();
       // Refresh subjects after update
+      if (!response.ok) {
+        setErrorMessage(data.message || "failed to update lesson");
+        throw new Error(data.message || "failed to update lesson");
+      }
       setSubjects(
         subjects.map((subject) =>
           subject.subjectId === id ? data.data : subject
@@ -165,24 +169,41 @@ export function DataProvider({ children }) {
     }));
     setErrorMessage("");
     return data.data;
-      setErrorMessage("");
-      return data.data;
     } catch (error) {
       console.error("Error adding lesson:", error);
       throw error;
     }
   };
 
-  const updateLesson = (id, updatedLesson) => {
-    setLessons(
-      lessons.map((lesson) =>
-        lesson.id === id ? { ...lesson, ...updatedLesson } : lesson
-      )
-    );
+  const updateLesson = async (id, updatedLesson) => {
+    try {
+      const response = await fetch(`/api/lessons/${id}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(updatedLesson),
+      });
+      const data = await response.json();
+      // Refresh lessons after update
+      if (!response.ok) {
+        setErrorMessage(data.message || "failed to update lesson");
+        throw new Error(data.message || "failed to update lesson");
+      }
+      setLessons((prevLessons) => ({
+        ...prevLessons,
+        content: prevLessons.content.map((lesson) =>
+          lesson.lessonId === id ? data.data.content : lesson
+        ),
+      }));
+    } catch (error) {
+      console.error("Error updating lesson:", error);
+      throw error;
+    }
   };
 
   const deleteLesson = (id) => {
-    setLessons(lessons.filter((lesson) => lesson.id !== id));
+    setLessons(lessons.filter((lesson) => lesson.lessonId !== id));
     // Also delete related content
     setVocabulary(vocabulary.filter((item) => item.lessonId !== id));
     setGrammar(grammar.filter((item) => item.lessonId !== id));

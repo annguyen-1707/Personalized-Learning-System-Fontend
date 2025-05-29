@@ -19,8 +19,6 @@ import { toast } from "react-toastify";
 import ReactPaginate from "react-paginate";
 import { use } from "react";
 
-
-
 function LessonManagement() {
   const { subjectId } = useParams();
   const {
@@ -30,7 +28,7 @@ function LessonManagement() {
     addLog,
     lessonsFetch,
     fetchLessonStatus,
-    fetchSubjects
+    fetchSubjects,
   } = useData();
 
   const [subject, setSubject] = useState(null);
@@ -53,9 +51,9 @@ function LessonManagement() {
   const getStatus = async () => {
     let res = await fetchLessonStatus();
     if (res) {
-      setStatusOptions(res)
+      setStatusOptions(res);
     }
-  }
+  };
 
   const getLessons = async () => {
     try {
@@ -74,31 +72,29 @@ function LessonManagement() {
     }
   };
 
-
   const handlePageClick = (event) => {
     const selectedPage = event.selected;
     setCurrentPage(selectedPage);
   };
 
- const getSubject = async () => {
-  try {
-    const subjects = await fetchSubjects();
-    const found = subjects?.find((subj) => subj.subjectId == subjectId);
-    if (found) {
-      setSubject(found);
-      getLessons();
-      getStatus();
+  const getSubject = async () => {
+    try {
+      const subjects = await fetchSubjects();
+      const found = subjects?.find((subj) => subj.subjectId == subjectId);
+      if (found) {
+        setSubject(found);
+        getLessons();
+        getStatus();
+      }
+    } catch (error) {
+      console.error("Error in getSubject:", error);
     }
-  } catch (error) {
-    console.error("Error in getSubject:", error);
-  }
-};
+  };
 
-    useEffect(() => {
-      getSubject();
-    }, [subjectId, currentPage, totolElements]);
+  useEffect(() => {
+    getSubject();
+  }, [subjectId, currentPage, totolElements]);
 
- 
   const handleAddSubmit = async (e) => {
     e.preventDefault();
     try {
@@ -132,24 +128,34 @@ function LessonManagement() {
     }
   };
 
-  const handleEditSubmit = (e) => {
+  const handleEditSubmit = async (e) => {
     e.preventDefault();
 
-    updateLesson(isEditing, {
-      ...formData,
-    });
-
-    addLog("Lesson Updated", `Lesson "${formData.name}" was updated`);
-
-    setFormData({
-      name: "",
-      description: "",
-      duration: "",
-      status: "PUBLIC",
-      subjectId: subjectId,
-    });
-
-    setIsEditing(null);
+    try {
+      const updatedLesson = await updateLesson(isEditing, {
+        ...formData,
+      });
+      toast.success(
+        `Lesson "${formData.name}" updated successfully!`
+      );
+      setSubjectLessons((prevLessons) =>
+        prevLessons.map((lesson) =>
+          lesson.lessonId === isEditing ? { ...lesson, ...formData } : lesson
+        )
+      );
+      setFormData({
+        name: "",
+        description: "",
+        duration: "",
+        status: "PUBLIC",
+        subjectId: subjectId,
+      });
+      setErrorMessage("");
+      setIsEditing(null);
+    } catch (error) {
+      console.error("Error updating lesson:", error);
+      setErrorMessage(error.message || "Failed to update lesson.");
+    }
   };
 
   const handleDelete = (id) => {
@@ -461,12 +467,10 @@ function LessonManagement() {
             </div>
           )}
         </div>
-
-      
       </div>
-             {/* Phan Trang */}
-      <ReactPaginate 
-      className="pagination mt-6 justify-center"
+      {/* Phan Trang */}
+      <ReactPaginate
+        className="pagination mt-6 justify-center"
         nextLabel="next >"
         onPageChange={handlePageClick}
         pageRangeDisplayed={3} // giới hạn trang bên trái 1 2 3 .... 99 100
@@ -487,7 +491,6 @@ function LessonManagement() {
         renderOnZeroPageCount={null}
       />
     </div>
-      
   );
 }
 

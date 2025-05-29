@@ -16,8 +16,14 @@ import {
 
 function CourseManagement() {
   // Replace courses with subjects and update methods accordingly
-  const { subjects, addSubject, updateSubject, deleteSubject, addLog, fetchSubjects } =
-    useData();
+  const {
+    subjects,
+    addSubject,
+    updateSubject,
+    deleteSubject,
+    addLog,
+    fetchSubjects,
+  } = useData();
   const [isAdding, setIsAdding] = useState(false);
   const [isEditing, setIsEditing] = useState(null);
   const [search, setSearch] = useState("");
@@ -74,30 +80,33 @@ function CourseManagement() {
         status: "ACTIVE",
       }); // Reset form
       setIsAdding(false);
-      setErrorMessage(""); 
+      setErrorMessage("");
     } catch (error) {
       console.error("Failed to add subject:", error);
       setErrorMessage(error.message || "Failed to add subject.");
     }
   };
 
-    // Handle form submission for editing subjects
-  const handleEditSubmit =  async (e) => {
+  // Handle form submission for editing subjects
+  const handleEditSubmit = async (e) => {
     e.preventDefault();
     try {
       const updatedSubject = await updateSubject(isEditing, {
         ...formData,
       });
-      if (!updatedSubject) {
-        throw new Error("Failed to update subject");
-      }
-      addLog("Subject Updated", `Subject "${formData.subjectCode}" was updated`);
+
+      toast.success("Subject updated successfully.");
+      addLog(
+        "Subject Updated",
+        `Subject "${formData.subjectCode}" was updated`
+      );
       setFormData({
-      subjectCode: "",
-      subjectName: "",
-      description: "",
-      status: "ACTIVE",
-    });
+        subjectCode: "",
+        subjectName: "",
+        description: "",
+        status: "ACTIVE",
+      });
+
       setIsEditing(null);
       setErrorMessage("");
     } catch (error) {
@@ -107,20 +116,20 @@ function CourseManagement() {
   };
 
   const handleDelete = async (id) => {
-  setShowDeleteConfirm(null);
-  try {
-    await deleteSubject(id);
-    addLog("Subject Deleted", `Subject with ID ${id} was deleted`);
-    toast.success("Subject deleted successfully.");
-  } catch (error) {
-    console.error("Failed to delete subject:", error);
-    const message =
-      error?.response?.data?.message ||
-      error?.message ||
-      "Failed to delete subject.";
-     toast.error(message);
-  }
-};
+    setShowDeleteConfirm(null);
+    try {
+      await deleteSubject(id);
+      addLog("Subject Deleted", `Subject with ID ${id} was deleted`);
+      toast.success("Subject deleted successfully.");
+    } catch (error) {
+      console.error("Failed to delete subject:", error);
+      const message =
+        error?.response?.data?.message ||
+        error?.message ||
+        "Failed to delete subject.";
+      toast.error(message);
+    }
+  };
 
   const startEdit = (subject) => {
     setErrorMessage("");
@@ -139,10 +148,10 @@ function CourseManagement() {
     setIsAdding(false);
     setIsEditing(null);
     setFormData({
-       subjectCode: "",
-        subjectName: "",
-        description: "",
-        status: "ACTIVE",
+      subjectCode: "",
+      subjectName: "",
+      description: "",
+      status: "ACTIVE",
     });
   };
 
@@ -221,7 +230,12 @@ function CourseManagement() {
           {errorMessage && (
             <div className="mb-4 p-3 rounded bg-red-100 text-red-700 text-sm flex items-center justify-between">
               <p className="mb-2">{errorMessage}</p>
-              <button className="text-red-700 hover:text-red-900" onClick={() => setErrorMessage("")}>X</button>
+              <button
+                className="text-red-700 hover:text-red-900"
+                onClick={() => setErrorMessage("")}
+              >
+                X
+              </button>
             </div>
           )}
           <form onSubmit={isAdding ? handleAddSubmit : handleEditSubmit}>
