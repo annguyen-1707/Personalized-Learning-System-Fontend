@@ -22,14 +22,12 @@ import Dashboard from "./pages/adminPages/Dashboard";
 
 import SpeakingContentManagement from "./pages/content/SpeakingContentManagement";
 import DialogueManagement from "./pages/content/DialogueManagement";
-import AuthInitializer from "./context/AuthInitializer";
 
 function App() {
 
   return (
     <AuthProvider>
       <DataProvider>
-        <AuthInitializer />
         <Routes>
           {/* Auth routes */}
           <Route path="/login" element={<Login />} />

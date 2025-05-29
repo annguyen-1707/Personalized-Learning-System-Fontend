@@ -38,7 +38,7 @@ function RegisterP2() {
         formData.gender,
         formData.phone
       );
-      navigate('/learn');
+      navigate('/login', { state: { successMessage: 'Register Successfully' } });
     } catch (err) {
       setError('Failed to create an account');
     }
