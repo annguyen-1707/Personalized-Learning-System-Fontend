@@ -29,23 +29,17 @@ export function DataProvider({ children }) {
   const [grammar, setGrammar] = useState(mockGrammar);
   const [exercises, setExercises] = useState(mockExercises);
   const [resources, setResources] = useState(mockResources);
-  const [subjects, setSubjects] = useState([]);
+  const [subjects, setSubjects] = useState({});
   const [errorMessage, setErrorMessage] = useState([]);
   const [errors, setErrors] = useState({});
   const [lessonStatus, setLessonStatus] = useState([]);
 
   // api for fetching days "/api/subjects" and "/api/lessons?subjectId={subjectId}"
-  const fetchSubjects = async () => {
-    try {
-      const response = await fetch("/api/subjects");
-      if (!response.ok)
-        throw new Error(`HTTP error! status: ${response.status}`);
-      const data = await response.json();
-      setSubjects(data.data);
-      return data.data;
-    } catch (error) {
-      console.error("Error fetching subjects:", error);
-    }
+  const fetchSubjects = async (page) => {
+    const response = await fetch(`/api/subjects?page=${page}`);
+    const data = await response.json();
+    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+    return data.data;
   };
 
   // Fetch Lessons - chạy mỗi khi subjectId thay đổi
@@ -91,8 +85,9 @@ export function DataProvider({ children }) {
         setErrorMessage(data.message || "failed to add subject");
         throw new Error(data.message || "failed to add subject");
       }
-      setSubjects([...subjects, data.data]); // Update state with new subject
+      await fetchSubjects(0);
       setErrorMessage("");
+      return data.data;
     } catch (error) {
       console.error("Error adding subject:", error);
       throw error;
@@ -114,11 +109,8 @@ export function DataProvider({ children }) {
         setErrorMessage(data.message || "failed to update lesson");
         throw new Error(data.message || "failed to update lesson");
       }
-      setSubjects(
-        subjects.map((subject) =>
-          subject.subjectId === id ? data.data : subject
-        )
-      );
+      await fetchSubjects(0);
+      setErrorMessage("");
     } catch (error) {
       console.error("Error updating subject:", error);
       throw error;
@@ -139,7 +131,7 @@ export function DataProvider({ children }) {
         );
       }
       // Remove subject from state
-      setSubjects(subjects.filter((subject) => subject.subjectId !== id));
+      await fetchSubjects(0);
       setErrorMessage("");
     } catch (error) {
       console.error("Error deleting subject:", error);
@@ -194,38 +186,33 @@ export function DataProvider({ children }) {
   };
 
   const updateLesson = async (id, updatedLesson) => {
-    try {
-      const response = await fetch(`/api/lessons/${id}`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(updatedLesson),
-      });
-      const data = await response.json();
-      // Refresh lessons after update
-      if (!response.ok) {
-        setErrorMessage(data.message || "failed to update lesson");
-        throw new Error(data.message || "failed to update lesson");
-      }
-      setLessons((prevLessons) => ({
-        ...prevLessons,
-        content: prevLessons.content.map((lesson) =>
-          lesson.lessonId === id ? data.data.content : lesson
-        ),
-      }));
-    } catch (error) {
-      console.error("Error updating lesson:", error);
-      throw error;
+    const response = await fetch(`/api/lessons/${id}`, {
+      method:  "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(updatedLesson),
+    });
+    const data = await response.json();
+    // Refresh lessons after update
+    if (!response.ok) {
+      return data;
     }
+    setLessons((prevLessons) => ({
+      ...prevLessons,
+      content: [...prevLessons.content, data.data.content],
+    }));
   };
 
-  const deleteLesson = (id) => {
-    setLessons(lessons.filter((lesson) => lesson.lessonId !== id));
-    // Also delete related content
-    setVocabulary(vocabulary.filter((item) => item.lessonId !== id));
-    setGrammar(grammar.filter((item) => item.lessonId !== id));
-    setExercises(exercises.filter((item) => item.lessonId !== id));
+  const deleteLesson = async (id) => {
+    const res = await fetch(`/api/lessons/${id}`, {
+      method: "DELETE",
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      return data;
+    }
+    return data;
   };
 
   // Admin CRUD operations

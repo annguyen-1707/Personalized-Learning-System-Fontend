@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useLocation  } from "react-router-dom";
 import { useData } from "../../context/DataContext";
 import {
   ArrowLeft,
@@ -13,14 +13,17 @@ import {
   X,
   ExternalLink,
 } from "lucide-react";
-import { g, s, sub } from "framer-motion/client";
+import { g, s, sub, u } from "framer-motion/client";
 import { GiOpenBook } from "react-icons/gi";
 import { toast } from "react-toastify";
 import ReactPaginate from "react-paginate";
 import { use } from "react";
 
 function LessonManagement() {
-  const { subjectId } = useParams();
+  const { subjectId} = useParams();
+  const location = useLocation();
+const queryParams = new URLSearchParams(location.search);
+const subjectPage = parseInt(queryParams.get("subjectPage") || "0", 10);
   const {
     addLesson,
     updateLesson,
@@ -79,8 +82,8 @@ function LessonManagement() {
 
   const getSubject = async () => {
     try {
-      const subjects = await fetchSubjects();
-      const found = subjects?.find((subj) => subj.subjectId == subjectId);
+      const subjects = await fetchSubjects(subjectPage);
+      const found = subjects?.content.find((subj) => subj.subjectId == subjectId);
       if (found) {
         setSubject(found);
         getLessons();
@@ -93,7 +96,7 @@ function LessonManagement() {
 
   useEffect(() => {
     getSubject();
-  }, [subjectId, currentPage, totolElements]);
+  }, [totolElements, currentPage, subjectId]);
 
   const handleAddSubmit = async (e) => {
     e.preventDefault();
@@ -135,9 +138,11 @@ function LessonManagement() {
       const updatedLesson = await updateLesson(isEditing, {
         ...formData,
       });
-      toast.success(
-        `Lesson "${formData.name}" updated successfully!`
-      );
+      if (updatedLesson.status === "error") {
+        setErrorMessage(updatedLesson.message);
+        return;
+      }
+      toast.success(`Lesson "${formData.name}" updated successfully!`);
       setSubjectLessons((prevLessons) =>
         prevLessons.map((lesson) =>
           lesson.lessonId === isEditing ? { ...lesson, ...formData } : lesson
@@ -158,16 +163,18 @@ function LessonManagement() {
     }
   };
 
-  const handleDelete = (id) => {
-    const lessonToDelete = subjectLessons.find(
-      (lesson) => lesson.lessonId === id
-    );
-    deleteLesson(id);
-    addLog(
-      "Lesson Deleted",
-      `Lesson "${lessonToDelete.name}" was deleted from course "${subject.subjectName}"`
-    );
+  const handleDelete = async (id) => {
+    const result = await deleteLesson(id);
+    if (result.status === "error") {
+      toast.error(result.message);
+      setShowDeleteConfirm(null);
+      return;
+    }
+    toast.success("Lesson deleted successfully!");
     setShowDeleteConfirm(null);
+    setSubjectLessons((prevLessons) =>
+      prevLessons.filter((lesson) => lesson.lessonId !== id)
+    );
   };
 
   const startEdit = (lesson) => {
@@ -437,7 +444,7 @@ function LessonManagement() {
                           <Edit size={16} />
                         </button>
                         <button
-                          onClick={() => setShowDeleteConfirm(lesson.id)}
+                          onClick={() => setShowDeleteConfirm(lesson.lessonId)}
                           className="text-error-500 hover:text-error-700"
                           disabled={isAdding || isEditing}
                           title="Delete Lesson"

@@ -58,6 +58,7 @@ function ContentManagement() {
   const [levels, setLevels] = useState([]);
   const [partOfSpeech, setPartOfSpeech] = useState([]);
   const [errors, setErrors] = useState({});
+  const [errorMessages, setErrorMessages] = useState("");
 
   const handlePageClick = (event) => {
     const selectedPage = event.selected;
@@ -66,8 +67,8 @@ function ContentManagement() {
 
   const getSubject = async () => {
     try {
-      const subjects = await fetchSubjects();
-      const found = subjects?.find((subj) => subj.subjectId == subjectId);
+      const subjects = await fetchSubjects(0);
+      const found = subjects?.content.find((subj) => subj.subjectId == subjectId);
       if (found) {
         setSubject(found);
       }
@@ -289,6 +290,8 @@ function ContentManagement() {
             result.data.forEach((err) => {
               errorMap[err.field] = err.message;
             });
+          } else {
+            setErrorMessages(result.message)
           }
           setErrors(errorMap);
           return;
@@ -466,6 +469,8 @@ function ContentManagement() {
     setIsAdding(false);
     setIsEditing(null);
     resetForm();
+    setErrors({});
+    setErrorMessages("");
   };
 
   // Get tab icon
@@ -502,6 +507,9 @@ function ContentManagement() {
       case "vocabulary":
         return (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+            <div className="col-span-2">
+              <p className="text-red-500 text-sm">{errorMessages}</p>
+            </div>
             {/* Kanji */}
             <div>
               <label
