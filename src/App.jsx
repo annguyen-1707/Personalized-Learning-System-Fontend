@@ -59,6 +59,7 @@ function App() {
             <Route path="/admin/content_speaking" element={<ContentSpeakingManagement />} />
             <Route path="/admin/content_speaking/:contentSpeakingId/dialogue" element={<DialogueManagement />} />
             <Route path="/admin/content_reading" element={<ContentReadingManagement />} />
+            <Route path="/admin/content_reading/:contentReadingId/vocabulary" element={<VocabularyManagement />} />
             <Route path="/admin" element={<Dashboard />} />
             <Route path="/admin/courses" element={<CourseManagement />} />
             <Route
