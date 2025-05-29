@@ -25,6 +25,7 @@ import ContentSpeakingManagement from "./pages/content/ContentSpeakingManagement
 import DialogueManagement from "./pages/content/DialogueManagement";
 import AuthInitializer from "./context/AuthInitializer";
 import ContentReadingManagement from "./pages/content/ContentReadingManagement";
+import ListeningContentManagement from "./pages/content/ContentListeningManagement";
 
 function App() {
 
@@ -38,10 +39,10 @@ function App() {
           <Route path="/register1" element={<RegisterP1 />} />
           <Route path="/register2" element={<RegisterP2 />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
-           {/*ProfilePage routes*/}
+          {/*ProfilePage routes*/}
           <Route path="/" element={<Layout />}>
             <Route path="profile" element={<ProfilePage />} />
-            <Route path="/profile/edit" element={<EditProfilePage />}/>
+            <Route path="/profile/edit" element={<EditProfilePage />} />
             <Route path="/profile/change-password" element={<ChangePasswordPage />} />
           </Route>
           <Route path="/await-confirmation" element={<AwaitEmailConfirmation />} />
@@ -60,6 +61,7 @@ function App() {
             <Route path="/admin/content_speaking/:contentSpeakingId/dialogue" element={<DialogueManagement />} />
             <Route path="/admin/content_reading" element={<ContentReadingManagement />} />
             <Route path="/admin/content_reading/:contentReadingId/vocabulary" element={<VocabularyManagement />} />
+            <Route path="/admin/content_listening" element={<ListeningContentManagement />} />
             <Route path="/admin" element={<Dashboard />} />
             <Route path="/admin/courses" element={<CourseManagement />} />
             <Route
