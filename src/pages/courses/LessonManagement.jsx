@@ -359,7 +359,7 @@ function LessonManagement() {
         <div className="p-4 border-b border-gray-200">
           <h2 className="text-lg font-medium text-gray-900">
             Subject Lessons -{" "}
-            <span className="text-gray-900">{subjectLessons.length}</span>
+            <span className="text-gray-900">{`(${subjectLessons.length})`}</span>
           </h2>
         </div>
         <div className="divide-y divide-gray-200">
@@ -404,7 +404,7 @@ function LessonManagement() {
                   </div>
                   <div className="flex items-center">
                     <Link
-                      to={`/courses/${subjectId}/lessons/${lesson.lessonId}/content`}
+                      to={`/admin/courses/${subjectId}/lessons/${lesson.lessonId}/content`}
                       className="text-secondary-600 hover:text-secondary-800 mr-3"
                       title="Manage Content"
                     >

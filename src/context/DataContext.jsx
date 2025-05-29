@@ -20,7 +20,7 @@ export function useData() {
 export function DataProvider({ children }) {
   const [admins, setAdmins] = useState(mockAdmins);
   const [users, setUsers] = useState(mockUsers);
-   const [lessons, setLessons] = useState({
+  const [lessons, setLessons] = useState({
     content: [],
     page: { totalPages: 0, number: 0, totalElements: 0 },
   });
@@ -30,7 +30,8 @@ export function DataProvider({ children }) {
   const [exercises, setExercises] = useState(mockExercises);
   const [resources, setResources] = useState(mockResources);
   const [subjects, setSubjects] = useState([]);
-  const [errorMessage, setErrorMessage] = useState("");
+  const [errorMessage, setErrorMessage] = useState([]);
+  const [errors, setErrors] = useState({});
   const [lessonStatus, setLessonStatus] = useState([]);
 
   // api for fetching days "/api/subjects" and "/api/lessons?subjectId={subjectId}"
@@ -149,6 +150,23 @@ export function DataProvider({ children }) {
   // api for fetching lessons "/lessons"
 
   // Lesson CRUD operations
+
+  const getLessonById = async (id) => {
+    try {
+      const response = await fetch(`/api/lessons/${id}`);
+      if (!response.ok) {
+        const data = await response.json();
+        setErrorMessage(data.message || "failed to fetch lesson");
+        throw new Error(data.message || "failed to fetch lesson");
+      }
+      const data = await response.json();
+      return data.data;
+    } catch (error) {
+      console.error("Error fetching lesson by ID:", error);
+      throw error;
+    }
+  };
+
   const addLesson = async (lesson) => {
     try {
       const response = await fetch("/api/lessons", {
@@ -164,11 +182,11 @@ export function DataProvider({ children }) {
         throw new Error(data.message || "failed to add lesson");
       }
       setLessons((prevLessons) => ({
-      ...prevLessons,
-      content: [...prevLessons.content, data.data.content],
-    }));
-    setErrorMessage("");
-    return data.data;
+        ...prevLessons,
+        content: [...prevLessons.content, data.data.content],
+      }));
+      setErrorMessage("");
+      return data.data;
     } catch (error) {
       console.error("Error adding lesson:", error);
       throw error;
@@ -266,22 +284,105 @@ export function DataProvider({ children }) {
   };
 
   // Content management operations
-  const addVocabulary = (item) => {
-    const newItem = { ...item, id: Date.now().toString() };
+
+  const fetchLevels = async () => {
+    try {
+      const response = await fetch("/api/vocabularies/levels");
+      if (!response.ok) {
+        const data = await response.json();
+        setErrorMessage(data.message || "failed to fetch levels");
+        throw new Error(data.message || "failed to fetch levels");
+      }
+      const data = await response.json();
+      return data.data;
+    } catch (error) {
+      console.error("Error fetching levels:", error);
+      throw error;
+    }
+  };
+
+  const fetchPartOfSpeech = async () => {
+    try {
+      const response = await fetch("/api/vocabularies/part-of-speech");
+      if (!response.ok) {
+        const data = await response.json();
+        setErrorMessage(data.message || "failed to fetch part of speech");
+        throw new Error(data.message || "failed to fetch part of speech");
+      }
+      const data = await response.json();
+      return data.data;
+    } catch (error) {
+      console.error("Error fetching part of speech:", error);
+      throw error;
+    }
+  };
+
+  const fetchVocabulary = async (lessonId, page) => {
+    try {
+      const response = await fetch(
+        `/api/vocabularies?lessonId=${lessonId}&page=${page}`
+      );
+      if (!response.ok) {
+        const data = await response.json();
+        setErrorMessage(data.message || "failed to fetch vocabulary");
+        throw new Error(data.message || "failed to fetch vocabulary");
+      }
+      const data = await response.json();
+      return data.data;
+    } catch (error) {
+      console.error("Error fetching vocabulary:", error);
+      throw error;
+    }
+  };
+
+  const addVocabulary = async (item) => {
+    const response = await fetch("/api/vocabularies", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(item),
+    });
+    const data = await response.json();
+    if (!response.ok) {
+      return data;
+    }
+
+    const newItem = { ...data.data };
     setVocabulary([...vocabulary, newItem]);
     return newItem;
   };
 
-  const updateVocabulary = (id, updatedItem) => {
+  const updateVocabulary = async (id, updatedItem) => {
+    const response = await fetch(`/api/vocabularies/${id}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(updatedItem),
+    });
+    const data = await response.json();
+    if (!response.ok) {
+      return data;
+    }
+
     setVocabulary(
       vocabulary.map((item) =>
-        item.id === id ? { ...item, ...updatedItem } : item
+        item.id === id ? { ...item, ...data.data } : item
       )
     );
+    return data.data;
   };
 
-  const deleteVocabulary = (id) => {
-    setVocabulary(vocabulary.filter((item) => item.id !== id));
+  const deleteVocabulary = async (id) => {
+    const response = await fetch(`/api/vocabularies/${id}`, {
+      method: "DELETE",
+    });
+    const data = await response.json();
+    if (!response.ok) {
+      return data;
+    }
+    return data;
   };
 
   const addGrammar = (item) => {
@@ -362,6 +463,7 @@ export function DataProvider({ children }) {
     subjects,
     errorMessage,
     lessonStatus,
+    errors,
     addAdmin,
     updateAdmin,
     deleteAdmin,
@@ -390,7 +492,11 @@ export function DataProvider({ children }) {
     addLog,
     lessonsFetch,
     fetchSubjects,
-    fetchLessonStatus
+    fetchLessonStatus,
+    getLessonById,
+    fetchVocabulary,
+    fetchLevels,
+    fetchPartOfSpeech,
   };
 
   return <DataContext.Provider value={value}>{children}</DataContext.Provider>;
