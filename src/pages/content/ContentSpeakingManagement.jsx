@@ -312,7 +312,13 @@ function SpeakingContentManagement() {
                         <p className="text-gray-900 font-medium mb-1">Create at: {new Date(contentSpeaking.createdAt).toLocaleDateString()}</p>
                       </div>
                       <div className="text-sm mt-2">
-                        <p className="text-gray-900 font-medium mb-1">Update at: {new Date(contentSpeaking.updatedAt).toLocaleDateString()}</p>
+                        <p className="text-gray-900 font-medium mb-1">
+                          Update at: {
+                            contentSpeaking.updatedAt
+                              ? new Date(contentSpeaking.updatedAt).toLocaleDateString()
+                              : "Never update"
+                          }
+                        </p>
                       </div>
                     </div>
                   </div>
