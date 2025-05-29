@@ -28,10 +28,10 @@ function Sidebar({ open, setOpen }) {
       icon: Settings,
       children: [
         { name: "Admin List", href: "/admins", icon: UserCog },
-        { name: "System Logs", href: "/system-logs", icon: Database },
+        { name: "System Logs", href: "admin/system-logs", icon: Database },
       ],
     },
-    { name: "User Management", href: "/users", icon: Users },
+    { name: "User Management", href: "admin/users", icon: Users },
     {
       name: "Content Management",
       icon: BookOpen,

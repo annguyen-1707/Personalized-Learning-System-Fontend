@@ -7,7 +7,8 @@ import RegisterP1 from "./pages/auth/RegisterP1";
 import ForgotPassword from "./pages/auth/ForgotPassword";
 import MainLayout from "./components/adminLayouts/MainLayout";
 import HomePage from "./pages/HomePage/HomePage";
-
+import SystemLogs from './pages/admin/SystemLogs';
+import UserManagement from './pages/users/UserManagement';
 import { DataProvider } from "./context/DataContext";
 import { AuthProvider } from "./context/AuthContext";
 import RegisterP2 from "./pages/auth/RegisterP2";
@@ -51,6 +52,8 @@ function App() {
             <Route path="/admin/content_speaking" element={<SpeakingContentManagement />} />
             <Route path="/admin/content_speaking/:contentSpeakingId/dialogue" element={<DialogueManagement />} />
             <Route path="/admin" element={<Dashboard />} />
+            <Route path="/admin/system-logs" element={<SystemLogs />} />
+            <Route path="/admin/users" element={<UserManagement />} />
             <Route path="/admin/courses" element={<CourseManagement />} />
             <Route
               path="/admin/courses/:subjectId/lessons"
