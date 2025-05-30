@@ -82,8 +82,8 @@ function DialogueManagement() {
         console.log("Data page", res)
         if (res && res.data && res.data.content) {
             setDialogues(res.data.content);
-            setPageCount(res.data.totalPages);
-            setTotalElements(res.data.totalElements)
+            setPageCount(res.data.page.totalPages);
+            setTotalElements(res.data.page.totalElements)
         } else {
             console.error("Failed to fetch dialogues");
         }
