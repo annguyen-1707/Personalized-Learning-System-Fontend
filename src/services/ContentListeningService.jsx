@@ -1,28 +1,30 @@
 import axios from "./customixe-axios";
 import uploadFile from './UploadFileService';
 import { toast } from "react-toastify";
-// const [errorMessage, setErrorMessage] = useState('');
-
-
-const fetchAllContentSpeaking = () => {
-    return axios.get(`/api/content_speaking`)
+const fetchAllContentListening = () => {
+    return axios.get(`/api/content_listening`)
 }
 
-const fetchAllContentCategorySpeaking = () => {
-    return axios.get(`/api/content_category/speaking`)
+const fetchAllContentCategoryListening = () => {
+    return axios.get(`/api/content_category/listening`)
 }
 
 const handleCreateContent = async (data) => {
     try {
         // 1. Upload ảnh trước
-        const imageUrl = await uploadFile(data.image, "images/content_speaking");
+        const imageUrl = await uploadFile(data.image, "images/content_listening");
+        const audio = await uploadFile(data.audioFile, "audio/content_listening");
         // 2. Gửi dữ liệu content kèm URL ảnh
         const formData = {
             title: data.title,
             image: imageUrl,
-            category: data.category
+            category: data.category,
+            scriptJp: data.scriptJp,
+            scriptVn: data.scriptVn,
+            audioFile: audio,
         };
-        const response = await axios.post(`/api/content_speaking`, formData);
+        console.log("data", data)
+        const response = await axios.post(`/api/content_listening`, formData, "images/content_listening");
         return response;
     } catch (error) {
         const allErrors = error.response?.data?.data?.map(e => `${e.message}`).join(", ");
@@ -36,7 +38,7 @@ async function handleDeleteContent(id) {
     const confirmDelete = window.confirm('Bạn có chắc muốn xóa nội dung này không?');
     if (!confirmDelete) return;
     try {
-        const response = await axios.delete(`/api/content_speaking/${id}`);
+        const response = await axios.delete(`/api/content_listening/${id}`);
         toast.success("Xoá content thành công!");
         return response;
     } catch (error) {
@@ -47,23 +49,26 @@ async function handleDeleteContent(id) {
 
 const handleUpdateContent = async (id, data) => {
     try {
-        console.log("1 data:", data)
         // 1. Upload ảnh trước nếu có
         let imageUrl = data.image;
-        console.log("2 image:", imageUrl)
+        let audio = data.audioFile;
         if (data.image instanceof File) {
-            imageUrl = await uploadFile(data.image, "images/content_speaking");
+            imageUrl = await uploadFile(data.image, "images/content_listening");
         }
-        console.log("3 image:", imageUrl)
+        if (data.audioFile instanceof File) {
+            audio = await uploadFile(data.audioFile, "audio/content_listening");
+
+        }
         // 2. Gửi dữ liệu content kèm URL ảnh
         const formData = {
             title: data.title,
             image: imageUrl,
             category: data.category,
+            scriptJp: data.scriptJp,
+            scriptVn: data.scriptVn,
+            audioFile: audio,
         };
-        console.log("4")
-        const response = await axios.patch(`/api/content_speaking/${id}`, formData);
-        console.log("5")
+        const response = await axios.patch(`/api/content_listening/${id}`, formData);
         return response;
     } catch (error) {
         const allErrors = error.response?.data?.data?.map(e => `${e.message}`).join(", ");
@@ -72,8 +77,8 @@ const handleUpdateContent = async (id, data) => {
     }
 }
 
-const getPageContentSpeaking = async (page, size) => {
-    return axios.get(`/api/content_speaking?page=${page}&size=${size}`)
+const getPageContentListening = async (page, size) => {
+    return axios.get(`/api/content_listening?page=${page}&size=${size}`)
 }
 
-export { getPageContentSpeaking, handleUpdateContent, fetchAllContentSpeaking, fetchAllContentCategorySpeaking, handleCreateContent, handleDeleteContent }
+export { getPageContentListening, handleUpdateContent, fetchAllContentListening, fetchAllContentCategoryListening, handleCreateContent, handleDeleteContent }

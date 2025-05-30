@@ -28,7 +28,6 @@ function SpeakingContentManagement() {
   useEffect(() => {
     getContentPage(1);
     getContentCategorys();
-
   }, [size])
 
   const getContentPage = async (page) => {
@@ -44,8 +43,6 @@ function SpeakingContentManagement() {
     let res = await fetchAllContentCategorySpeaking();
     if (res && res.data) {
       setlistContentCategory(res.data)
-      console.log("listContentCategory", res)
-
     }
   }
 
@@ -234,7 +231,7 @@ function SpeakingContentManagement() {
                   onChange={(e) => setFormData({ ...formData, category: e.target.value })}
                   className="w-full"
                 >
-                  <option value="">-- Chọn chủ đề --</option>
+                  <option value="">All Category</option>
                   {listContentCategory?.length > 0 && listContentCategory.map((category) => (
                     <option key={category} value={category}>
                       {category}
@@ -312,7 +309,13 @@ function SpeakingContentManagement() {
                         <p className="text-gray-900 font-medium mb-1">Create at: {new Date(contentSpeaking.createdAt).toLocaleDateString()}</p>
                       </div>
                       <div className="text-sm mt-2">
-                        <p className="text-gray-900 font-medium mb-1">Update at: {new Date(contentSpeaking.updatedAt).toLocaleDateString()}</p>
+                        <p className="text-gray-900 font-medium mb-1">
+                          Update at: {
+                            contentSpeaking.updatedAt
+                              ? new Date(contentSpeaking.updatedAt).toLocaleDateString()
+                              : "Never update"
+                          }
+                        </p>
                       </div>
                     </div>
                   </div>

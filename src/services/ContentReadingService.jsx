@@ -1,28 +1,31 @@
 import axios from "./customixe-axios";
 import uploadFile from './UploadFileService';
 import { toast } from "react-toastify";
-// const [errorMessage, setErrorMessage] = useState('');
-
-
-const fetchAllContentSpeaking = () => {
-    return axios.get(`/api/content_speaking`)
+const fetchAllContentReading = () => {
+    return axios.get(`/api/content_reading`)
 }
 
-const fetchAllContentCategorySpeaking = () => {
-    return axios.get(`/api/content_category/speaking`)
+const fetchAllContentCategoryReading = () => {
+    return axios.get(`/api/content_category/reading`)
 }
 
 const handleCreateContent = async (data) => {
     try {
         // 1. Upload ảnh trước
-        const imageUrl = await uploadFile(data.image, "images/content_speaking");
+        const imageUrl = await uploadFile(data.image, "images/content_reading");
+        const audio = await uploadFile(data.audioFile, "audio/content_reading");
         // 2. Gửi dữ liệu content kèm URL ảnh
         const formData = {
             title: data.title,
             image: imageUrl,
-            category: data.category
+            category: data.category,
+            scriptJp: data.scriptJp,
+            scriptVn: data.scriptVn,
+            audioFile: audio,
+            timeNew: data.timeNew
         };
-        const response = await axios.post(`/api/content_speaking`, formData);
+        console.log("data", data)
+        const response = await axios.post(`/api/content_reading`, formData, "images/content_reading");
         return response;
     } catch (error) {
         const allErrors = error.response?.data?.data?.map(e => `${e.message}`).join(", ");
@@ -36,7 +39,7 @@ async function handleDeleteContent(id) {
     const confirmDelete = window.confirm('Bạn có chắc muốn xóa nội dung này không?');
     if (!confirmDelete) return;
     try {
-        const response = await axios.delete(`/api/content_speaking/${id}`);
+        const response = await axios.delete(`/api/content_reading/${id}`);
         toast.success("Xoá content thành công!");
         return response;
     } catch (error) {
@@ -47,23 +50,27 @@ async function handleDeleteContent(id) {
 
 const handleUpdateContent = async (id, data) => {
     try {
-        console.log("1 data:", data)
         // 1. Upload ảnh trước nếu có
         let imageUrl = data.image;
-        console.log("2 image:", imageUrl)
+        let audio = data.audioFile;
         if (data.image instanceof File) {
-            imageUrl = await uploadFile(data.image, "images/content_speaking");
+            imageUrl = await uploadFile(data.image, "images/content_reading");
         }
-        console.log("3 image:", imageUrl)
+        if (data.audioFile instanceof File) {
+            audio = await uploadFile(data.audioFile, "audio/content_reading");
+
+        }
         // 2. Gửi dữ liệu content kèm URL ảnh
         const formData = {
             title: data.title,
             image: imageUrl,
             category: data.category,
+            scriptJp: data.scriptJp,
+            scriptVn: data.scriptVn,
+            audioFile: audio,
+            timeNew: data.timeNew
         };
-        console.log("4")
-        const response = await axios.patch(`/api/content_speaking/${id}`, formData);
-        console.log("5")
+        const response = await axios.patch(`/api/content_reading/${id}`, formData);
         return response;
     } catch (error) {
         const allErrors = error.response?.data?.data?.map(e => `${e.message}`).join(", ");
@@ -72,8 +79,8 @@ const handleUpdateContent = async (id, data) => {
     }
 }
 
-const getPageContentSpeaking = async (page, size) => {
-    return axios.get(`/api/content_speaking?page=${page}&size=${size}`)
+const getPageContentReading = async (page, size) => {
+    return axios.get(`/api/content_reading?page=${page}&size=${size}`)
 }
 
-export { getPageContentSpeaking, handleUpdateContent, fetchAllContentSpeaking, fetchAllContentCategorySpeaking, handleCreateContent, handleDeleteContent }
+export { getPageContentReading, handleUpdateContent, fetchAllContentReading, fetchAllContentCategoryReading, handleCreateContent, handleDeleteContent }

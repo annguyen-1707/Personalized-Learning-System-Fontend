@@ -41,9 +41,9 @@ function Sidebar({ open, setOpen }) {
           name: "Practice",
           icon: Activity,
           children: [
-            { name: "Listening", href: "/listening", icon: Headphones },
+            { name: "Listening", href: "/admin/content_listening", icon: Headphones },
             { name: "Speaking", href: "/admin/content_speaking", icon: Mic },
-            { name: "Reading", href: "/reading", icon: Newspaper },
+            { name: "Reading", href: "/admin/content_reading", icon: Newspaper },
           ],
         },
       ],
