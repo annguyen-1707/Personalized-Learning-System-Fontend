@@ -99,16 +99,17 @@ useEffect(() => {
       console.error("OAuth2 login failed", error);
     }
   };
-
-
-  const register2 = async (fullName, dob, address, gender, phone) => {
+const register2 = async (email ,fullName, dob, address, gender, phone) => {
     setLoading(true);
     try {
-      const email = localStorage.getItem("email");
+      console.log("✅ Register2 called with email:", email);
+      if(email === null || email === undefined) {
+        email = localStorage.getItem("email")
+      }
       const response = await fetch(`http://localhost:8080/auth/complete-profile?email=${email}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ fullName, dob, address, gender, phone }),
+        body: JSON.stringify({ fullName, gender, dob, address, phone }),
         credentials: 'include',
       });
 
@@ -139,6 +140,7 @@ useEffect(() => {
         credentials: 'include', // nếu dùng allowCredentials(true)
       });
 
+      localStorage.setItem("email", email);
       if (!response.ok) {
         throw new Error('Failed to register');
       }

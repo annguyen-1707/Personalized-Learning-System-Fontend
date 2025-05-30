@@ -14,6 +14,7 @@ function OAuthCallBack() {
 
 
       try {
+        const emailSend = email;
         localStorage.setItem("email", email);
         let provider = localStorage.getItem("provider").toUpperCase();
         if (exist) {
@@ -36,7 +37,7 @@ function OAuthCallBack() {
           setUser(userData.data);
           navigate("/");
         } else {
-          navigate("/register2", { state: { provider: "provider" } });
+          navigate("/register2", { state: { email:  emailSend } });
         }
       } catch (err) {
         console.error("Lỗi khi xử lý OAuth:", err);

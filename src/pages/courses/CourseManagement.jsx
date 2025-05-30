@@ -138,6 +138,7 @@ useEffect(() => {
 
   const handleDelete = async (id) => {
     setShowDeleteConfirm(null);
+    console.log("Deleting subject with ID:", id);
     try {
       await deleteSubject(id);
       addLog("Subject Deleted", `Subject with ID ${id} was deleted`);
@@ -149,8 +150,8 @@ useEffect(() => {
         error?.response?.data?.message ||
         error?.message ||
         "Failed to delete subject.";
-      toast.error(message);
-      showDeleteConfirm(null)
+      toast.error("Subject has many lessons, cannot delete.");
+      showDeleteConfirm(null);
     }
   };
 

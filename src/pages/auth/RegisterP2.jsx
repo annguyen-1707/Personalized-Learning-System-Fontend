@@ -9,7 +9,7 @@ function RegisterP2() {
   const { register2 } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const provider = location.state?.provider; 
+  const email = location.state?.email || localStorage.getItem("email");
 
   const [formData, setFormData] = useState({
     fullName: '',
@@ -30,15 +30,16 @@ function RegisterP2() {
     e.preventDefault();
     try {
       setError('');
-      console.log("✅ SUBMIT CALLED" + formData.fullName);
+      console.log("✅ SUBMIT CALLED" + formData.fullName + email);
       await register2(
+        email,
         formData.fullName,
         formData.dob,
         formData.address,
         formData.gender,
         formData.phone
       );
-      if(provider) {
+      if(email) {
         navigate('/');
       }
       navigate('/login', { state: { successMessage: 'Register Successfully' } });
@@ -76,6 +77,101 @@ function RegisterP2() {
               <div className="mt-1 relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                   <User className="h-5 w-5 text-gray-400" />
+                </div>
+                <input
+                  id="fullName"
+                  name="fullName"
+                  type="text"
+                  required
+                  className="pl-10 w-full border-gray-300 rounded-md"
+                  value={formData.fullName}
+                  onChange={handleChange}
+                />
+              </div>
+            </div>
+<div>
+              <label htmlFor="dob" className="block text-sm font-medium text-gray-700">
+                Date of Birth
+              </label>
+              <div className="mt-1 relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <Calendar className="h-5 w-5 text-gray-400" />
+                </div>
+                <input
+                  id="dob"
+                  name="dob"
+                  type="date"
+                  required
+                  className="pl-10 w-full border-gray-300 rounded-md"
+                  value={formData.dob}
+                  onChange={handleChange}
+                />
+              </div>
+            </div>
+
+            <div>
+              <label htmlFor="address" className="block text-sm font-medium text-gray-700">
+                Address
+              </label>
+              <div className="mt-1 relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <MapPin className="h-5 w-5 text-gray-400" />
+                </div>
+                <input
+                  id="address"
+                  name="address"
+                  type="text"
+                  required
+                  className="pl-10 w-full border-gray-300 rounded-md"
+                  value={formData.address}
+                  onChange={handleChange}
+                />
+              </div>
+            </div>
+
+
+            <div className="flex items-center space-x-4 pl-1">
+              <label className="flex items-center space-x-2">
+                <input
+                  type="radio"
+                  name="gender"
+                  value="MALE"
+                  checked={formData.gender === 'MALE'}
+                  onChange={handleChange}
+                />
+                <span>Male</span>
+              </label>
+              <label className="flex items-center space-x-2">
+                <input
+                  type="radio"
+                  name="gender"
+                  value="FEMALE"
+                  checked={formData.gender === 'FEMALE'}
+                  onChange={handleChange}
+                />
+                <span>Female</span>
+              </label>
+              <label className="flex items-center space-x-2">
+                <input
+                  type="radio"
+                  name="gender"
+                  value="OTHER"
+                  checked={formData.gender === 'OTHER'}
+                  onChange={handleChange}
+                />
+                <span>Other</span>
+              </label>
+            </div>
+
+
+
+            <div>
+              <label htmlFor="phone" className="block text-sm font-medium text-gray-700">
+                Phone Number
+              </label>
+              <div className="mt-1 relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+<User className="h-5 w-5 text-gray-400" />
                 </div>
                 <input
                   id="fullName"
@@ -159,7 +255,7 @@ function RegisterP2() {
                   checked={formData.gender === 'OTHER'}
                   onChange={handleChange}
                 />
-                <span>Other</span>
+<span>Other</span>
               </label>
             </div>
 
