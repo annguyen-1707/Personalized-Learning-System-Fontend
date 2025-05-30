@@ -8,6 +8,8 @@ import RegisterP1 from "./pages/auth/RegisterP1";
 import ForgotPassword from "./pages/auth/ForgotPassword";
 import MainLayout from "./components/adminLayouts/MainLayout";
 import HomePage from "./pages/HomePage/HomePage";
+import SystemLogs from './pages/admin/SystemLogs';
+import UserManagement from './pages/users/UserManagement';
 import ProfilePage from "./pages/ProfilePage/ProfilePage";
 import EditProfilePage from "./pages/ProfilePage/EditProfilePage";
 import { DataProvider } from "./context/DataContext";
@@ -23,13 +25,9 @@ import ContentManagement from "./pages/courses/ContentManagement";
 import Dashboard from "./pages/adminPages/Dashboard";
 import ContentSpeakingManagement from "./pages/content/ContentSpeakingManagement";
 import DialogueManagement from "./pages/content/DialogueManagement";
-<<<<<<< HEAD
 import OAuthCallBack from "./pages/auth/OAuthCallBack";
-=======
-import AuthInitializer from "./context/AuthInitializer";
 import ContentReadingManagement from "./pages/content/ContentReadingManagement";
 import ListeningContentManagement from "./pages/content/ContentListeningManagement";
->>>>>>> e80c0b32046a62d5839d4e63de790f5c00568e46
 
 function App() {
 
@@ -67,6 +65,8 @@ function App() {
             <Route path="/admin/content_reading/:contentReadingId/vocabulary" element={<VocabularyManagement />} />
             <Route path="/admin/content_listening" element={<ListeningContentManagement />} />
             <Route path="/admin" element={<Dashboard />} />
+            <Route path="/admin/system-logs" element={<SystemLogs />} />
+            <Route path="/admin/users" element={<UserManagement />} />
             <Route path="/admin/courses" element={<CourseManagement />} />
             <Route
               path="/admin/courses/:subjectId/lessons"
