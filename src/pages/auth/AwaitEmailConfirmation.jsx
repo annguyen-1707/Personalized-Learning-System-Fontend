@@ -10,7 +10,7 @@ function AwaitEmailConfirmation() {
     const interval = setInterval(async () => {
       try {
         const response = await fetch(`http://localhost:8080/auth?email=${encodeURIComponent(email)}`, {
-           method: 'GET',
+          method: 'GET',
           headers: { 'X-Requested-With': 'XMLHttpRequest' }
         });
 
@@ -30,6 +30,22 @@ function AwaitEmailConfirmation() {
     return () => clearInterval(interval);
   }, [email, navigate]);
 
+  const handleResendEmail = async () => {
+  try {
+    const response = await fetch(`http://localhost:8080/auth/mailAgain?emailAgain=${email}`, {
+      method: 'GET',
+    });
+    if (response.ok) {
+      alert('Đã gửi lại email xác nhận. Vui lòng kiểm tra hộp thư!');
+    } else {
+      alert('Gửi lại email thất bại. Vui lòng thử lại sau!');
+    }
+  } catch (error) {
+    console.error('Lỗi gửi lại email:', error);
+    alert('Đã xảy ra lỗi. Vui lòng thử lại sau!');
+  }
+};
+
   return (
     <div className="min-h-screen flex flex-col justify-center items-center text-center px-4">
       <h2 className="text-2xl font-semibold mb-4">Vui lòng kiểm tra email để xác nhận tài khoản</h2>
@@ -41,12 +57,12 @@ function AwaitEmailConfirmation() {
 
       <p>
         Nếu không nhận được email, hãy kiểm tra thư rác hoặc{' '}
-        <a
-          href={`http://localhost:9999/news/registerServlet?emailAgain=${email}`}
+        <button
+          onClick={handleResendEmail}
           className="text-blue-600 underline"
         >
           gửi lại email xác nhận
-        </a>.
+        </button>.
       </p>
 
       <style>{`

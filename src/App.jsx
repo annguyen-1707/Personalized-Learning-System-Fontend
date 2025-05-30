@@ -8,6 +8,8 @@ import RegisterP1 from "./pages/auth/RegisterP1";
 import ForgotPassword from "./pages/auth/ForgotPassword";
 import MainLayout from "./components/adminLayouts/MainLayout";
 import HomePage from "./pages/HomePage/HomePage";
+import SystemLogs from './pages/admin/SystemLogs';
+import UserManagement from './pages/users/UserManagement';
 import ProfilePage from "./pages/ProfilePage/ProfilePage";
 import EditProfilePage from "./pages/ProfilePage/EditProfilePage";
 import { DataProvider } from "./context/DataContext";
@@ -23,7 +25,7 @@ import ContentManagement from "./pages/courses/ContentManagement";
 import Dashboard from "./pages/adminPages/Dashboard";
 import ContentSpeakingManagement from "./pages/content/ContentSpeakingManagement";
 import DialogueManagement from "./pages/content/DialogueManagement";
-import AuthInitializer from "./context/AuthInitializer";
+import OAuthCallBack from "./pages/auth/OAuthCallBack";
 import ContentReadingManagement from "./pages/content/ContentReadingManagement";
 import ListeningContentManagement from "./pages/content/ContentListeningManagement";
 
@@ -32,9 +34,9 @@ function App() {
   return (
     <AuthProvider>
       <DataProvider>
-        <AuthInitializer />
         <Routes>
           {/* Auth routes */}
+          <Route path="oauth-callback" element={<OAuthCallBack />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register1" element={<RegisterP1 />} />
           <Route path="/register2" element={<RegisterP2 />} />
@@ -63,6 +65,8 @@ function App() {
             <Route path="/admin/content_reading/:contentReadingId/vocabulary" element={<VocabularyManagement />} />
             <Route path="/admin/content_listening" element={<ListeningContentManagement />} />
             <Route path="/admin" element={<Dashboard />} />
+            <Route path="/admin/system-logs" element={<SystemLogs />} />
+            <Route path="/admin/users" element={<UserManagement />} />
             <Route path="/admin/courses" element={<CourseManagement />} />
             <Route
               path="/admin/courses/:subjectId/lessons"
