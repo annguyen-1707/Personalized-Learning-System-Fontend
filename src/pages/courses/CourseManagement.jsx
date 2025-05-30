@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useData } from "../../context/DataContext";
 import { toast } from "react-toastify";
+import ReactPaginate from "react-paginate";
 import {
   Edit,
   Trash2,
@@ -13,16 +14,26 @@ import {
   Check,
   X,
 } from "lucide-react";
+import { a, sub } from "framer-motion/client";
 
 function CourseManagement() {
   // Replace courses with subjects and update methods accordingly
-  const { subjects, addSubject, updateSubject, deleteSubject, addLog, fetchSubjects } =
-    useData();
+  const {
+    addSubject,
+    updateSubject,
+    deleteSubject,
+    addLog,
+    fetchSubjects,
+  } = useData();
   const [isAdding, setIsAdding] = useState(false);
   const [isEditing, setIsEditing] = useState(null);
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("all");
   const [errorMessage, setErrorMessage] = useState("");
+  const [totalPages, setTotalPages] = useState(0);
+  const [currentPage, setCurrentPage] = useState(0);
+  const [totalElements, setTotalElements] = useState(0);
+  const [subjects, setSubjects] = useState([]);
   const [formData, setFormData] = useState({
     subjectCode: "",
     subjectName: "",
@@ -33,13 +44,25 @@ function CourseManagement() {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(null);
 
   const status = ["ACTIVE", "DRAFT"];
+const loadSubjects = async () => {
+  const result = await fetchSubjects(currentPage);
+  setSubjects(result.content);
+  setTotalPages(result.page.totalPages);
+  setTotalElements(result.page.totalElements);
+  if (result.page.number !== currentPage) {
+    setCurrentPage(result.page.number); // Chỉ cập nhật nếu khác
+  }
+};
 
-  // Fetch subjects on component mount
-  useEffect(() => {
-    fetchSubjects();
-  }, []);
+useEffect(() => {
+  loadSubjects();
+  console.log("Subjects loaded:", subjects);
+  console.log("Total Pages:", totalPages);
+  console.log("Current Page:", currentPage);
+  console.log("Total Elements:", totalElements);
+}, [currentPage,totalElements, totalPages]);
 
-  // Filter subjects based on search and status
+  //Filter subjects based on search and status
   const filteredSubjects = subjects.filter((subject) => {
     // Search filter (case insensitive)
     const searchMatch =
@@ -63,6 +86,7 @@ function CourseManagement() {
 
     try {
       const newSubject = await addSubject(subjectPayload);
+      toast.success("Subject added successfully.");
       addLog(
         "Subject Created",
         `New subject "${newSubject.subjectCode}" was created`
@@ -74,32 +98,38 @@ function CourseManagement() {
         status: "ACTIVE",
       }); // Reset form
       setIsAdding(false);
-      setErrorMessage(""); 
+      setErrorMessage("");
+      await loadSubjects();
     } catch (error) {
       console.error("Failed to add subject:", error);
       setErrorMessage(error.message || "Failed to add subject.");
     }
   };
 
-    // Handle form submission for editing subjects
-  const handleEditSubmit =  async (e) => {
+  // Handle form submission for editing subjects
+  const handleEditSubmit = async (e) => {
     e.preventDefault();
     try {
       const updatedSubject = await updateSubject(isEditing, {
         ...formData,
       });
-      if (!updatedSubject) {
-        throw new Error("Failed to update subject");
-      }
-      addLog("Subject Updated", `Subject "${formData.subjectCode}" was updated`);
+
+      toast.success("Subject updated successfully.");
+      addLog(
+        "Subject Updated",
+        `Subject "${formData.subjectCode}" was updated`
+      );
       setFormData({
-      subjectCode: "",
-      subjectName: "",
-      description: "",
-      status: "ACTIVE",
-    });
+        subjectCode: "",
+        subjectName: "",
+        description: "",
+        status: "ACTIVE",
+      });
+
       setIsEditing(null);
       setErrorMessage("");
+      // Reload subjects to reflect changes
+      await loadSubjects();
     } catch (error) {
       console.error("Failed to update subject:", error);
       setErrorMessage(error.message || "Failed to update subject.");
@@ -107,20 +137,27 @@ function CourseManagement() {
   };
 
   const handleDelete = async (id) => {
-  setShowDeleteConfirm(null);
-  try {
-    await deleteSubject(id);
-    addLog("Subject Deleted", `Subject with ID ${id} was deleted`);
-    toast.success("Subject deleted successfully.");
-  } catch (error) {
-    console.error("Failed to delete subject:", error);
-    const message =
-      error?.response?.data?.message ||
-      error?.message ||
-      "Failed to delete subject.";
-     toast.error(message);
-  }
-};
+    setShowDeleteConfirm(null);
+    try {
+      await deleteSubject(id);
+      addLog("Subject Deleted", `Subject with ID ${id} was deleted`);
+      toast.success("Subject deleted successfully.");
+      await loadSubjects();
+    } catch (error) {
+      console.error("Failed to delete subject:", error);
+      const message =
+        error?.response?.data?.message ||
+        error?.message ||
+        "Failed to delete subject.";
+      toast.error(message);
+      showDeleteConfirm(null)
+    }
+  };
+
+    const handlePageClick = (event) => {
+    const selectedPage = event.selected;
+    setCurrentPage(selectedPage);
+  };
 
   const startEdit = (subject) => {
     setErrorMessage("");
@@ -139,10 +176,10 @@ function CourseManagement() {
     setIsAdding(false);
     setIsEditing(null);
     setFormData({
-       subjectCode: "",
-        subjectName: "",
-        description: "",
-        status: "ACTIVE",
+      subjectCode: "",
+      subjectName: "",
+      description: "",
+      status: "ACTIVE",
     });
   };
 
@@ -221,7 +258,12 @@ function CourseManagement() {
           {errorMessage && (
             <div className="mb-4 p-3 rounded bg-red-100 text-red-700 text-sm flex items-center justify-between">
               <p className="mb-2">{errorMessage}</p>
-              <button className="text-red-700 hover:text-red-900" onClick={() => setErrorMessage("")}>X</button>
+              <button
+                className="text-red-700 hover:text-red-900"
+                onClick={() => setErrorMessage("")}
+              >
+                X
+              </button>
             </div>
           )}
           <form onSubmit={isAdding ? handleAddSubmit : handleEditSubmit}>
@@ -401,7 +443,7 @@ function CourseManagement() {
                       ) : (
                         <div className="flex items-center space-x-2">
                           <Link
-                            to={`/admin/courses/${subject.subjectId}/lessons`}
+                           to={`/admin/courses/${subject.subjectId}/lessons?subjectPage=${currentPage}`}
                             className="text-secondary-600 hover:text-secondary-800"
                             title="Manage Lessons"
                           >
@@ -444,9 +486,36 @@ function CourseManagement() {
             </tbody>
           </table>
         </div>
+       
       </div>
+       {/* Phan Trang */}
+      <ReactPaginate
+        className="pagination mt-6 justify-center"
+        nextLabel="next >"
+        onPageChange={handlePageClick}
+        pageRangeDisplayed={3} // giới hạn trang bên trái 1 2 3 .... 99 100
+        marginPagesDisplayed={2} // giới hạn trang bên phải 1 2 3 .... 99 100
+        pageCount={totalPages}
+        previousLabel="< previous"
+        pageClassName="page-item"
+        pageLinkClassName="page-link"
+        previousClassName="page-item"
+        previousLinkClassName="page-link"
+        nextClassName="page-item"
+        nextLinkClassName="page-link"
+        breakLabel="..."
+        breakClassName="page-item"
+        breakLinkClassName="page-link"
+        containerClassName="pagination"
+        activeClassName="active"
+        renderOnZeroPageCount={null}
+      />
     </div>
   );
+
+  const value = {
+    currentPage,
+  }
 }
 
 export default CourseManagement;

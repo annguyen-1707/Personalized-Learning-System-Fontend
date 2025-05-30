@@ -52,16 +52,16 @@ function Dashboard() {
   });
 
   // Calculate statistics when data changes
-  useEffect(() => {
-    setStats({
-      totalUsers: users.length,
-      activeUsers: users.filter(user => user.status === 'active').length,
-      totalSubjects: subjects.length,
-      activeSubjects: subjects.filter(subject => subject.status === 'ACTIVE').length,
-      totalLessons: lessons.length,
-      recentActivity: logs.slice(0, 5)
-    });
-  }, [users, subjects, lessons, logs]);
+  // useEffect(() => {
+  //   setStats({
+  //     totalUsers: users.length,
+  //     activeUsers: users.filter(user => user.status === 'active').length,
+  //     totalSubjects: subjects.length,
+  //     activeSubjects: subjects.filter(subject => subject.status === 'ACTIVE').length,
+  //     totalLessons: lessons.length,
+  //     recentActivity: logs.slice(0, 5)
+  //   });
+  // }, [users, subjects, lessons, logs]);
 
 
   // Sample data for charts
@@ -77,23 +77,23 @@ function Dashboard() {
     ]
   };
 
-  const subjectCompletionData = {
-    labels: subjects.slice(0, 5).map(subject => subject.subjectCode),
-    datasets: [
-      {
-        label: 'Completion Rate (%)',
-        data: subjects.slice(0, 5).map(subject => subject.completion),
-        backgroundColor: [
-          'rgba(59, 130, 246, 0.6)',
-          'rgba(79, 70, 229, 0.6)',
-          'rgba(16, 185, 129, 0.6)',
-          'rgba(245, 158, 11, 0.6)',
-          'rgba(239, 68, 68, 0.6)'
-        ],
-        borderWidth: 1
-      }
-    ]
-  };
+  // const subjectCompletionData = {
+  //   labels: subjects?.data?.content.slice(0, 5).map(subject => subject.subjectCode),
+  //   datasets: [
+  //     {
+  //       label: 'Completion Rate (%)',
+  //       data: subjects?.content.slice(0, 5).map(subject => subject.completion),
+  //       backgroundColor: [
+  //         'rgba(59, 130, 246, 0.6)',
+  //         'rgba(79, 70, 229, 0.6)',
+  //         'rgba(16, 185, 129, 0.6)',
+  //         'rgba(245, 158, 11, 0.6)',
+  //         'rgba(239, 68, 68, 0.6)'
+  //       ],
+  //       borderWidth: 1
+  //     }
+  //   ]
+  // };
 
   const userDistributionData = {
     labels: ['Beginner', 'Intermediate', 'Advanced'],
