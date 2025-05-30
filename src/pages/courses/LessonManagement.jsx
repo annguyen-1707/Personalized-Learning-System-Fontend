@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useParams, Link, useLocation  } from "react-router-dom";
+import { useParams, Link, useLocation } from "react-router-dom";
 import { useData } from "../../context/DataContext";
 import {
   ArrowLeft,
@@ -20,10 +20,10 @@ import ReactPaginate from "react-paginate";
 import { use } from "react";
 
 function LessonManagement() {
-  const { subjectId} = useParams();
+  const { subjectId } = useParams();
   const location = useLocation();
-const queryParams = new URLSearchParams(location.search);
-const subjectPage = parseInt(queryParams.get("subjectPage") || "0", 10);
+  const queryParams = new URLSearchParams(location.search);
+  const subjectPage = parseInt(queryParams.get("subjectPage") || "0", 10);
   const {
     addLesson,
     updateLesson,
@@ -398,11 +398,10 @@ const subjectPage = parseInt(queryParams.get("subjectPage") || "0", 10);
                       <div className="mt-2 flex items-center space-x-4">
                         <GiOpenBook className="h-4 w-4 text-gray-400" />
                         <span
-                          className={`badge ${
-                            lesson.status === "PUBLIC"
-                              ? "bg-success-50 text-success-700"
-                              : "bg-warning-50 text-warning-700"
-                          }`}
+                          className={`badge ${lesson.status === "PUBLIC"
+                            ? "bg-success-50 text-success-700"
+                            : "bg-warning-50 text-warning-700"
+                            }`}
                         >
                           {lesson.status === "PUBLIC" ? "Published" : "Draft"}
                         </span>

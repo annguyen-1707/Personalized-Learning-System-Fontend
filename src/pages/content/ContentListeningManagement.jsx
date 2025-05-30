@@ -1,18 +1,18 @@
-import { useEffect, useState } from 'react';
-import { Plus, Search, Edit, Trash2, Check, X, MessageSquare } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Plus, Search, Edit, Trash2, Check, X, MessageCircleQuestion } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { getPageContentSpeaking, handleUpdateContent, fetchAllContentCategorySpeaking, handleCreateContent, handleDeleteContent } from '../../services/ContentSpeakingService';
+import { getPageContentListening, handleUpdateContent, fetchAllContentCategoryListening, handleCreateContent, handleDeleteContent } from '../../services/ContentListeningService';
 import ReactPaginate from 'react-paginate';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { toast } from "react-toastify";
 
-function SpeakingContentManagement() {
+function ListeningContentManagement() {
   const [isAdding, setIsAdding] = useState(false);
   const [isEditing, setIsEditing] = useState(null);
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState('all');
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(null);
-  const [listContentSpeakings, setListContentSpeakings] = useState([]);
+  const [listContentListenings, setListContentListenings] = useState([]);
   const [listContentCategory, setlistContentCategory] = useState([]);
   const [pageCount, setPageCount] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
@@ -23,30 +23,36 @@ function SpeakingContentManagement() {
     title: '',
     image: '',
     category: '',
-    contentType: 'speaking'
+    scriptJp: '',
+    scriptVn: '',
+    audioFile: '',
+
+    contentType: 'listening',
   });
   useEffect(() => {
     getContentPage(1);
     getContentCategorys();
+
   }, [size])
 
   const getContentPage = async (page) => {
-    let res = await getPageContentSpeaking(page, size);
+    let res = await getPageContentListening(page, size);
+    console.log("data", res)
     if (res && res.data && res.data.content) {
-      setListContentSpeakings(res.data.content)
+      setListContentListenings(res.data.content)
       setPageCount(res.data.page.totalPages)
       setTotalElements(res.data.page.totalElements)
     }
   }
 
   const getContentCategorys = async () => {
-    let res = await fetchAllContentCategorySpeaking();
+    let res = await fetchAllContentCategoryListening();
     if (res && res.data) {
       setlistContentCategory(res.data)
     }
   }
 
-  const handeDelete = async (id) => {
+  const handleDelete = async (id) => {
     await handleDeleteContent(id);
     await getContentPage(1);
   }
@@ -61,14 +67,17 @@ function SpeakingContentManagement() {
           title: '',
           image: '',
           category: '',
-          contentType: 'speaking'
+          scriptJp: '',
+          scriptVn: '',
+          audioFile: '',
+          contentType: 'listening',
         });
         setIsAdding(false);
         setErrorMessage("");
         toast.success("Tạo content thành công!");
       } catch (error) {
         toast.error("Tạo content thất bại!");
-        setErrorMessage(error.message || "Failed to add content Speaking.");
+        setErrorMessage(error.message || "Failed to add content Listening.");
       }
     } else if (isEditing) {
       try {
@@ -79,14 +88,18 @@ function SpeakingContentManagement() {
           title: '',
           image: '',
           category: '',
-          contentType: 'speaking'
+          scriptJp: '',
+          scriptVn: '',
+          audioFile: '',
+
+          contentType: 'listening',
         });
         setIsEditing(null);
         setErrorMessage("");
         toast.success("Cập nhật content thành công!");
       } catch (error) {
         console.error("Error updating content:", error);
-        setErrorMessage(error.message || "Failed to update content Speaking.");
+        setErrorMessage(error.message || "Failed to update content Listening.");
         toast.error("Cập nhật content thất bại!");
       }
     }
@@ -97,20 +110,24 @@ function SpeakingContentManagement() {
     setSize(newSize)
   }
 
-  const filteredContents = listContentSpeakings.filter((content) => {
+  const filteredContents = listContentListenings.filter((content) => {
     // Search filter (case insensitive)
     const searchMatch =
       search === "" ||
       content.title?.toLowerCase().includes(search.toLowerCase()) ||
+      content.category?.toLowerCase().includes(search.toLowerCase()) ||
+      content.scriptJp?.toLowerCase().includes(search.toLowerCase()) ||
+      content.scriptVn?.toLowerCase().includes(search.toLowerCase()) ||
       content.category?.toLowerCase().includes(search.toLowerCase());
     const categoryMatch = filter === "all" || content.category === filter;
     return searchMatch && categoryMatch;
   });
 
-  const startUpdate = (contentSpeaking) => {
+  const startUpdate = (content) => {
+    console.log("before update:", content)
     window.scrollTo({ top: 0, behavior: 'smooth' });
-    setFormData(contentSpeaking);
-    setIsEditing(contentSpeaking.contentSpeakingId);
+    setFormData(content);
+    setIsEditing(content.contentListeningId);
     setIsAdding(false);
     setErrorMessage("");
   }
@@ -123,16 +140,15 @@ function SpeakingContentManagement() {
 
   return (
     <div className="animate-fade-in">
-      {/* Header */}
       <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between">
-        <h1 className="text-2xl font-bold text-gray-900 mb-2 sm:mb-0">Speaking Content Management</h1>
+        <h1 className="text-2xl font-bold text-gray-900 mb-2 sm:mb-0">Listening Content Management</h1>
         <button
           onClick={() => { setIsAdding(true); setIsEditing(null); }}
           className="btn-primary flex items-center"
           disabled={isAdding || isEditing}
         >
           <Plus size={16} className="mr-1" />
-          Add
+          Add Listening Content
         </button>
       </div>
 
@@ -160,7 +176,7 @@ function SpeakingContentManagement() {
             </div>
             <input
               type="text"
-              placeholder="Search speaking content..."
+              placeholder="Search listening content..."
               className="pl-10"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
@@ -187,7 +203,7 @@ function SpeakingContentManagement() {
       {(isAdding || isEditing) && (
         <div className="card p-6 mb-6">
           <h2 className="text-xl font-medium mb-4">
-            {isAdding ? 'Add New Speaking Content' : 'Edit Speaking Content'}
+            {isAdding ? 'Add New Listening Content' : 'Edit Listening Content'}
           </h2>
           {errorMessage && (
             <div className="mb-4 p-3 rounded bg-red-100 text-red-700 text-sm flex items-center justify-between">
@@ -198,7 +214,7 @@ function SpeakingContentManagement() {
           <form onSubmit={handleSubmit}>
             <div className="grid grid-cols-1 gap-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1" >
+                <label className="block text-sm font-medium text-gray-700 mb-1">
                   Title
                 </label>
                 <input
@@ -222,16 +238,47 @@ function SpeakingContentManagement() {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Content category
+                  Audio File
                 </label>
+                <input
+                  type="file"
+                  accept="audio/*"
+                  onChange={(e) =>
+                    setFormData({ ...formData, audioFile: e.target.files[0] })
+                  }
+                />
               </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Japanese Content
+                </label>
+                <textarea
+                  rows={5}
+                  value={formData.scriptJp}
+                  onChange={(e) => setFormData({ ...formData, scriptJp: e.target.value })}
+                  className="w-full rounded-md border border-gray-300 shadow-sm focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Vietnamese Content
+                </label>
+                <textarea
+                  rows={5}
+                  value={formData.scriptVn}
+                  onChange={(e) => setFormData({ ...formData, scriptVn: e.target.value })}
+                  className="w-full rounded-md border border-gray-300 shadow-sm focus:border-primary-500 focus:ring-1 focus:ring-primary-500"
+                />
+              </div>
+
               <div>
                 <select
                   value={formData.category}
                   onChange={(e) => setFormData({ ...formData, category: e.target.value })}
                   className="w-full"
                 >
-                  <option value="">All Category</option>
+                  <option value="">-- Chọn chủ đề --</option>
                   {listContentCategory?.length > 0 && listContentCategory.map((category) => (
                     <option key={category} value={category}>
                       {category}
@@ -261,58 +308,79 @@ function SpeakingContentManagement() {
               </button>
             </div>
           </form>
-        </div>
-      )}
+        </div >
+      )
+      }
 
       {/* Content List */}
-      <div className="card mb-4">
+      <div className="card">
         <div className="divide-y divide-gray-200">
           {filteredContents?.length > 0 ? (
-            filteredContents.map((contentSpeaking) => (
-              <div key={contentSpeaking.contentSpeakingId} className="p-6 hover:bg-gray-50">
+            filteredContents.map((content) => (
+              <div key={content.contentListeningId} className="p-6 hover:bg-gray-50">
                 <div className="flex justify-between items-start">
                   <div className="flex-1">
                     <div className="flex items-center mb-2">
-                      <h3 className="text-lg font-medium text-gray-900">{contentSpeaking.title}</h3>
+                      <h3 className="text-lg font-medium text-gray-900">{content.title}</h3>
                       <span className="ml-2 badge bg-primary-50 text-primary-700">
-                        {contentSpeaking?.content?.contentType}
+                        {content.contentType}
                       </span>
                     </div>
+
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                       <div className="space-y-2">
                         <div className="flex items-center text-sm text-gray-500">
-                          {/* <Image size={16} className="mr-2" /> */}
                           <span className="truncate">
                             <img
-                              src={`http://localhost:8080/images/content_speaking/${contentSpeaking.image}`}
+                              src={`http://localhost:8080/images/content_listening/${content.image}`}
                               alt="Thumbnail"
                               className="w-20 h-20 mr-2"
                             />
                           </span>
                         </div>
                       </div>
-                      <div className="space-y-2">
-                        <Link to={`/admin/content_speaking/${contentSpeaking.contentSpeakingId}/dialogue`}>
-                          <div className="flex items-center text-sm text-gray-500">
-                            <MessageSquare size={16} className="mr-2" />
-                            <span className="mr-3">Conversation Practice</span>
-                            <Edit size={16} color='blue' />
-                          </div>
-                        </Link>
+                    </div>
+                    <div className='mt-2'>
+                      {content.audioFile && (
+                        <div className="mb-4">
+                          <audio controls>
+                            <source src={`http://localhost:8080/audio/content_listening/${content.audioFile}`} type="audio/mpeg" />
+                            Your browser does not support the audio element.
+                          </audio>
+                        </div>
+                      )}
+                    </div>
+                    <div className="space-y-2">
+                      <Link to={`/admin/content_listening/${content.contentListeningId}/exercise`}>
+                        <div className="flex items-center text-sm text-gray-500">
+                          < MessageCircleQuestion size={16} className="mr-2" />
+                          <span className="mr-3">List exercise</span>
+                          <Edit size={16} color='blue' />
+                        </div>
+                      </Link>
+                    </div>
+                    <div className="mt-4">
+                      <div className="text-sm">
+                        <p className="text-gray-900 font-medium mb-1">Japanese Content:</p>
+                        <p className="text-gray-600">{content.scriptJp}</p>
+                      </div>
+                      <div className="text-sm mt-2">
+                        <p className="text-gray-900 font-medium mb-1">Vietnamese Content:</p>
+                        <p className="text-gray-600">{content.scriptVn}</p>
                       </div>
                     </div>
                     <div className="mt-4">
                       <div className="text-sm">
-                        <p className="text-gray-900 font-medium mb-1">Category: {contentSpeaking.category}</p>
+                        <p className="text-gray-900 font-medium mb-1">Category: {content.category}</p>
                       </div>
                       <div className="text-sm">
-                        <p className="text-gray-900 font-medium mb-1">Create at: {new Date(contentSpeaking.createdAt).toLocaleDateString()}</p>
+                        <p className="text-gray-900 font-medium mb-1">Create at: {new Date(content.createdAt).toLocaleDateString()}</p>
                       </div>
                       <div className="text-sm mt-2">
                         <p className="text-gray-900 font-medium mb-1">
                           Update at: {
-                            contentSpeaking.updatedAt
-                              ? new Date(contentSpeaking.updatedAt).toLocaleDateString()
+                            content.updatedAt
+                              ? new Date(content.updatedAt).toLocaleDateString()
                               : "Never update"
                           }
                         </p>
@@ -321,20 +389,20 @@ function SpeakingContentManagement() {
                   </div>
 
                   <div className="ml-4 flex items-center">
-                    {showDeleteConfirm === contentSpeaking.contentSpeakingId ? (
+                    {showDeleteConfirm === content.contentListeningId ? (
                       <div className="flex items-center space-x-2">
                         <span className="text-xs text-gray-500">Delete?</span>
-                        <button
-                          onClick={() => {
-                            handeDelete(contentSpeaking.contentSpeakingId);
-                            setShowDeleteConfirm(null);
-                          }}
+                        <button onClick={() => {
+                          handleDelete(content.contentListeningId);
+                          setShowDeleteConfirm(null)
+                        }}
                           className="text-error-500 hover:text-error-700">
                           <Check size={16} />
                         </button>
                         <button
                           onClick={() => {
-                            setShowDeleteConfirm(null);
+                            handleDelete(content.contentListeningId)
+                            setShowDeleteConfirm(null)
                           }}
                           className="text-gray-500 hover:text-gray-700"
                         >
@@ -344,13 +412,13 @@ function SpeakingContentManagement() {
                     ) : (
                       <>
                         <button
-                          onClick={() => startUpdate(contentSpeaking)}
+                          onClick={() => startUpdate(content)}
                           className="text-primary-600 hover:text-primary-800 mr-2"
                         >
                           <Edit size={16} />
                         </button>
                         <button
-                          onClick={() => setShowDeleteConfirm(contentSpeaking.contentSpeakingId)}
+                          onClick={() => setShowDeleteConfirm(content.contentListeningId)}
                           className="text-error-500 hover:text-error-700"
                         >
                           <Trash2 size={16} />
@@ -362,35 +430,36 @@ function SpeakingContentManagement() {
               </div>
             ))) : (
             <div className="p-6 text-center text-gray-500">
-              No speaking content found.{search && 'Try a different search term.'}
+              No listening content found.{search && 'Try a different search term.'}
             </div>
           )}
         </div>
       </div>
-
       {/* Phan Trang */}
-      <ReactPaginate
-        nextLabel="next >"
-        onPageChange={handlePageClick}
-        pageRangeDisplayed={3} // giới hạn trang bên trái 1 2 3 .... 99 100
-        marginPagesDisplayed={2} // giới hạn trang bên phải 1 2 3 .... 99 100
-        pageCount={pageCount}
-        previousLabel="< previous"
-        pageClassName="page-item"
-        pageLinkClassName="page-link"
-        previousClassName="page-item"
-        previousLinkClassName="page-link"
-        nextClassName="page-item"
-        nextLinkClassName="page-link"
-        breakLabel="..."
-        breakClassName="page-item"
-        breakLinkClassName="page-link"
-        containerClassName="pagination"
-        activeClassName="active"
-        renderOnZeroPageCount={null}
-      />
-    </div>
+      <div className='mt-4'>
+        <ReactPaginate
+          nextLabel="next >"
+          onPageChange={handlePageClick}
+          pageRangeDisplayed={3} // giới hạn trang bên trái 1 2 3 .... 99 100
+          marginPagesDisplayed={2} // giới hạn trang bên phải 1 2 3 .... 99 100
+          pageCount={pageCount}
+          previousLabel="< previous"
+          pageClassName="page-item"
+          pageLinkClassName="page-link"
+          previousClassName="page-item"
+          previousLinkClassName="page-link"
+          nextClassName="page-item"
+          nextLinkClassName="page-link"
+          breakLabel="..."
+          breakClassName="page-item"
+          breakLinkClassName="page-link"
+          containerClassName="pagination"
+          activeClassName="active"
+          renderOnZeroPageCount={null}
+        />
+      </div>
+    </div >
   );
 }
 
-export default SpeakingContentManagement;
+export default ListeningContentManagement;
