@@ -33,7 +33,7 @@ function RegisterP1() {
     try {
       setError('');
       await loginWithProvider(provider);
-      navigate('/learn');
+      
     } catch (err) {
       setError(`Failed to sign up with ${provider}`);
     }

@@ -23,18 +23,22 @@ import ContentManagement from "./pages/courses/ContentManagement";
 import Dashboard from "./pages/adminPages/Dashboard";
 import ContentSpeakingManagement from "./pages/content/ContentSpeakingManagement";
 import DialogueManagement from "./pages/content/DialogueManagement";
+<<<<<<< HEAD
+import OAuthCallBack from "./pages/auth/OAuthCallBack";
+=======
 import AuthInitializer from "./context/AuthInitializer";
 import ContentReadingManagement from "./pages/content/ContentReadingManagement";
 import ListeningContentManagement from "./pages/content/ContentListeningManagement";
+>>>>>>> e80c0b32046a62d5839d4e63de790f5c00568e46
 
 function App() {
 
   return (
     <AuthProvider>
       <DataProvider>
-        <AuthInitializer />
         <Routes>
           {/* Auth routes */}
+          <Route path="oauth-callback" element={<OAuthCallBack />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register1" element={<RegisterP1 />} />
           <Route path="/register2" element={<RegisterP2 />} />
