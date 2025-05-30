@@ -90,7 +90,7 @@ useEffect(() => {
       const data = await response.json();
 
       if (data.authUrl) {
-        // Chuyển hướng trình duyệt đến Google/Facebook/Github login page
+        localStorage.setItem("provider", provider);
         window.location.href = data.authUrl;
       } else {
         console.error("No URL returned from backend");

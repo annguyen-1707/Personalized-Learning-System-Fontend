@@ -9,7 +9,7 @@ function RegisterP2() {
   const { register2 } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const email = location.state?.email;
+  const provider = location.state?.provider; 
 
   const [formData, setFormData] = useState({
     fullName: '',
@@ -38,6 +38,9 @@ function RegisterP2() {
         formData.gender,
         formData.phone
       );
+      if(provider) {
+        navigate('/');
+      }
       navigate('/login', { state: { successMessage: 'Register Successfully' } });
     } catch (err) {
       setError('Failed to create an account');

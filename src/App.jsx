@@ -22,6 +22,7 @@ import Dashboard from "./pages/adminPages/Dashboard";
 
 import SpeakingContentManagement from "./pages/content/SpeakingContentManagement";
 import DialogueManagement from "./pages/content/DialogueManagement";
+import OAuthCallBack from "./pages/auth/OAuthCallBack";
 
 function App() {
 
@@ -30,6 +31,7 @@ function App() {
       <DataProvider>
         <Routes>
           {/* Auth routes */}
+          <Route path="oauth-callback" element={<OAuthCallBack />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register1" element={<RegisterP1 />} />
           <Route path="/register2" element={<RegisterP2 />} />
