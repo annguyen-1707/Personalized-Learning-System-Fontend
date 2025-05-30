@@ -10,6 +10,7 @@ const fetchAllContentCategoryReading = () => {
 }
 
 const handleCreateContent = async (data) => {
+    console.log("data before create", data)
     try {
         // 1. Upload ảnh trước
         const imageUrl = await uploadFile(data.image, "images/content_reading");
@@ -24,8 +25,8 @@ const handleCreateContent = async (data) => {
             audioFile: audio,
             timeNew: data.timeNew
         };
-        console.log("data", data)
-        const response = await axios.post(`/api/content_reading`, formData, "images/content_reading");
+        console.log("data before post", formData)
+        const response = await axios.post(`/api/content_reading`, formData);
         return response;
     } catch (error) {
         const allErrors = error.response?.data?.data?.map(e => `${e.message}`).join(", ");

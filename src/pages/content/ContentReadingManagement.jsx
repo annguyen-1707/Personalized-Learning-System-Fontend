@@ -5,7 +5,6 @@ import { getPageContentReading, handleUpdateContent, fetchAllContentCategoryRead
 import ReactPaginate from 'react-paginate';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { toast } from "react-toastify";
-import { data } from 'autoprefixer';
 
 function ReadingContentManagement() {
   const [isAdding, setIsAdding] = useState(false);
