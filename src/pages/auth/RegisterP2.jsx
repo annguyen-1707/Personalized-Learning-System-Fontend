@@ -39,10 +39,12 @@ function RegisterP2() {
         formData.gender,
         formData.phone
       );
-      if(email) {
-        navigate('/');
+      if (email === null || email === undefined) {
+        navigate('/login', { state: { successMessage: 'Register Successfully' } });
+
       }
-      navigate('/login', { state: { successMessage: 'Register Successfully' } });
+      navigate('/');
+
     } catch (err) {
       setError('Failed to create an account');
     }
@@ -89,7 +91,7 @@ function RegisterP2() {
                 />
               </div>
             </div>
-<div>
+            <div>
               <label htmlFor="dob" className="block text-sm font-medium text-gray-700">
                 Date of Birth
               </label>
@@ -171,108 +173,12 @@ function RegisterP2() {
               </label>
               <div className="mt-1 relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-<User className="h-5 w-5 text-gray-400" />
-                </div>
-                <input
-                  id="fullName"
-                  name="fullName"
-                  type="text"
-                  required
-                  className="pl-10 w-full border-gray-300 rounded-md"
-                  value={formData.fullName}
-                  onChange={handleChange}
-                />
-              </div>
-            </div>
-
-            <div>
-              <label htmlFor="dob" className="block text-sm font-medium text-gray-700">
-                Date of Birth
-              </label>
-              <div className="mt-1 relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Calendar className="h-5 w-5 text-gray-400" />
-                </div>
-                <input
-                  id="dob"
-                  name="dob"
-                  type="date"
-                  required
-                  className="pl-10 w-full border-gray-300 rounded-md"
-                  value={formData.dob}
-                  onChange={handleChange}
-                />
-              </div>
-            </div>
-
-            <div>
-              <label htmlFor="address" className="block text-sm font-medium text-gray-700">
-                Address
-              </label>
-              <div className="mt-1 relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <MapPin className="h-5 w-5 text-gray-400" />
-                </div>
-                <input
-                  id="address"
-                  name="address"
-                  type="text"
-                  required
-                  className="pl-10 w-full border-gray-300 rounded-md"
-                  value={formData.address}
-                  onChange={handleChange}
-                />
-              </div>
-            </div>
-
-
-            <div className="flex items-center space-x-4 pl-1">
-              <label className="flex items-center space-x-2">
-                <input
-                  type="radio"
-                  name="gender"
-                  value="MALE"
-                  checked={formData.gender === 'MALE'}
-                  onChange={handleChange}
-                />
-                <span>Male</span>
-              </label>
-              <label className="flex items-center space-x-2">
-                <input
-                  type="radio"
-                  name="gender"
-                  value="FEMALE"
-                  checked={formData.gender === 'FEMALE'}
-                  onChange={handleChange}
-                />
-                <span>Female</span>
-              </label>
-              <label className="flex items-center space-x-2">
-                <input
-                  type="radio"
-                  name="gender"
-                  value="OTHER"
-                  checked={formData.gender === 'OTHER'}
-                  onChange={handleChange}
-                />
-<span>Other</span>
-              </label>
-            </div>
-
-
-
-            <div>
-              <label htmlFor="phone" className="block text-sm font-medium text-gray-700">
-                Phone Number
-              </label>
-              <div className="mt-1 relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Phone className="h-5 w-5 text-gray-400" />
+                  <User className="h-5 w-5 text-gray-400" />
                 </div>
                 <input
                   id="phone"
                   name="phone"
-                  type="tel"
+                  type="text"
                   required
                   className="pl-10 w-full border-gray-300 rounded-md"
                   value={formData.phone}
@@ -280,7 +186,6 @@ function RegisterP2() {
                 />
               </div>
             </div>
-
             <div>
               <button type="submit" className="w-full btn-primary py-2 px-4">
                 Create profile
