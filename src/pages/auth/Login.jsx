@@ -169,12 +169,6 @@ function Login() {
               >
                 <Facebook className="h-5 w-5" />
               </button>
-              <button
-                onClick={() => handleProviderLogin('github')}
-                className="btn-outline py-2 px-4 flex justify-center items-center"
-              >
-                <Github className="h-5 w-5" />
-              </button>
             </div>
           </div>
         </div>
