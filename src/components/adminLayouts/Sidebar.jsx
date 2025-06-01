@@ -22,16 +22,16 @@ function Sidebar({ open, setOpen }) {
   const location = useLocation();
 
   const navigation = [
-    { name: "Dashboard", href: "/dashboard", icon: Layout },
+    { name: "Dashboard", href: "/admin/dashboard", icon: Layout },
     {
       name: "Administration",
       icon: Settings,
       children: [
-        { name: "Admin List", href: "/admins", icon: UserCog },
-        { name: "System Logs", href: "admin/system-logs", icon: Database },
+        { name: "Admin List", href: "/admin/admins", icon: UserCog },
+        { name: "System Logs", href: "/admin/system-logs", icon: Database },
       ],
     },
-    { name: "User Management", href: "admin/users", icon: Users },
+    { name: "User Management", href: "/admin/users", icon: Users },
     {
       name: "Content Management",
       icon: BookOpen,
@@ -41,9 +41,17 @@ function Sidebar({ open, setOpen }) {
           name: "Practice",
           icon: Activity,
           children: [
-            { name: "Listening", href: "/admin/content_listening", icon: Headphones },
+            {
+              name: "Listening",
+              href: "/admin/content_listening",
+              icon: Headphones,
+            },
             { name: "Speaking", href: "/admin/content_speaking", icon: Mic },
-            { name: "Reading", href: "/admin/content_reading", icon: Newspaper },
+            {
+              name: "Reading",
+              href: "/admin/content_reading",
+              icon: Newspaper,
+            },
           ],
         },
       ],
@@ -61,7 +69,10 @@ function Sidebar({ open, setOpen }) {
     const [open, setOpen] = useState(false);
     return (
       <div className="ml-auto relative">
-        <button onClick={() => setOpen(!open)} className="p-2 focus:outline-none">
+        <button
+          onClick={() => setOpen(!open)}
+          className="p-2 focus:outline-none"
+        >
           <ChevronDown className="h-5 w-5" />
         </button>
         {open && (
@@ -70,10 +81,11 @@ function Sidebar({ open, setOpen }) {
               <Link
                 key={subChild.name}
                 to={subChild.href}
-                className={`block px-4 py-2 text-sm ${isActive(subChild.href)
-                  ? "bg-primary-50 text-primary-700"
-                  : "text-gray-600 hover:bg-gray-50"
-                  }`}
+                className={`block px-4 py-2 text-sm ${
+                  isActive(subChild.href)
+                    ? "bg-primary-50 text-primary-700"
+                    : "text-gray-600 hover:bg-gray-50"
+                }`}
               >
                 <subChild.icon className="inline mr-2 h-5 w-5" />
                 {subChild.name}
@@ -97,8 +109,9 @@ function Sidebar({ open, setOpen }) {
 
       {/* Sidebar */}
       <div
-        className={`fixed top-0 left-0 bottom-0 w-64 bg-white border-r border-gray-200 z-30 transform transition-transform duration-300 ease-in-out ${open ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
-          }`}
+        className={`fixed top-0 left-0 bottom-0 w-64 bg-white border-r border-gray-200 z-30 transform transition-transform duration-300 ease-in-out ${
+          open ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
+        }`}
       >
         <div className="flex items-center justify-center h-16 border-b border-gray-200">
           <Link to="/" className="flex items-center gap-2">
@@ -124,16 +137,20 @@ function Sidebar({ open, setOpen }) {
                       <div key={child.name} className="flex items-center">
                         <Link
                           to={child.href}
-                          className={`${isActive(child.href)
-                            ? "bg-primary-50 text-primary-700"
-                            : "text-gray-600 hover:bg-gray-50"
-                            } group flex items-center px-2 py-2 text-sm font-medium rounded-md flex-1`}
+                          className={`${
+                            isActive(child.href)
+                              ? "bg-primary-50 text-primary-700"
+                              : "text-gray-600 hover:bg-gray-50"
+                          } group flex items-center px-2 py-2 text-sm font-medium rounded-md flex-1`}
                         >
                           <child.icon className="mr-3 h-5 w-5" />
                           {child.name}
                         </Link>
                         {child.children && (
-                          <Dropdown subChildren={child.children} isActive={isActive} />
+                          <Dropdown
+                            subChildren={child.children}
+                            isActive={isActive}
+                          />
                         )}
                       </div>
                     ))}
@@ -143,10 +160,11 @@ function Sidebar({ open, setOpen }) {
                 <Link
                   key={item.name}
                   to={item.href}
-                  className={`${isActive(item.href)
-                    ? "bg-primary-50 text-primary-700"
-                    : "text-gray-600 hover:bg-gray-50"
-                    } group flex items-center px-2 py-2 text-sm font-medium rounded-md`}
+                  className={`${
+                    isActive(item.href)
+                      ? "bg-primary-50 text-primary-700"
+                      : "text-gray-600 hover:bg-gray-50"
+                  } group flex items-center px-2 py-2 text-sm font-medium rounded-md`}
                 >
                   <item.icon className="mr-3 h-5 w-5" />
                   {item.name}

@@ -1,4 +1,4 @@
-import { useState, useEffect, useLocation } from "react";
+import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useData } from "../../context/DataContext";
 import { toast } from "react-toastify";
@@ -44,11 +44,8 @@ function ContentManagement() {
     getLessonById,
     fetchLevels,
     fetchPartOfSpeech,
+    getSubjectById,
   } = useData();
-
-  // const location = useLocation();
-  // const queryParams = new URLSearchParams(location.search);
-  // const subjectPage = parseInt(queryParams.get("subjectPage") || "0", 10);
 
   const [subject, setSubject] = useState(null);
   const [lesson, setLesson] = useState(null);
@@ -91,25 +88,9 @@ function ContentManagement() {
 
   const getSubject = async () => {
     try {
-      const subjects = await fetchSubjects(0); // can fix later dont hardcode this
-      const found = subjects?.content.find(
-        (subj) => subj.subjectId == subjectId
-      );
-      console.log("subject:", found);
-      if (found) {
-        setSubject(found);
-      } else {
-        const subjects = await fetchSubjects(1);
-        const found = subjects?.content.find(
-          (subj) => subj.subjectId == subjectId
-        );
-        console.log("subject:", found);
-        if (found) {
-          setSubject(found);
-        } else {
-          console.error("Subject not found");
-          toast.error("Subject not found");
-        }
+      const subject = await getSubjectById(subjectId);
+      if (subject) {
+        setSubject(subject);
       }
     } catch (error) {
       console.error("Error in getSubject:", error);
@@ -152,7 +133,7 @@ function ContentManagement() {
     }
   };
 
-  const getLevles = async () => {
+  const getLevels = async () => {
     try {
       const levels = await fetchLevels();
       if (levels) {
@@ -173,14 +154,6 @@ function ContentManagement() {
       console.error("Error in getPartOfSpeech:", error);
     }
   };
-  // Filter lesson-specific content
-  // const lessonGrammar = grammar.filter(item => item.lessonId === lessonId);
-  // const lessonExercises = exercises.filter(item => item.lessonId === lessonId);
-
-  // Get resources for the three skill types
-  // const readingResources = resources.filter(resource => resource.type === 'reading');
-  // const listeningResources = resources.filter(resource => resource.type === 'listening');
-  // const speakingResources = resources.filter(resource => resource.type === 'speaking');
 
   // Reset form when changing tabs
   useEffect(() => {
@@ -190,7 +163,7 @@ function ContentManagement() {
     getLessons();
     getSubject();
     getVocabulary();
-    getLevles();
+    getLevels();
     getPartOfSpeech();
     console.log("Fetching vocabulary for lessonId:", lessonId);
     console.log("Current page:", currentPage);

@@ -22,9 +22,7 @@ import { use } from "react";
 
 function LessonManagement() {
   const { subjectId } = useParams();
-  const location = useLocation();
-  const queryParams = new URLSearchParams(location.search);
-  const subjectPage = parseInt(queryParams.get("subjectPage") || "0", 10);
+
   const {
     addLesson,
     updateLesson,
@@ -32,7 +30,7 @@ function LessonManagement() {
     addLog,
     lessonsFetch,
     fetchLessonStatus,
-    fetchSubjects,
+    getSubjectById,
   } = useData();
 
   const [subject, setSubject] = useState(null);
@@ -42,7 +40,7 @@ function LessonManagement() {
   const [errorMessage, setErrorMessage] = useState("");
   const [totalPages, setTotalPages] = useState(0);
   const [currentPage, setCurrentPage] = useState(0);
-  const [totolElements, setTotolElements] = useState(0);
+  const [totalElements, setTotalElements] = useState(0);
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("all");
   const [formData, setFormData] = useState({
@@ -61,7 +59,7 @@ function LessonManagement() {
     }
   };
 
-  const filteredSubjects = subjectLessons.filter((lesson) => {
+  const filteredLessons = subjectLessons.filter((lesson) => {
     // Search filter (case insensitive)
     const searchMatch =
       search === "" ||
@@ -80,7 +78,7 @@ function LessonManagement() {
       if (res) {
         setSubjectLessons(res.content);
         setTotalPages(res.page.totalPages);
-        setTotolElements(res.page.totalElements);
+        setTotalElements(res.page.totalElements);
       } else {
         console.error("Failed to fetch lessons:", res);
         setErrorMessage("Failed to fetch lessons.");
@@ -98,14 +96,9 @@ function LessonManagement() {
 
   const getSubject = async () => {
     try {
-      const subjects = await fetchSubjects(subjectPage);
-      const found = subjects?.content.find(
-        (subj) => subj.subjectId == subjectId
-      );
-      if (found) {
-        setSubject(found);
-        getLessons();
-        getStatus();
+      const subject = await getSubjectById(subjectId);
+      if (subject) {
+        setSubject(subject);
       }
     } catch (error) {
       console.error("Error in getSubject:", error);
@@ -114,7 +107,9 @@ function LessonManagement() {
 
   useEffect(() => {
     getSubject();
-  }, [totolElements, currentPage, subjectId]);
+    getLessons();
+    getStatus();
+  }, [subjectId, currentPage, totalElements, totalPages]);
 
   const handleAddSubmit = async (e) => {
     e.preventDefault();
@@ -423,8 +418,8 @@ function LessonManagement() {
           </h2>
         </div>
         <div className="divide-y divide-gray-200">
-          {filteredSubjects.length > 0 ? (
-            filteredSubjects.map((lesson, index) => (
+          {filteredLessons.length > 0 ? (
+            filteredLessons.map((lesson, index) => (
               <div
                 key={lesson.lessonId}
                 className="p-4 hover:bg-gray-50 animate-fade-in"

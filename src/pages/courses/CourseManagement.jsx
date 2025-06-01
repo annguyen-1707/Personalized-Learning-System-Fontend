@@ -18,13 +18,8 @@ import { a, sub } from "framer-motion/client";
 
 function CourseManagement() {
   // Replace courses with subjects and update methods accordingly
-  const {
-    addSubject,
-    updateSubject,
-    deleteSubject,
-    addLog,
-    fetchSubjects,
-  } = useData();
+  const { addSubject, updateSubject, deleteSubject, addLog, fetchSubjects } =
+    useData();
   const [isAdding, setIsAdding] = useState(false);
   const [isEditing, setIsEditing] = useState(null);
   const [search, setSearch] = useState("");
@@ -44,23 +39,23 @@ function CourseManagement() {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(null);
 
   const status = ["ACTIVE", "DRAFT"];
-const loadSubjects = async () => {
-  const result = await fetchSubjects(currentPage);
-  setSubjects(result.content);
-  setTotalPages(result.page.totalPages);
-  setTotalElements(result.page.totalElements);
-  if (result.page.number !== currentPage) {
-    setCurrentPage(result.page.number); // Chỉ cập nhật nếu khác
-  }
-};
+  const loadSubjects = async () => {
+    const result = await fetchSubjects(currentPage);
+    setSubjects(result.content);
+    setTotalPages(result.page.totalPages);
+    setTotalElements(result.page.totalElements);
+    if (result.page.number !== currentPage) {
+      setCurrentPage(result.page.number); // Chỉ cập nhật nếu khác
+    }
+  };
 
-useEffect(() => {
-  loadSubjects();
-  console.log("Subjects loaded:", subjects);
-  console.log("Total Pages:", totalPages);
-  console.log("Current Page:", currentPage);
-  console.log("Total Elements:", totalElements);
-}, [currentPage,totalElements, totalPages]);
+  useEffect(() => {
+    loadSubjects();
+    console.log("Subjects loaded:", subjects);
+    console.log("Total Pages:", totalPages);
+    console.log("Current Page:", currentPage);
+    console.log("Total Elements:", totalElements);
+  }, [currentPage, totalElements, totalPages]);
 
   //Filter subjects based on search and status
   const filteredSubjects = subjects.filter((subject) => {
@@ -155,7 +150,7 @@ useEffect(() => {
     }
   };
 
-    const handlePageClick = (event) => {
+  const handlePageClick = (event) => {
     const selectedPage = event.selected;
     setCurrentPage(selectedPage);
   };
@@ -444,7 +439,7 @@ useEffect(() => {
                       ) : (
                         <div className="flex items-center space-x-2">
                           <Link
-                           to={`/admin/courses/${subject.subjectId}/lessons?subjectPage=${currentPage}`}
+                            to={`/admin/courses/${subject.subjectId}/lessons?subjectPage=${currentPage}`}
                             className="text-secondary-600 hover:text-secondary-800"
                             title="Manage Lessons"
                           >
@@ -487,9 +482,8 @@ useEffect(() => {
             </tbody>
           </table>
         </div>
-       
       </div>
-       {/* Phan Trang */}
+      {/* Phan Trang */}
       <ReactPaginate
         className="pagination mt-6 justify-center"
         nextLabel="next >"
@@ -516,7 +510,7 @@ useEffect(() => {
 
   const value = {
     currentPage,
-  }
+  };
 }
 
 export default CourseManagement;

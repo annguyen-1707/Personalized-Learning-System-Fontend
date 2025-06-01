@@ -8,8 +8,8 @@ import RegisterP1 from "./pages/auth/RegisterP1";
 import ForgotPassword from "./pages/auth/ForgotPassword";
 import MainLayout from "./components/adminLayouts/MainLayout";
 import HomePage from "./pages/HomePage/HomePage";
-import SystemLogs from './pages/admin/SystemLogs';
-import UserManagement from './pages/users/UserManagement';
+import SystemLogs from "./pages/admin/SystemLogs";
+import UserManagement from "./pages/users/UserManagement";
 import ProfilePage from "./pages/ProfilePage/ProfilePage";
 import EditProfilePage from "./pages/ProfilePage/EditProfilePage";
 import { DataProvider } from "./context/DataContext";
@@ -30,7 +30,6 @@ import ContentReadingManagement from "./pages/content/ContentReadingManagement";
 import ListeningContentManagement from "./pages/content/ContentListeningManagement";
 
 function App() {
-
   return (
     <AuthProvider>
       <DataProvider>
@@ -45,9 +44,15 @@ function App() {
           <Route path="/" element={<Layout />}>
             <Route path="profile" element={<ProfilePage />} />
             <Route path="/profile/edit" element={<EditProfilePage />} />
-            <Route path="/profile/change-password" element={<ChangePasswordPage />} />
+            <Route
+              path="/profile/change-password"
+              element={<ChangePasswordPage />}
+            />
           </Route>
-          <Route path="/await-confirmation" element={<AwaitEmailConfirmation />} />
+          <Route
+            path="/await-confirmation"
+            element={<AwaitEmailConfirmation />}
+          />
 
           {/* Public routes */}
           <Route path="/" element={<Layout />}>
@@ -56,23 +61,41 @@ function App() {
 
           {/* Admin routes */}
           {/* <Route path="admin" element={<MainLayout />}>
-             */}
+           */}
 
-          <Route element={<MainLayout />}>
-            <Route path="/admin/content_speaking" element={<ContentSpeakingManagement />} />
-            <Route path="/admin/content_speaking/:contentSpeakingId/dialogue" element={<DialogueManagement />} />
-            <Route path="/admin/content_reading" element={<ContentReadingManagement />} />
-            <Route path="/admin/content_reading/:contentReadingId/vocabulary" element={<VocabularyManagement />} />
-            <Route path="/admin/content_listening" element={<ListeningContentManagement />} />
+          <Route path="/admin" element={<MainLayout />}>
+            <Route
+              path="/admin/content_speaking"
+              element={<ContentSpeakingManagement />}
+            />
+            <Route
+              path="/admin/content_speaking/:contentSpeakingId/dialogue"
+              element={<DialogueManagement />}
+            />
+            <Route
+              path="/admin/content_reading"
+              element={<ContentReadingManagement />}
+            />
+            <Route
+              path="/admin/content_reading/:contentReadingId/vocabulary"
+              element={<VocabularyManagement />}
+            />
+            <Route
+              path="/admin/content_listening"
+              element={<ListeningContentManagement />}
+            />
             <Route path="/admin" element={<Dashboard />} />
             <Route path="/admin/system-logs" element={<SystemLogs />} />
             <Route path="/admin/users" element={<UserManagement />} />
-            <Route path="/admin/courses" element={<CourseManagement />} />
+            <Route path="courses" element={<CourseManagement />} />
             <Route
-              path="/admin/courses/:subjectId/lessons"
+              path="courses/:subjectId/lessons"
               element={<LessonManagement />}
             />
-            <Route path="/admin/courses/:subjectId/lessons/:lessonId/content" element={<ContentManagement />} />
+            <Route
+              path="courses/:subjectId/lessons/:lessonId/content"
+              element={<ContentManagement />}
+            />
             <Route
               path="/admin/content/reading/:contentId/vocabulary"
               element={<VocabularyManagement />}
