@@ -33,7 +33,7 @@ useEffect(() => {
         const userData = await userRes.json();
 
         if (userRes.ok) {
-          setUser(userData);
+          setUser(userData.data);
         } else {
           throw new Error(userData.message || 'Failed to fetch user data');
         }
@@ -74,7 +74,7 @@ useEffect(() => {
       if (!userRes.ok) {
         throw new Error(userData.message || 'Failed to fetch user data');
       }
-      setUser(userData);
+      setUser(userData.data);
     } catch (error) {
       console.error('Login failed:', error);
       throw new Error('Login failed');
