@@ -17,6 +17,8 @@ import {
   Mic,
   BookMarked,
   Headphones,
+  Search,
+  Filter,
 } from "lucide-react";
 import { a, div, s } from "framer-motion/client";
 import ReactPaginate from "react-paginate";
@@ -44,9 +46,9 @@ function ContentManagement() {
     fetchPartOfSpeech,
   } = useData();
 
-    // const location = useLocation();
-    // const queryParams = new URLSearchParams(location.search);
-    // const subjectPage = parseInt(queryParams.get("subjectPage") || "0", 10);
+  // const location = useLocation();
+  // const queryParams = new URLSearchParams(location.search);
+  // const subjectPage = parseInt(queryParams.get("subjectPage") || "0", 10);
 
   const [subject, setSubject] = useState(null);
   const [lesson, setLesson] = useState(null);
@@ -63,23 +65,45 @@ function ContentManagement() {
   const [partOfSpeech, setPartOfSpeech] = useState([]);
   const [errors, setErrors] = useState({});
   const [errorMessages, setErrorMessages] = useState("");
+  const [search, setSearch] = useState("");
+  const [filter, setFilter] = useState("all");
 
   const handlePageClick = (event) => {
     const selectedPage = event.selected;
     setCurrentPage(selectedPage);
   };
 
+  const filteredVocabularies = vocabularies.filter((vocabulary) => {
+    // Search filter (case insensitive)
+    const searchMatch =
+      search === "" ||
+      vocabulary.kanji?.toLowerCase().includes(search.toLowerCase()) ||
+      vocabulary.kana?.toLowerCase().includes(search.toLowerCase()) ||
+      vocabulary.romaji?.toLowerCase().includes(search.toLowerCase()) ||
+      vocabulary.meaning?.toLowerCase().includes(search.toLowerCase()) ||
+      vocabulary.description?.toLowerCase().includes(search.toLowerCase()) ||
+      vocabulary.example?.toLowerCase().includes(search.toLowerCase());
+
+    const levelMatch = filter === "all" || vocabulary.jlptLevel === filter;
+
+    return searchMatch && levelMatch;
+  });
+
   const getSubject = async () => {
     try {
       const subjects = await fetchSubjects(0); // can fix later dont hardcode this
-      const found = subjects?.content.find((subj) => subj.subjectId == subjectId);
-      console.log('subject:', found);
+      const found = subjects?.content.find(
+        (subj) => subj.subjectId == subjectId
+      );
+      console.log("subject:", found);
       if (found) {
         setSubject(found);
-      }else{
+      } else {
         const subjects = await fetchSubjects(1);
-        const found = subjects?.content.find((subj) => subj.subjectId == subjectId);
-        console.log('subject:', found);
+        const found = subjects?.content.find(
+          (subj) => subj.subjectId == subjectId
+        );
+        console.log("subject:", found);
         if (found) {
           setSubject(found);
         } else {
@@ -116,7 +140,7 @@ function ContentManagement() {
 
   const getVocabulary = async () => {
     try {
-      console.log('lessonid', lessonId, 'currentPage', currentPage);
+      console.log("lessonid", lessonId, "currentPage", currentPage);
       const vocabularies = await fetchVocabulary(lessonId, currentPage);
       if (vocabularies) {
         setVocabularies(vocabularies.content);
@@ -225,69 +249,69 @@ function ContentManagement() {
     let newItem;
     let logAction;
 
-      let response;
+    let response;
 
-      switch (activeTab) {
-        case "vocabulary":
-          response = await addVocabulary({ ...formData });
-          getVocabulary();
-          if (response.status === "error") {
-            const errorMap = {};
-            if (Array.isArray(response.data)) {
-              response.data.forEach((err) => {
-                errorMap[err.field] = err.message;
-              });
-            }
-            setErrors(errorMap);
-            return;
-          }
-          toast.success("Vocabulary added successfully!");
-          logAction = "Vocabulary Added";
-          newItem = response;
-          break;
-
-        case "grammar":
-          response = await addGrammar({
-            ...formData,
-            examples: formData.examples.split("\n"),
-          });
-          if (response.status === "error") {
-            const errorMap = {};
+    switch (activeTab) {
+      case "vocabulary":
+        response = await addVocabulary({ ...formData });
+        getVocabulary();
+        if (response.status === "error") {
+          const errorMap = {};
+          if (Array.isArray(response.data)) {
             response.data.forEach((err) => {
               errorMap[err.field] = err.message;
             });
-            setErrors(errorMap);
-            return;
           }
-          toast.success("Grammar added successfully!");
-          logAction = "Grammar Added";
-          newItem = response;
-          break;
-
-        case "exercises":
-          response = await addExercise({
-            ...formData,
-            content: formData.content,
-          });
-          if (response.status === "error") {
-            const errorMap = {};
-            response.data.forEach((err) => {
-              errorMap[err.field] = err.message;
-            });
-            setErrorMessages(errorMap);
-            return;
-          }
-          toast.success("Exercise added successfully!");
-          logAction = "Exercise Added";
-          newItem = response;
-          break;
-
-        default:
+          setErrors(errorMap);
           return;
-      }
+        }
+        toast.success("Vocabulary added successfully!");
+        logAction = "Vocabulary Added";
+        newItem = response;
+        break;
 
-      // Xoá lỗi cũ sau khi thành công
-      setErrors({});
+      case "grammar":
+        response = await addGrammar({
+          ...formData,
+          examples: formData.examples.split("\n"),
+        });
+        if (response.status === "error") {
+          const errorMap = {};
+          response.data.forEach((err) => {
+            errorMap[err.field] = err.message;
+          });
+          setErrors(errorMap);
+          return;
+        }
+        toast.success("Grammar added successfully!");
+        logAction = "Grammar Added";
+        newItem = response;
+        break;
+
+      case "exercises":
+        response = await addExercise({
+          ...formData,
+          content: formData.content,
+        });
+        if (response.status === "error") {
+          const errorMap = {};
+          response.data.forEach((err) => {
+            errorMap[err.field] = err.message;
+          });
+          setErrorMessages(errorMap);
+          return;
+        }
+        toast.success("Exercise added successfully!");
+        logAction = "Exercise Added";
+        newItem = response;
+        break;
+
+      default:
+        return;
+    }
+
+    // Xoá lỗi cũ sau khi thành công
+    setErrors({});
 
     addLog(
       logAction,
@@ -313,7 +337,7 @@ function ContentManagement() {
               errorMap[err.field] = err.message;
             });
           } else {
-            setErrorMessages(result.message)
+            setErrorMessages(result.message);
           }
           setErrors(errorMap);
           return;
@@ -515,13 +539,13 @@ function ContentManagement() {
     }
   };
 
-    if (!subject || !lesson) {
-      return (
-        <div className="flex justify-center items-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary-600"></div>
-        </div>
-      );
-    }
+  if (!subject || !lesson) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary-600"></div>
+      </div>
+    );
+  }
 
   // Render form based on active tab
   const renderForm = () => {
@@ -961,8 +985,8 @@ function ContentManagement() {
       case "vocabulary":
         return (
           <div className="divide-y divide-gray-200">
-            {vocabularies.length > 0 ? (
-              vocabularies.map((item) => (
+            {filteredVocabularies.length > 0 ? (
+              filteredVocabularies.map((item) => (
                 <div
                   key={item.vocabularyId}
                   className="p-4 hover:bg-gray-50 animate-fade-in"
@@ -1445,6 +1469,40 @@ function ContentManagement() {
           <div>
             <p className="text-sm text-gray-500">Lesson {lessonId}</p>
             <p className="font-medium">{lesson.name}</p>
+          </div>
+        </div>
+      </div>
+
+      {/* filter */}
+      <div className="card p-4 mb-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="md:col-span-2">
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <Search size={18} className="text-gray-400" />
+              </div>
+              <input
+                type="text"
+                placeholder="Search content..."
+                className="pl-10"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+            </div>
+          </div>
+          <div>
+            <select
+              className="rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 w-full"
+              value={filter}
+              onChange={(e) => setFilter(e.target.value)}
+            >
+              <option value="all">All Status</option>
+              {levels.map((status) => (
+                <option key={status} value={status}>
+                  {status}
+                </option>
+              ))}
+            </select>
           </div>
         </div>
       </div>

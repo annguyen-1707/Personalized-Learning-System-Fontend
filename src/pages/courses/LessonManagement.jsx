@@ -293,7 +293,7 @@ function LessonManagement() {
               </div>
               <input
                 type="text"
-                placeholder="Search subjects by title or description..."
+                placeholder="Search lessons by title or description..."
                 className="pl-10"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
