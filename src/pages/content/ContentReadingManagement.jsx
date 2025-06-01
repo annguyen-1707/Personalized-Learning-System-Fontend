@@ -19,6 +19,8 @@ function ReadingContentManagement() {
   const [size, setSize] = useState(5); // 1trang bn phan tu
   const [totalElements, setTotalElements] = useState(); // tong phan tu
   const [errorMessage, setErrorMessage] = useState("");
+  const [previewImage, setPreviewImage] = useState(null);
+  const [previewAudio, setPreviewAudio] = useState(null);
   const [formData, setFormData] = useState({
     title: '',
     image: '',
@@ -73,6 +75,8 @@ function ReadingContentManagement() {
           timeNew: '',
           contentType: 'reading',
         });
+        setPreviewAudio(null);
+        setPreviewImage(null);
         setIsAdding(false);
         setErrorMessage("");
         toast.success("Tạo content thành công!");
@@ -95,6 +99,8 @@ function ReadingContentManagement() {
           timeNew: '',
           contentType: 'reading',
         });
+        setPreviewAudio(null);
+        setPreviewImage(null);
         setIsEditing(null);
         setErrorMessage("");
         toast.success("Cập nhật content thành công!");
@@ -128,6 +134,15 @@ function ReadingContentManagement() {
     console.log("before update:", content)
     window.scrollTo({ top: 0, behavior: 'smooth' });
     setFormData(content);
+    if (content.image && typeof content.image === "string") {
+      setPreviewImage(`http://localhost:8080/images/content_reading/` + content.image);
+      console.log("Check previewImage" + previewImage)
+    }
+    // Hiển thị preview audio nếu đang edit và có URL audio
+    if (content.audioFile && typeof content.audioFile === "string") {
+      setPreviewAudio(`http://localhost:8080/audio/content_reading/` + content.audioFile);
+      console.log("Check previewImage" + previewAudio)
+    }
     setIsEditing(content.contentReadingId);
     setIsAdding(false);
     setErrorMessage("");
@@ -137,6 +152,46 @@ function ReadingContentManagement() {
     const selectedPage = +event.selected + 1;
     setCurrentPage(selectedPage);
     getContentPage(selectedPage);
+  }
+
+
+  const handleAudioChange = (e) => {
+    const file = e.target.files[0];
+    setFormData({ ...formData, audioFile: file });
+
+    if (file) {
+      const previewURL = URL.createObjectURL(file);
+      setPreviewAudio(previewURL);
+    } else {
+      setPreviewAudio(null);
+    }
+  };
+
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    setFormData({ ...formData, image: file });
+
+    if (file) {
+      const previewURL = URL.createObjectURL(file);
+      setPreviewImage(previewURL);
+    } else {
+      setPreviewImage(null);
+    }
+  };
+  const handleCancel = () => {
+    setIsAdding(false);
+    setIsEditing(null);
+    setFormData({
+      title: '',
+      image: '',
+      category: '',
+      scriptJp: '',
+      scriptVn: '',
+      audioFile: '',
+      contentType: 'listening',
+    });
+    setPreviewImage(null);
+    setPreviewAudio(null);
   }
 
   return (
@@ -233,8 +288,17 @@ function ReadingContentManagement() {
                 <input
                   type="file"
                   accept="image/*"
-                  onChange={(e) => setFormData({ ...formData, image: e.target.files[0] })}
+                  onChange={handleImageChange}
                 ></input>
+                {previewImage && (
+                  <div style={{ marginTop: "10px" }}>
+                    <img
+                      src={previewImage}
+                      alt="Preview"
+                      style={{ maxWidth: "300px", maxHeight: "300px", objectFit: "contain" }}
+                    />
+                  </div>
+                )}
               </div>
 
               <div>
@@ -244,10 +308,16 @@ function ReadingContentManagement() {
                 <input
                   type="file"
                   accept="audio/*"
-                  onChange={(e) =>
-                    setFormData({ ...formData, audioFile: e.target.files[0] })
-                  }
+                  onChange={handleAudioChange}
                 />
+                {previewAudio && (
+                  <div style={{ marginTop: "10px" }}>
+                    <audio controls>
+                      <source src={previewAudio} type="audio/mpeg" />
+                      Your browser does not support the audio element.
+                    </audio>
+                  </div>
+                )}
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -307,10 +377,7 @@ function ReadingContentManagement() {
             <div className="mt-6 flex justify-end space-x-3">
               <button
                 type="button"
-                onClick={() => {
-                  setIsAdding(false);
-                  setIsEditing(null);
-                }}
+                onClick={handleCancel}
                 className="btn-outline"
               >
                 Cancel

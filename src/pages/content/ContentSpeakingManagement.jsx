@@ -19,6 +19,7 @@ function SpeakingContentManagement() {
   const [size, setSize] = useState(5); // 1trang bn phan tu
   const [totalElements, setTotalElements] = useState(); // tong phan tu
   const [errorMessage, setErrorMessage] = useState("");
+  const [previewImage, setPreviewImage] = useState(null);
   const [formData, setFormData] = useState({
     title: '',
     image: '',
@@ -27,6 +28,7 @@ function SpeakingContentManagement() {
   });
   useEffect(() => {
     getContentPage(1);
+    setCurrentPage(1);
     getContentCategorys();
   }, [size])
 
@@ -94,7 +96,7 @@ function SpeakingContentManagement() {
   };
 
   const handleChangeSize = async (newSize) => {
-    setSize(newSize)
+    setSize(newSize);
   }
 
   const filteredContents = listContentSpeakings.filter((content) => {
@@ -110,6 +112,10 @@ function SpeakingContentManagement() {
   const startUpdate = (contentSpeaking) => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
     setFormData(contentSpeaking);
+    if (contentSpeaking.image && typeof contentSpeaking.image === "string") {
+      setPreviewImage(`http://localhost:8080/images/content_speaking/` + contentSpeaking.image);
+      console.log("Check previewImage" + previewImage)
+    }
     setIsEditing(contentSpeaking.contentSpeakingId);
     setIsAdding(false);
     setErrorMessage("");
@@ -121,6 +127,33 @@ function SpeakingContentManagement() {
     getContentPage(selectedPage);
   }
 
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    setFormData({ ...formData, image: file });
+
+    if (file) {
+      const previewURL = URL.createObjectURL(file);
+      setPreviewImage(previewURL);
+    } else {
+      setPreviewImage(null);
+    }
+  };
+
+  const handleCancel = () => {
+    setIsAdding(false);
+    setIsEditing(null);
+    setFormData({
+      title: '',
+      image: '',
+      category: '',
+      scriptJp: '',
+      scriptVn: '',
+      audioFile: '',
+      contentType: 'listening',
+    });
+    setPreviewImage(null);
+    W
+  }
   return (
     <div className="animate-fade-in">
       {/* Header */}
@@ -216,8 +249,17 @@ function SpeakingContentManagement() {
                 <input
                   type="file"
                   accept="image/*"
-                  onChange={(e) => setFormData({ ...formData, image: e.target.files[0] })}
+                  onChange={handleImageChange}
                 ></input>
+                {previewImage && (
+                  <div style={{ marginTop: "10px" }}>
+                    <img
+                      src={previewImage}
+                      alt="previewImage"
+                      style={{ maxWidth: "300px", maxHeight: "300px", objectFit: "contain" }}
+                    />
+                  </div>
+                )}
               </div>
 
               <div>
@@ -245,10 +287,7 @@ function SpeakingContentManagement() {
             <div className="mt-6 flex justify-end space-x-3">
               <button
                 type="button"
-                onClick={() => {
-                  setIsAdding(false);
-                  setIsEditing(null);
-                }}
+                onClick={handleCancel}
                 className="btn-outline"
               >
                 Cancel
