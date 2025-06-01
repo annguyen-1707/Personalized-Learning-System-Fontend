@@ -156,7 +156,7 @@ function RegisterP1() {
               </div>
             </div>
 
-            <div className="mt-6 grid grid-cols-3 gap-3">
+            <div className="mt-6 grid grid-cols-2 gap-3">
               <button
                 onClick={() => handleProviderLogin('google')}
                 className="btn-outline py-2 px-4 flex justify-center items-center"
@@ -169,12 +169,7 @@ function RegisterP1() {
               >
                 <Facebook className="h-5 w-5" />
               </button>
-              <button
-                onClick={() => handleProviderLogin('github')}
-                className="btn-outline py-2 px-4 flex justify-center items-center"
-              >
-                <Github className="h-5 w-5" />
-              </button>
+              
             </div>
           </div>
         </div>

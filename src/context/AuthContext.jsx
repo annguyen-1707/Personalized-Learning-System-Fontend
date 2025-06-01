@@ -21,8 +21,6 @@ useEffect(() => {
       if (response.ok) {
         const data = await response.json(); // ← Lấy dữ liệu từ check-login
         const accessToken = data.data.accessToken;
-
-        // Lưu accessToken vào localStorage
         localStorage.setItem("accessToken", accessToken);
 
         // Gọi API lấy thông tin người dùng
@@ -142,7 +140,7 @@ const register2 = async (email ,fullName, dob, address, gender, phone) => {
 
       localStorage.setItem("email", email);
       if (!response.ok) {
-        throw new Error('Failed to register');
+        throw new Error('Email already exists or registration failed');
       }
 
     } catch (error) {
