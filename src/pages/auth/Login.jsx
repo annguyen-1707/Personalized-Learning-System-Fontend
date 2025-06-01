@@ -156,7 +156,7 @@ function Login() {
               </div>
             </div>
 
-            <div className="mt-6 grid grid-cols-3 gap-3">
+            <div className="mt-6 grid grid-cols-2 gap-3">
               <button
                 onClick={() => handleProviderLogin('google')}
                 className="btn-outline py-2 px-4 flex justify-center items-center"
