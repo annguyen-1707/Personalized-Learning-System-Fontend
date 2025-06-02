@@ -10,6 +10,15 @@ const fetchAllContentCategoryReading = () => {
 }
 
 const handleCreateContent = async (data) => {
+    if (data.image === null || data.image === "") {
+        throw new Error("upload image before create");
+    }
+    if (data.audioFile === null || data.audioFile === "") {
+        throw new Error("upload audioFile before create");
+    }
+    if (data.category === "") {
+        throw new Error("choose category")
+    }
     console.log("data before create", data)
     try {
         // 1. Upload ảnh trước

@@ -13,6 +13,13 @@ const fetchAllContentCategorySpeaking = () => {
 }
 
 const handleCreateContent = async (data) => {
+    console.log("data before create:", data)
+    if (data.image === null || data.image === "") {
+        throw new Error("upload image before create");
+    }
+    if (data.category === "") {
+        throw new Error("choose category")
+    }
     try {
         // 1. Upload ảnh trước
         const imageUrl = await uploadFile(data.image, "images/content_speaking");
@@ -27,7 +34,7 @@ const handleCreateContent = async (data) => {
     } catch (error) {
         const allErrors = error.response?.data?.data?.map(e => `${e.message}`).join(", ");
         console.error("All error", allErrors)
-        throw new Error(allErrors || "can not create");
+        throw new Error(allErrors || "choose content category");
     }
 };
 

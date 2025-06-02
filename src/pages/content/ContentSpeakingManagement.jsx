@@ -51,6 +51,7 @@ function SpeakingContentManagement() {
   const handeDelete = async (id) => {
     await handleDeleteContent(id);
     await getContentPage(1);
+    setCurrentPage(1);
   }
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -65,6 +66,7 @@ function SpeakingContentManagement() {
           category: '',
           contentType: 'speaking'
         });
+        setPreviewImage(null);
         setIsAdding(false);
         setErrorMessage("");
         toast.success("Tạo content thành công!");
@@ -83,6 +85,7 @@ function SpeakingContentManagement() {
           category: '',
           contentType: 'speaking'
         });
+        setPreviewImage(null)
         setIsEditing(null);
         setErrorMessage("");
         toast.success("Cập nhật content thành công!");
@@ -146,13 +149,9 @@ function SpeakingContentManagement() {
       title: '',
       image: '',
       category: '',
-      scriptJp: '',
-      scriptVn: '',
-      audioFile: '',
-      contentType: 'listening',
+      contentType: 'speaking'
     });
     setPreviewImage(null);
-    W
   }
   return (
     <div className="animate-fade-in">
@@ -273,7 +272,7 @@ function SpeakingContentManagement() {
                   onChange={(e) => setFormData({ ...formData, category: e.target.value })}
                   className="w-full"
                 >
-                  <option value="">All Category</option>
+                  <option value="" disabled selected>All Category</option>
                   {listContentCategory?.length > 0 && listContentCategory.map((category) => (
                     <option key={category} value={category}>
                       {category}
