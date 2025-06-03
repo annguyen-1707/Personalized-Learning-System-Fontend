@@ -71,6 +71,22 @@ export function DataProvider({ children }) {
   };
 
   // Subject CRUD operations
+
+  const getSubjectById = async (id) => {
+    try {
+      const response = await fetch(`/api/subjects/${id}`);
+      if (!response.ok) {
+        const data = await response.json();
+        return data;
+      }
+      const data = await response.json();
+      return data.data;
+    } catch (error) {
+      console.error("Error fetching subject by ID:", error);
+      throw error;
+    }
+  };
+
   const addSubject = async (subject) => {
     try {
       const response = await fetch("/api/subjects", {
@@ -187,7 +203,7 @@ export function DataProvider({ children }) {
 
   const updateLesson = async (id, updatedLesson) => {
     const response = await fetch(`/api/lessons/${id}`, {
-      method:  "PATCH",
+      method: "PATCH",
       headers: {
         "Content-Type": "application/json",
       },
@@ -484,6 +500,7 @@ export function DataProvider({ children }) {
     fetchVocabulary,
     fetchLevels,
     fetchPartOfSpeech,
+    getSubjectById,
   };
 
   return <DataContext.Provider value={value}>{children}</DataContext.Provider>;

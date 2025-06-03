@@ -12,6 +12,7 @@ import {
   Check,
   X,
   ExternalLink,
+  Search,
 } from "lucide-react";
 import { g, s, sub, u } from "framer-motion/client";
 import { GiOpenBook } from "react-icons/gi";
@@ -21,9 +22,7 @@ import { use } from "react";
 
 function LessonManagement() {
   const { subjectId } = useParams();
-  const location = useLocation();
-  const queryParams = new URLSearchParams(location.search);
-  const subjectPage = parseInt(queryParams.get("subjectPage") || "0", 10);
+
   const {
     addLesson,
     updateLesson,
@@ -31,7 +30,7 @@ function LessonManagement() {
     addLog,
     lessonsFetch,
     fetchLessonStatus,
-    fetchSubjects,
+    getSubjectById,
   } = useData();
 
   const [subject, setSubject] = useState(null);
@@ -41,7 +40,9 @@ function LessonManagement() {
   const [errorMessage, setErrorMessage] = useState("");
   const [totalPages, setTotalPages] = useState(0);
   const [currentPage, setCurrentPage] = useState(0);
-  const [totolElements, setTotolElements] = useState(0);
+  const [totalElements, setTotalElements] = useState(0);
+  const [search, setSearch] = useState("");
+  const [filter, setFilter] = useState("all");
   const [formData, setFormData] = useState({
     name: "",
     description: "",
@@ -58,13 +59,26 @@ function LessonManagement() {
     }
   };
 
+  const filteredLessons = subjectLessons.filter((lesson) => {
+    // Search filter (case insensitive)
+    const searchMatch =
+      search === "" ||
+      lesson.name?.toLowerCase().includes(search.toLowerCase()) ||
+      lesson.description?.toLowerCase().includes(search.toLowerCase());
+
+    // Status filter
+    const statusMatch = filter === "all" || lesson.status === filter;
+
+    return searchMatch && statusMatch;
+  });
+
   const getLessons = async () => {
     try {
       const res = await lessonsFetch(subjectId, currentPage);
       if (res) {
         setSubjectLessons(res.content);
         setTotalPages(res.page.totalPages);
-        setTotolElements(res.page.totalElements);
+        setTotalElements(res.page.totalElements);
       } else {
         console.error("Failed to fetch lessons:", res);
         setErrorMessage("Failed to fetch lessons.");
@@ -82,12 +96,9 @@ function LessonManagement() {
 
   const getSubject = async () => {
     try {
-      const subjects = await fetchSubjects(subjectPage);
-      const found = subjects?.content.find((subj) => subj.subjectId == subjectId);
-      if (found) {
-        setSubject(found);
-        getLessons();
-        getStatus();
+      const subject = await getSubjectById(subjectId);
+      if (subject) {
+        setSubject(subject);
       }
     } catch (error) {
       console.error("Error in getSubject:", error);
@@ -96,7 +107,9 @@ function LessonManagement() {
 
   useEffect(() => {
     getSubject();
-  }, [totolElements, currentPage, subjectId]);
+    getLessons();
+    getStatus();
+  }, [subjectId, currentPage, totalElements, totalPages]);
 
   const handleAddSubmit = async (e) => {
     e.preventDefault();
@@ -265,6 +278,41 @@ function LessonManagement() {
         </div>
       </div>
 
+      {/* filter */}
+      <div className="card p-4 mb-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="md:col-span-2">
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <Search size={18} className="text-gray-400" />
+              </div>
+              <input
+                type="text"
+                placeholder="Search lessons by title or description..."
+                className="pl-10"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+            </div>
+          </div>
+
+          <div>
+            <select
+              className="rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 w-full"
+              value={filter}
+              onChange={(e) => setFilter(e.target.value)}
+            >
+              <option value="all">All Status</option>
+              {statusOptions.map((status) => (
+                <option key={status} value={status}>
+                  {status}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+      </div>
+
       {/* Add/Edit Form */}
       {(isAdding || isEditing) && (
         <div className="card p-6 mb-6">
@@ -370,8 +418,8 @@ function LessonManagement() {
           </h2>
         </div>
         <div className="divide-y divide-gray-200">
-          {subjectLessons.length > 0 ? (
-            subjectLessons.map((lesson, index) => (
+          {filteredLessons.length > 0 ? (
+            filteredLessons.map((lesson, index) => (
               <div
                 key={lesson.lessonId}
                 className="p-4 hover:bg-gray-50 animate-fade-in"
@@ -398,10 +446,11 @@ function LessonManagement() {
                       <div className="mt-2 flex items-center space-x-4">
                         <GiOpenBook className="h-4 w-4 text-gray-400" />
                         <span
-                          className={`badge ${lesson.status === "PUBLIC"
-                            ? "bg-success-50 text-success-700"
-                            : "bg-warning-50 text-warning-700"
-                            }`}
+                          className={`badge ${
+                            lesson.status === "PUBLIC"
+                              ? "bg-success-50 text-success-700"
+                              : "bg-warning-50 text-warning-700"
+                          }`}
                         >
                           {lesson.status === "PUBLIC" ? "Published" : "Draft"}
                         </span>

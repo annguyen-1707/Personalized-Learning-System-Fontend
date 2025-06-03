@@ -1,20 +1,35 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { useAuth } from "../../context/AuthContext"; // Adjust the import path as necessary
 
-function EditProfilePage({ user }) {
+function EditProfilePage({ }) {
+  const { user } = useAuth();
   const navigate = useNavigate();
-  const [form, setForm] = useState(user || {
+  const [form, setForm] = useState({
     fullName: '',
     dob: '',
     address: '',
-    // avatar: '',
     gender: '',
     phone: '',
     email: '',
   });
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+
+  // Always use the latest user info (especially email) after login
+  useEffect(() => {
+    if (user) {
+      setForm({
+        fullName: user.fullName || '',
+        dob: user.dob || '',
+        address: user.address || '',
+        gender: user.gender || '',
+        phone: user.phone || '',
+        email: user.email || '',
+      });
+    }
+  }, [user]);
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -29,17 +44,16 @@ function EditProfilePage({ user }) {
     setError("");
     setSuccess("");
     try {
-      await axios.post("http://localhost:8080/api/user/update-profile", {
-        fullName: form.fullName,
+      await axios.post("http://localhost:8080/api/user/edit", {
+        name: form.fullName,
         email: form.email,
-        phone: form.phone,
+        phoneNumber: form.phone,
         address: form.address,
-        dob: form.dob,
+        dateOfBirth: form.dob,
         gender: form.gender,
-        // avatar: form.avatar, // Nếu backend hỗ trợ
       });
-      setSuccess("Profile updated successfully!");
-      setTimeout(() => navigate("/profile"), 1500);
+      setSuccess("Profile updated successfully! You will be redirected shortly.");
+      setTimeout(() => navigate("/profile"), 3000);
     } catch (err) {
       setError(
         err.response?.data?.message ||
@@ -111,39 +125,39 @@ function EditProfilePage({ user }) {
             className="input input-bordered w-full"
           />
         </div>
-<div>
+        <div>
           <label className="block font-medium mb-1">Gender</label>
-          <div className="flex gap-4">
+          <div className="flex items-center gap-4 mt-1">
             <label className="inline-flex items-center">
               <input
-                type="checkbox"
+                type="radio"
                 name="gender"
-                value="male"
-                checked={form.gender === "male"}
-                onChange={() => setForm({ ...form, gender: form.gender === "male" ? "" : "male" })}
-                className="checkbox checkbox-primary rounded-full"
+                value="MALE"
+                checked={form.gender === "MALE"}
+                onChange={handleChange}
+                className="radio radio-primary"
               />
               <span className="ml-2">Male</span>
             </label>
             <label className="inline-flex items-center">
               <input
-                type="checkbox"
+                type="radio"
                 name="gender"
-                value="female"
-                checked={form.gender === "female"}
-                onChange={() => setForm({ ...form, gender: form.gender === "female" ? "" : "female" })}
-                className="checkbox checkbox-primary rounded-full"
+                value="FEMALE"
+                checked={form.gender === "FEMALE"}
+                onChange={handleChange}
+                className="radio radio-primary"
               />
               <span className="ml-2">Female</span>
             </label>
             <label className="inline-flex items-center">
               <input
-                type="checkbox"
+                type="radio"
                 name="gender"
-                value="other"
-                checked={form.gender === "other"}
-                onChange={() => setForm({ ...form, gender: form.gender === "other" ? "" : "other" })}
-                className="checkbox checkbox-primary rounded-full"
+                value="OTHER"
+                checked={form.gender === "OTHER"}
+                onChange={handleChange}
+                className="radio radio-primary"
               />
               <span className="ml-2">Other</span>
             </label>
@@ -151,6 +165,15 @@ function EditProfilePage({ user }) {
         </div>
         {error && <div className="text-red-500 text-sm">{error}</div>}
         {success && <div className="text-green-600 text-sm">{success}</div>}
+        <div className="flex justify-end mt-6">
+          <button
+            type="button"
+            className="btn btn-accent btn-sm"
+            onClick={() => navigate("/profile/change-password")}
+          >
+            Change Password
+          </button>
+        </div>
         <div className="flex gap-2 mt-4">
           <button type="submit" className="btn btn-primary w-full">
             Update

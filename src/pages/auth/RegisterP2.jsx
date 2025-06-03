@@ -9,7 +9,7 @@ function RegisterP2() {
   const { register2 } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const provider = location.state?.provider; 
+  const email = location.state?.email || localStorage.getItem("email");
 
   const [formData, setFormData] = useState({
     fullName: '',
@@ -30,18 +30,21 @@ function RegisterP2() {
     e.preventDefault();
     try {
       setError('');
-      console.log("✅ SUBMIT CALLED" + formData.fullName);
+      console.log("✅ SUBMIT CALLED" + formData.fullName + email);
       await register2(
+        email,
         formData.fullName,
         formData.dob,
         formData.address,
         formData.gender,
         formData.phone
       );
-      if(provider) {
-        navigate('/');
+      if (email === null || email === undefined) {
+        navigate('/login', { state: { successMessage: 'Register Successfully' } });
+
       }
-      navigate('/login', { state: { successMessage: 'Register Successfully' } });
+      navigate('/');
+
     } catch (err) {
       setError('Failed to create an account');
     }
@@ -88,7 +91,6 @@ function RegisterP2() {
                 />
               </div>
             </div>
-
             <div>
               <label htmlFor="dob" className="block text-sm font-medium text-gray-700">
                 Date of Birth
@@ -171,12 +173,12 @@ function RegisterP2() {
               </label>
               <div className="mt-1 relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Phone className="h-5 w-5 text-gray-400" />
+                  <User className="h-5 w-5 text-gray-400" />
                 </div>
                 <input
                   id="phone"
                   name="phone"
-                  type="tel"
+                  type="text"
                   required
                   className="pl-10 w-full border-gray-300 rounded-md"
                   value={formData.phone}
@@ -184,7 +186,6 @@ function RegisterP2() {
                 />
               </div>
             </div>
-
             <div>
               <button type="submit" className="w-full btn-primary py-2 px-4">
                 Create profile
