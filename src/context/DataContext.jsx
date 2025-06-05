@@ -393,8 +393,19 @@ export function DataProvider({ children }) {
       return data.data;
   };
 
-  const addGrammar = (item) => {
-    const newItem = { ...item, id: Date.now().toString() };
+ const addGrammar = async (item) => {
+    const res = await fetch("/api/grammars", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(item),
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      return data;
+    }
+    const newItem = { ...data.data };
     setGrammar([...grammar, newItem]);
     return newItem;
   };
