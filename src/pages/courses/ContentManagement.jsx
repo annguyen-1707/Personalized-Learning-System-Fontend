@@ -126,7 +126,7 @@ function ContentManagement() {
 
   const jlptLevelClassMap = {
     N5: "bg-success-50 text-success-700",
-    N4: "bg-teal-50 text-teal-700",
+    N4: "bg-primary-50 text-primary-700",
     N3: "bg-warning-50 text-warning-700",
     N2: "bg-orange-50 text-orange-700",
     N1: "bg-error-50 text-error-700",
@@ -223,7 +223,7 @@ function ContentManagement() {
           structure: "",
           meaning: "",
           usage: "",
-          examples: "",
+          example: "",
           jlptLevel: "",
           lessonId: lessonId,
         });
@@ -240,7 +240,7 @@ function ContentManagement() {
       default:
         setFormData({});
     }
-  }, [activeTab, lessonId,subjectId, currentPage]);
+  }, [activeTab, lessonId, subjectId, currentPage]);
 
   const handleAddSubmit = async (e) => {
     e.preventDefault();
@@ -272,15 +272,21 @@ function ContentManagement() {
       case "grammar":
         response = await addGrammar({
           ...formData,
-          examples: formData.examples.split("\n"),
         });
+        getGrammar();
         if (response.status === "error") {
+          if(!Array.isArray(response.data)) {
+            setErrorMessages(response.message);
+            return;
+          }
           const errorMap = {};
           response.data.forEach((err) => {
             errorMap[err.field] = err.message;
           });
-          setErrors(errorMap);
-          return;
+          if (Object.keys(errorMap).length > 1) {
+            setErrors(errorMap);
+            return;
+          }
         }
         toast.success("Grammar added successfully!");
         logAction = "Grammar Added";
@@ -348,14 +354,24 @@ function ContentManagement() {
         break;
 
       case "grammar":
-        updateGrammar(isEditing, {
-          ...formData,
-          examples:
-            typeof formData.examples === "string"
-              ? formData.examples.split("\n")
-              : formData.examples,
-        });
-        logAction = "Grammar Updated";
+        const res = await updateGrammar(isEditing, {...formData});
+        getGrammar();
+        if (res.status === "error") {
+          const errorMap = {};
+          if (Array.isArray(res.data)) {
+            res.data.forEach((err) => {
+              errorMap[err.field] = err.message;
+            });
+          } else {
+            setErrorMessages(res.message);
+          }
+          setErrors(errorMap);
+          return;
+        }
+        toast.success("Grammar updated successfully!");
+        setIsEditing(null);
+        resetForm();
+        setErrors({});
         break;
       case "exercises":
         updateExercise(isEditing, formData);
@@ -397,8 +413,13 @@ function ContentManagement() {
         toast.success("Vocabulary deleted successfully!");
         break;
       case "grammar":
-        await deleteGrammar(id);
-        logAction = "Grammar Deleted";
+        const res = await deleteGrammar(id);
+        getGrammar();
+        if (res.status === "error") {
+          toast.error("Failed to delete grammar");
+          return;
+        }
+        toast.success("Grammar deleted successfully!");
         break;
       case "exercises":
         await deleteExercise(id);
@@ -436,12 +457,13 @@ function ContentManagement() {
         break;
       case "grammar":
         editData = {
-          title: item.title,
-          explanation: item.explanation,
-          examples: Array.isArray(item.examples)
-            ? item.examples.join("\n")
-            : item.examples,
-          notes: item.notes,
+          titleJp: item.titleJp,
+          structure: item.structure,
+          meaning: item.meaning,
+          usage: item.usage,
+          example: item.example,
+          jlptLevel: item.jlptLevel,
+          lessonId: lessonId,
         };
         break;
       case "exercises":
@@ -458,7 +480,7 @@ function ContentManagement() {
     }
 
     setFormData(editData);
-    setIsEditing(item.vocabularyId);
+    setIsEditing(item.vocabularyId || item.grammarId || item.exerciseId);
     setIsAdding(false);
   };
 
@@ -480,10 +502,13 @@ function ContentManagement() {
         break;
       case "grammar":
         setFormData({
-          title: "",
-          explanation: "",
+          titleJp: "",
+          structure: "",
+          meaning: "",
+          usage: "",
           examples: "",
-          notes: "",
+          jlptLevel: "",
+          lessonId: lessonId,
         });
         break;
       case "exercises":
@@ -493,16 +518,6 @@ function ContentManagement() {
           instructions: "",
           content: "",
           difficulty: "easy",
-        });
-        break;
-      case "reading":
-      case "listening":
-      case "speaking":
-        setFormData({
-          title: "",
-          description: "",
-          url: "",
-          level: "beginner",
         });
         break;
       default:
@@ -785,86 +800,168 @@ function ContentManagement() {
 
       case "grammar":
         return (
-          <div className="grid grid-cols-1 gap-4 mb-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+            {errorMessages && (
+              <div className="col-span-2">
+                <p className="text-red-500 text-sm">{errorMessages}</p>
+              </div>
+            )}
             <div>
               <label
                 htmlFor="title"
                 className="block text-sm font-medium text-gray-700 mb-1"
               >
-                Grammar Point Title
+                Grammar Title (Japanese)
               </label>
               <input
                 id="title"
                 type="text"
-                required
-                value={formData.title || ""}
+                value={formData.titleJp || ""}
                 onChange={(e) =>
-                  setFormData({ ...formData, title: e.target.value })
+                  setFormData({ ...formData, titleJp: e.target.value })
                 }
+                className={`input border rounded px-3 py-2 w-full ${
+                  errors.titleJp
+                    ? "border-red-500 focus:border-red-500 bg-red-50"
+                    : "border-gray-300 focus:border-blue-500 bg-white"
+                }`}
               />
+              {errors.titleJp && (
+                <p className="text-red-500 text-xs mt-1">{errors.titleJp}</p>
+              )}
             </div>
 
             <div>
               <label
-                htmlFor="explanation"
+                htmlFor="structure"
                 className="block text-sm font-medium text-gray-700 mb-1"
               >
-                Explanation
+                Structure
               </label>
               <textarea
-                id="explanation"
-                rows={3}
-                required
-                value={formData.explanation || ""}
+                id="structure"
+                rows={1}
+                value={formData.structure || ""}
                 onChange={(e) =>
-                  setFormData({ ...formData, explanation: e.target.value })
+                  setFormData({ ...formData, structure: e.target.value })
                 }
-                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
+                className={`w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 
+                focus:outline-none focus:ring-1 focus:ring-primary-500 ${
+                  errors.structure
+                    ? "border-red-500 focus:border-red-500 bg-red-50"
+                    : "border-gray-300 focus:border-blue-500 bg-white"
+                }`}
               />
+              {errors.structure && (
+                <p className="text-red-500 text-xs mt-1">{errors.structure}</p>
+              )}
             </div>
 
             <div>
               <label
-                htmlFor="examples"
+                htmlFor="meaning"
                 className="block text-sm font-medium text-gray-700 mb-1"
               >
-                Examples (one per line)
+                Meaning
               </label>
               <textarea
-                id="examples"
-                rows={3}
-                required
-                value={
-                  typeof formData.examples === "string"
-                    ? formData.examples
-                    : Array.isArray(formData.examples)
-                    ? formData.examples.join("\n")
-                    : ""
-                }
-                onChange={(e) =>
-                  setFormData({ ...formData, examples: e.target.value })
-                }
-                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
-                placeholder="I play tennis every Sunday.&#10;She works in a bank.&#10;They don't like coffee."
-              />
-            </div>
-
-            <div>
-              <label
-                htmlFor="notes"
-                className="block text-sm font-medium text-gray-700 mb-1"
-              >
-                Additional Notes
-              </label>
-              <textarea
-                id="notes"
+                id="meaning"
                 rows={2}
-                value={formData.notes || ""}
+                value={formData.meaning || ""}
                 onChange={(e) =>
-                  setFormData({ ...formData, notes: e.target.value })
+                  setFormData({ ...formData, meaning: e.target.value })
                 }
-                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
+                className={`w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 ${
+                  errors.meaning
+                    ? "border-red-500 focus:border-red-500 bg-red-50"
+                    : "border-gray-300 focus:border-blue-500 bg-white"
+                }`}
               />
+              {errors.meaning && (
+                <p className="text-red-500 text-xs mt-1">{errors.meaning}</p>
+              )}
+            </div>
+
+            <div>
+              <label
+                htmlFor="example"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
+                Example
+              </label>
+              <textarea
+                id="example"
+                rows={2}
+                value={formData.example || ""}
+                onChange={(e) =>
+                  setFormData({ ...formData, example: e.target.value })
+                }
+                className={`w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 ${
+                  errors.example
+                    ? "border-red-500 focus:border-red-500 bg-red-50"
+                    : "border-gray-300 focus:border-blue-500 bg-white"
+                }`}
+                placeholder="例えば、これは例文です。"
+              />
+              {errors.example && (
+                <p className="text-red-500 text-xs mt-1">{errors.example}</p>
+              )}
+            </div>
+
+            <div>
+              <label
+                htmlFor="usage"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
+                Usage
+              </label>
+              <textarea
+                id="usage"
+                rows={1}
+                value={formData.usage || ""}
+                onChange={(e) =>
+                  setFormData({ ...formData, usage: e.target.value })
+                }
+                className={`w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 ${
+                  errors.usage
+                    ? "border-red-500 focus:border-red-500 bg-red-50"
+                    : "border-gray-300 focus:border-blue-500 bg-white"
+                }`}
+              />
+              {errors.usage && (
+                <p className="text-red-500 text-xs mt-1">{errors.usage}</p>
+              )}
+            </div>
+
+            <div className="">
+              <label
+                htmlFor="jlptLevel"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
+                JLPT Level
+              </label>
+              <select
+                id="jlptLevel"
+                value={formData.jlptLevel}
+                onChange={(e) =>
+                  setFormData({ ...formData, jlptLevel: e.target.value })
+                }
+                className={`input border rounded px-3 py-2 w-full ${
+                  errors.jlptLevel
+                    ? "border-red-500 focus:border-red-500 bg-red-50"
+                    : "border-gray-300 focus:border-blue-500 bg-white"
+                }`}
+              >
+                <option value="">Select...</option>
+                {levels.map((level) => (
+                  <option key={level} value={level}>
+                    {level}
+                  </option>
+                ))}
+              </select>
+              {errors.jlptLevel && (
+                <p className="text-red-500 text-xs mt-1">{errors.jlptLevel}</p>
+              )}
             </div>
           </div>
         );
@@ -872,7 +969,7 @@ function ContentManagement() {
       case "exercises":
         return (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-            <div className="md:col-span-2">
+            <div className="">
               <label
                 htmlFor="title"
                 className="block text-sm font-medium text-gray-700 mb-1"
@@ -1103,9 +1200,6 @@ function ContentManagement() {
           <div className="divide-y divide-gray-200">
             {filteredGrammars.length > 0 ? (
               filteredGrammars.map((item) => {
-                const jlptClass =
-                  jlptLevelClassMap[item.jlptLevel] ||
-                  "bg-gray-100 text-gray-500";
                 const formattedDate = formatDate(item.updatedAt);
 
                 return (
@@ -1120,7 +1214,7 @@ function ContentManagement() {
                             {item.titleJp}
                           </h3>
                           <span
-                            className={`ml-2 text-xs font-medium px-2 py-1 rounded ${jlptClass}`}
+                            className={`ml-2 text-xs font-medium px-2 py-1 rounded ${jlptLevelClassMap[item.jlptLevel]}`}
                           >
                             {item.jlptLevel}
                           </span>
