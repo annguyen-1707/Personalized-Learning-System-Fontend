@@ -1,16 +1,11 @@
-import { createContext, useContext, useState, useEffect } from "react";
+import { createContext, useContext, useState} from "react";
 import {
   mockAdmins,
   mockUsers,
   mockSystemLogs,
-  mockVocabulary,
-  mockGrammar,
   mockExercises,
   mockResources,
 } from "../data/mockData";
-import { data } from "autoprefixer";
-import { s } from "framer-motion/client";
-
 const DataContext = createContext();
 
 export function useData() {
@@ -25,14 +20,11 @@ export function DataProvider({ children }) {
     page: { totalPages: 0, number: 0, totalElements: 0 },
   });
   const [logs, setLogs] = useState(mockSystemLogs);
-  const [vocabulary, setVocabulary] = useState(mockVocabulary);
-  const [grammar, setGrammar] = useState(mockGrammar);
   const [exercises, setExercises] = useState(mockExercises);
   const [resources, setResources] = useState(mockResources);
-  const [subjects, setSubjects] = useState({});
   const [errorMessage, setErrorMessage] = useState([]);
-  const [errors, setErrors] = useState({});
-  const [lessonStatus, setLessonStatus] = useState([]);
+  const [vocabulary, setVocabulary] = useState([]);
+  const [grammar, setGrammar] = useState([]);
 
   // api for fetching days "/api/subjects" and "/api/lessons?subjectId={subjectId}"
   const fetchSubjects = async (page) => {
@@ -388,6 +380,19 @@ export function DataProvider({ children }) {
     return data;
   };
 
+
+  // Grammar CRUD operations
+
+  const fetchGrammar = async (lessonId, page) => {
+      const response = await fetch(`/api/grammars?lessonId=${lessonId}&page=${page}`);
+      if (!response.ok) {
+        const data = await response.json();
+        return data;
+      }
+      const data = await response.json();
+      return data.data;
+  };
+
   const addGrammar = (item) => {
     const newItem = { ...item, id: Date.now().toString() };
     setGrammar([...grammar, newItem]);
@@ -460,13 +465,8 @@ export function DataProvider({ children }) {
     users,
     lessons,
     logs,
-    vocabulary,
     exercises,
-    resources,
-    subjects,
     errorMessage,
-    lessonStatus,
-    errors,
     addAdmin,
     updateAdmin,
     deleteAdmin,
@@ -501,6 +501,7 @@ export function DataProvider({ children }) {
     fetchLevels,
     fetchPartOfSpeech,
     getSubjectById,
+    fetchGrammar,
   };
 
   return <DataContext.Provider value={value}>{children}</DataContext.Provider>;
