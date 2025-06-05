@@ -410,16 +410,35 @@ export function DataProvider({ children }) {
     return newItem;
   };
 
-  const updateGrammar = (id, updatedItem) => {
+  const updateGrammar = async (id, updatedItem) => {
+    const res = await fetch(`/api/grammars/${id}`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(updatedItem),
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      return data;
+    }
     setGrammar(
       grammar.map((item) =>
-        item.id === id ? { ...item, ...updatedItem } : item
+        item.id === id ? { ...item, ...data.data } : item
       )
     );
+    return data.data;
   };
 
-  const deleteGrammar = (id) => {
-    setGrammar(grammar.filter((item) => item.id !== id));
+  const deleteGrammar = async (id) => {
+    const res = await fetch(`/api/grammars/${id}`, {
+      method: "DELETE",
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      return data;
+    }
+    return data;
   };
 
   const addExercise = (item) => {

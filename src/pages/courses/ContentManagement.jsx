@@ -126,7 +126,7 @@ function ContentManagement() {
 
   const jlptLevelClassMap = {
     N5: "bg-success-50 text-success-700",
-    N4: "bg-teal-50 text-teal-700",
+    N4: "bg-primary-50 text-primary-700",
     N3: "bg-warning-50 text-warning-700",
     N2: "bg-orange-50 text-orange-700",
     N1: "bg-error-50 text-error-700",
@@ -223,7 +223,7 @@ function ContentManagement() {
           structure: "",
           meaning: "",
           usage: "",
-          examples: "",
+          example: "",
           jlptLevel: "",
           lessonId: lessonId,
         });
@@ -275,15 +275,16 @@ function ContentManagement() {
         });
         getGrammar();
         if (response.status === "error") {
+          if(!Array.isArray(response.data)) {
+            setErrorMessages(response.message);
+            return;
+          }
           const errorMap = {};
           response.data.forEach((err) => {
             errorMap[err.field] = err.message;
           });
           if (Object.keys(errorMap).length > 1) {
             setErrors(errorMap);
-            return;
-          } else {
-            setErrorMessages(response.message);
             return;
           }
         }
@@ -353,14 +354,24 @@ function ContentManagement() {
         break;
 
       case "grammar":
-        updateGrammar(isEditing, {
-          ...formData,
-          examples:
-            typeof formData.examples === "string"
-              ? formData.examples.split("\n")
-              : formData.examples,
-        });
-        logAction = "Grammar Updated";
+        const res = await updateGrammar(isEditing, {...formData});
+        getGrammar();
+        if (res.status === "error") {
+          const errorMap = {};
+          if (Array.isArray(res.data)) {
+            res.data.forEach((err) => {
+              errorMap[err.field] = err.message;
+            });
+          } else {
+            setErrorMessages(res.message);
+          }
+          setErrors(errorMap);
+          return;
+        }
+        toast.success("Grammar updated successfully!");
+        setIsEditing(null);
+        resetForm();
+        setErrors({});
         break;
       case "exercises":
         updateExercise(isEditing, formData);
@@ -402,8 +413,13 @@ function ContentManagement() {
         toast.success("Vocabulary deleted successfully!");
         break;
       case "grammar":
-        await deleteGrammar(id);
-        logAction = "Grammar Deleted";
+        const res = await deleteGrammar(id);
+        getGrammar();
+        if (res.status === "error") {
+          toast.error("Failed to delete grammar");
+          return;
+        }
+        toast.success("Grammar deleted successfully!");
         break;
       case "exercises":
         await deleteExercise(id);
@@ -441,12 +457,13 @@ function ContentManagement() {
         break;
       case "grammar":
         editData = {
-          title: item.title,
-          explanation: item.explanation,
-          examples: Array.isArray(item.examples)
-            ? item.examples.join("\n")
-            : item.examples,
-          notes: item.notes,
+          titleJp: item.titleJp,
+          structure: item.structure,
+          meaning: item.meaning,
+          usage: item.usage,
+          example: item.example,
+          jlptLevel: item.jlptLevel,
+          lessonId: lessonId,
         };
         break;
       case "exercises":
@@ -463,7 +480,7 @@ function ContentManagement() {
     }
 
     setFormData(editData);
-    setIsEditing(item.vocabularyId);
+    setIsEditing(item.vocabularyId || item.grammarId || item.exerciseId);
     setIsAdding(false);
   };
 
@@ -1183,9 +1200,6 @@ function ContentManagement() {
           <div className="divide-y divide-gray-200">
             {filteredGrammars.length > 0 ? (
               filteredGrammars.map((item) => {
-                const jlptClass =
-                  jlptLevelClassMap[item.jlptLevel] ||
-                  "bg-gray-100 text-gray-500";
                 const formattedDate = formatDate(item.updatedAt);
 
                 return (
@@ -1200,7 +1214,7 @@ function ContentManagement() {
                             {item.titleJp}
                           </h3>
                           <span
-                            className={`ml-2 text-xs font-medium px-2 py-1 rounded ${jlptClass}`}
+                            className={`ml-2 text-xs font-medium px-2 py-1 rounded ${jlptLevelClassMap[item.jlptLevel]}`}
                           >
                             {item.jlptLevel}
                           </span>
