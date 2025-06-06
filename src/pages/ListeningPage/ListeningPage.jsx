@@ -1,140 +1,64 @@
-import { useState } from 'react'
-import { motion } from 'framer-motion'
-import { FiHeadphones, FiInfo } from 'react-icons/fi'
-import AudioPlayer from './components/AudioPlayer'
-import ListeningQuiz from './components/ListeningQuiz'
+import { Link } from "react-router-dom";
 
-function ListeningPage() {
-  const [currentTime, setCurrentTime] = useState(0)
-  
-  // Example listening exercise data - in a real app, this would come from your backend
-  const exercise = {
+const listeningContents = [
+  {
     id: 1,
-    title: 'Daily Conversation Practice',
-    description: 'Listen to a conversation between two friends making plans for the weekend.',
-    level: 'N5',
-    audioUrl: 'https://example.com/audio.mp3', // Replace with actual audio URL
-    transcript: [
-      {
-        startTime: 0,
-        endTime: 5,
-        japanese: 'こんにちは、週末は何をする予定ですか？',
-        english: 'Hello, what are your plans for the weekend?'
-      },
-      {
-        startTime: 5,
-        endTime: 10,
-        japanese: '映画を見に行こうと思っています。',
-        english: 'I\'m thinking of going to see a movie.'
-      }
-    ],
-    questions: [
-      {
-        id: 1,
-        startTime: 0,
-        endTime: 5,
-        text: 'What is the first person asking about?',
-        options: [
-          'Weekend plans',
-          'Movie preferences',
-          'Restaurant recommendations',
-          'Weather forecast'
-        ],
-        correctAnswer: 'Weekend plans',
-        explanation: 'The person asks "週末は何をする予定ですか？" which means "What are your plans for the weekend?"'
-      },
-      {
-        id: 2,
-        startTime: 5,
-        endTime: 10,
-        text: 'What does the second person plan to do?',
-        options: [
-          'Go shopping',
-          'Watch a movie',
-          'Visit friends',
-          'Study Japanese'
-        ],
-        correctAnswer: 'Watch a movie',
-        explanation: 'The person responds "映画を見に行こうと思っています" which means "I\'m thinking of going to see a movie."'
-      }
-    ]
-  }
+    title: "Daily Conversation",
+    description: "Practice listening to daily Japanese conversations with native speakers.",
+    level: "Beginner",
+    progress: 40,
+    image: "https://images.unsplash.com/photo-1519125323398-675f0ddb6308?auto=format&fit=crop&w=400&q=80",
+  },
+  {
+    id: 2,
+    title: "Travel Situations",
+    description: "Understand Japanese in real travel scenarios: airport, hotel, restaurant, and more.",
+    level: "Intermediate",
+    progress: 10,
+    image: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=400&q=80",
+  },
+  {
+    id: 3,
+    title: "JLPT Listening N5",
+    description: "Prepare for JLPT N5 listening with sample tests and explanations.",
+    level: "Beginner",
+    progress: 0,
+    image: "https://images.unsplash.com/photo-1465101046530-73398c7f28ca?auto=format&fit=crop&w=400&q=80",
+  },
+  // Thêm các bài nghe khác nếu muốn
+];
 
+function ListeningListPage() {
   return (
-    <div className="max-w-4xl mx-auto px-4">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="bg-white rounded-lg shadow-md overflow-hidden mb-8"
-      >
-        <div className="bg-primary-500 text-white p-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl font-bold">{exercise.title}</h1>
-              <p className="mt-2 opacity-90">{exercise.description}</p>
-            </div>
-            <div className="text-lg font-medium">
-              JLPT {exercise.level}
-            </div>
-          </div>
-        </div>
-        
-        <div className="p-6">
-          <AudioPlayer
-            audioUrl={exercise.audioUrl}
-            onTimeUpdate={setCurrentTime}
-          />
-        </div>
-      </motion.div>
-      
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Transcript */}
-        <div className="lg:col-span-1">
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <h2 className="text-lg font-medium text-gray-900 mb-4">Transcript</h2>
-            <div className="space-y-4">
-              {exercise.transcript.map((line, index) => (
-                <div
-                  key={index}
-                  className={`p-3 rounded-lg transition-colors ${
-                    currentTime >= line.startTime && currentTime <= line.endTime
-                      ? 'bg-primary-50 border-2 border-primary-500'
-                      : 'bg-gray-50'
-                  }`}
+    <div className="p-8">
+      <h1 className="text-2xl font-bold mb-6">Listening Practice</h1>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {listeningContents.map((item) => (
+          <div key={item.id} className="bg-white rounded-lg shadow-md overflow-hidden flex flex-col">
+            <img src={item.image} alt={item.title} className="h-40 w-full object-cover" />
+            <div className="p-4 flex-1 flex flex-col">
+              <div className="flex items-center justify-between mb-2">
+                <span className={`px-2 py-1 rounded text-xs font-semibold ${item.level === "Beginner" ? "bg-green-100 text-green-700" : item.level === "Intermediate" ? "bg-yellow-100 text-yellow-700" : "bg-blue-100 text-blue-700"}`}>
+                  {item.level}
+                </span>
+                <span className="text-xs text-gray-500">{item.progress}%</span>
+              </div>
+              <h2 className="text-lg font-semibold mb-1">{item.title}</h2>
+              <p className="text-gray-600 text-sm flex-1">{item.description}</p>
+              <div className="mt-4">
+                <Link
+                  to={`/listening/${item.id}`}
+                  className={`block w-full text-center px-4 py-2 rounded font-medium ${item.progress > 0 ? "bg-blue-500 text-white hover:bg-blue-600" : "bg-green-500 text-white hover:bg-green-600"}`}
                 >
-                  <div className="text-primary-600">{line.japanese}</div>
-                  <div className="text-sm text-gray-600 mt-1">{line.english}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-          
-          {/* Tips */}
-          <div className="bg-white rounded-lg shadow-md p-6 mt-6">
-            <h2 className="text-lg font-medium text-gray-900 mb-4">Listening Tips</h2>
-            <div className="space-y-3 text-gray-600">
-              <div className="flex items-start">
-                <FiHeadphones className="h-5 w-5 text-primary-500 mt-0.5 mr-2" />
-                <span>Use headphones for better audio quality</span>
-              </div>
-              <div className="flex items-start">
-                <FiInfo className="h-5 w-5 text-primary-500 mt-0.5 mr-2" />
-                <span>Focus on understanding the main idea first</span>
+                  {item.progress > 0 ? "Continue Listening" : "Start Listening"}
+                </Link>
               </div>
             </div>
           </div>
-        </div>
-        
-        {/* Questions */}
-        <div className="lg:col-span-2">
-          <ListeningQuiz
-            questions={exercise.questions}
-            currentTime={currentTime}
-          />
-        </div>
+        ))}
       </div>
     </div>
-  )
+  );
 }
 
-export default ListeningPage
+export default ListeningListPage;
