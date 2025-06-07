@@ -28,6 +28,7 @@ import DialogueManagement from "./pages/content/DialogueManagement";
 import OAuthCallBack from "./pages/auth/OAuthCallBack";
 import ContentReadingManagement from "./pages/content/ContentReadingManagement";
 import ListeningContentManagement from "./pages/content/ContentListeningManagement";
+import QuestionManagement from "./pages/content/QuestionManagement";
 
 function App() {
   return (
@@ -83,6 +84,10 @@ function App() {
             <Route
               path="/admin/content_listening"
               element={<ListeningContentManagement />}
+            />
+            <Route
+              path="/admin/content_listening/:contentListeningId/question"
+              element={<QuestionManagement />}
             />
             <Route path="/admin" element={<Dashboard />} />
             <Route path="/admin/system-logs" element={<SystemLogs />} />

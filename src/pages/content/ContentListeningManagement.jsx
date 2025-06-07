@@ -415,10 +415,10 @@ function ListeningContentManagement() {
                       )}
                     </div>
                     <div className="space-y-2">
-                      <Link to={`/admin/content_listening/${content.contentListeningId}/exercise`}>
+                      <Link to={`/admin/content_listening/${content.contentListeningId}/question`}>
                         <div className="flex items-center text-sm text-gray-500">
                           < MessageCircleQuestion size={16} className="mr-2" />
-                          <span className="mr-3">List exercise</span>
+                          <span className="mr-3">List question</span>
                           <Edit size={16} color='blue' />
                         </div>
                       </Link>
