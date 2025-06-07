@@ -82,6 +82,10 @@ function App() {
               element={<VocabularyManagement />}
             />
             <Route
+              path="/admin/content_reading/:contentReadingId/grammar"
+              element={<GrammarManagement />}
+            />
+            <Route
               path="/admin/content_listening"
               element={<ListeningContentManagement />}
             />
