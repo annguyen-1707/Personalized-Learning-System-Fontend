@@ -48,9 +48,9 @@ function ListeningListPage() {
               <div className="mt-4">
                 <Link
                   to={`/listening/${item.id}`}
-                  className={`block w-full text-center px-4 py-2 rounded font-medium ${item.progress > 0 ? "bg-blue-500 text-white hover:bg-blue-600" : "bg-green-500 text-white hover:bg-green-600"}`}
+                  className="block w-full text-center px-4 py-2 rounded font-medium bg-blue-500 text-white hover:bg-blue-600"
                 >
-                  {item.progress > 0 ? "Continue Listening" : "Start Listening"}
+                  Start Listening
                 </Link>
               </div>
             </div>

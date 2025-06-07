@@ -32,7 +32,56 @@ const listeningExercises = {
       }
     ]
   },
-  // Thêm các bài khác nếu muốn
+  2: {
+    id: 2,
+    title: 'Daily Conversation Practice',
+    description: 'Listen to a conversation between two friends making plans for the weekend.',
+    level: 'N5',
+    audioUrl: 'https://example.com/audio.mp3',
+    transcript: [
+      { startTime: 0, endTime: 5, japanese: 'こんにちは、週末は何をする予定ですか？', english: 'Hello, what are your plans for the weekend?' },
+      { startTime: 5, endTime: 10, japanese: '映画を見に行こうと思っています。', english: "I'm thinking of going to see a movie." }
+    ],
+    questions: [
+      {
+        id: 1, startTime: 0, endTime: 5, text: 'What is the first person asking about?',
+        options: ['Weekend plans', 'Movie preferences', 'Restaurant recommendations', 'Weather forecast'],
+        correctAnswer: 'Weekend plans',
+        explanation: 'The person asks "週末は何をする予定ですか？" which means "What are your plans for the weekend?"'
+      },
+      {
+        id: 2, startTime: 5, endTime: 10, text: 'What does the second person plan to do?',
+        options: ['Go shopping', 'Watch a movie', 'Visit friends', 'Study Japanese'],
+        correctAnswer: 'Watch a movie',
+        explanation: 'The person responds "映画を見に行こうと思っています" which means "I\'m thinking of going to see a movie."'
+      }
+    ]
+  },
+  3: {
+    id: 3,
+    title: 'Daily Conversation Practice',
+    description: 'Listen to a conversation between two friends making plans for the weekend.',
+    level: 'N5',
+    audioUrl: 'https://example.com/audio.mp3',
+    transcript: [
+      { startTime: 0, endTime: 5, japanese: 'こんにちは、週末は何をする予定ですか？', english: 'Hello, what are your plans for the weekend?' },
+      { startTime: 5, endTime: 10, japanese: '映画を見に行こうと思っています。', english: "I'm thinking of going to see a movie." }
+    ],
+    questions: [
+      {
+        id: 1, startTime: 0, endTime: 5, text: 'What is the first person asking about?',
+        options: ['Weekend plans', 'Movie preferences', 'Restaurant recommendations', 'Weather forecast'],
+        correctAnswer: 'Weekend plans',
+        explanation: 'The person asks "週末は何をする予定ですか？" which means "What are your plans for the weekend?"'
+      },
+      {
+        id: 2, startTime: 5, endTime: 10, text: 'What does the second person plan to do?',
+        options: ['Go shopping', 'Watch a movie', 'Visit friends', 'Study Japanese'],
+        correctAnswer: 'Watch a movie',
+        explanation: 'The person responds "映画を見に行こうと思っています" which means "I\'m thinking of going to see a movie."'
+      }
+    ]
+  },
 };
 
 function ListeningDetailPage() {
