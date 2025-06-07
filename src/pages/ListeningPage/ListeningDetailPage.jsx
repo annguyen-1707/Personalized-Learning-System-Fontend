@@ -5,7 +5,6 @@ import { FiHeadphones, FiInfo } from 'react-icons/fi'
 import AudioPlayer from './components/AudioPlayer'
 import ListeningQuiz from './components/ListeningQuiz'
 
-// Giả lập dữ liệu, thực tế bạn fetch từ backend theo id
 const listeningExercises = {
   1: {
     id: 1,
