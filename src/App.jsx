@@ -31,6 +31,7 @@ import ListeningContentManagement from "./pages/content/ContentListeningManageme
 import ListeningPage from "./pages/ListeningPage/ListeningPage";
 import ListeningDetailPage from "./pages/ListeningPage/ListeningDetailPage";
 import QuestionManagement from "./pages/content/QuestionManagement";
+import ExerciseManagement from "./pages/courses/ExerciseManagement";
 
 function App() {
   return (
@@ -110,6 +111,10 @@ function App() {
             <Route
               path="courses/:subjectId/lessons/:lessonId/content"
               element={<ContentManagement />}
+            />
+            <Route
+              path="/admin/courses/:subjectId/lessons/:lessonId/exercises/:exerciseId"
+              element={<ExerciseManagement />}
             />
             <Route
               path="/admin/content/reading/:contentId/vocabulary"
