@@ -110,16 +110,8 @@ function ContentManagement() {
   const filteredExercises = lessonExercises.filter((exercise) => {
     const searchMatch =
       search === "" ||
-      exercise.content?.title?.toLowerCase().includes(search.toLowerCase()) ||
-      exercise.content?.duration
-        ?.toLowerCase()
-        .includes(search.toLowerCase()) ||
-      exercise.content?.content?.questionText
-        ?.toLowerCase()
-        .includes(search.toLowerCase()) ||
-      exercise.content?.content?.answerQuestionRequests?.some((answer) =>
-        answer?.answerText?.toLowerCase().includes(search.toLowerCase())
-      );
+      exercise.title?.toLowerCase().includes(search.toLowerCase())
+
     return searchMatch;
   });
 
