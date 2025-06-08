@@ -28,6 +28,8 @@ import DialogueManagement from "./pages/content/DialogueManagement";
 import OAuthCallBack from "./pages/auth/OAuthCallBack";
 import ContentReadingManagement from "./pages/content/ContentReadingManagement";
 import ListeningContentManagement from "./pages/content/ContentListeningManagement";
+import ListeningPage from "./pages/ListeningPage/ListeningPage";
+import ListeningDetailPage from "./pages/ListeningPage/ListeningDetailPage";
 import QuestionManagement from "./pages/content/QuestionManagement";
 
 function App() {
@@ -54,7 +56,11 @@ function App() {
             path="/await-confirmation"
             element={<AwaitEmailConfirmation />}
           />
-
+          {/* Listening routes */}
+          <Route path="/" element={<Layout />}>
+          <Route path="/listening" element={<ListeningPage />} />
+          <Route path="/listening/:id" element={<ListeningDetailPage />} />
+          </Route>
           {/* Public routes */}
           <Route path="/" element={<Layout />}>
             <Route index element={<HomePage />} />
