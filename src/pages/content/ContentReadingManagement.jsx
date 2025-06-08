@@ -122,7 +122,6 @@ function ReadingContentManagement() {
     const searchMatch =
       search === "" ||
       content.title?.toLowerCase().includes(search.toLowerCase()) ||
-      content.category?.toLowerCase().includes(search.toLowerCase()) ||
       content.scriptJp?.toLowerCase().includes(search.toLowerCase()) ||
       content.scriptVn?.toLowerCase().includes(search.toLowerCase()) ||
       content.category?.toLowerCase().includes(search.toLowerCase());
