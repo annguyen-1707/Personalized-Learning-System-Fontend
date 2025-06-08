@@ -2,16 +2,19 @@ import { Link } from 'react-router-dom'
 import { FiClock, FiBook, FiBarChart2 } from 'react-icons/fi'
 import { MdPeopleAlt } from "react-icons/md";
 import { useState } from 'react';
+import LearningPaggService from "../../../services/LearningPaggService";
 
 function CourseCard({ course }) {
   const [showEnrollDialog, setShowEnrollDialog] = useState(false);
+  const { enrollInCourse } = LearningPaggService;
 
   const handleStartLearning = (e) => {
     e.preventDefault();
     setShowEnrollDialog(true);
   };
 
-  const handleConfirmEnroll = () => {
+  const handleConfirmEnroll = async () => {
+    await enrollInCourse(course.subjectId);
     setShowEnrollDialog(false);
     window.location.href = `/learning/${course.subjectId}/lesson-1`;
   };
