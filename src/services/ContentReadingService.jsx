@@ -111,8 +111,25 @@ const getVocabularyByContentReadingId = async (id) => {
     return axios.get(`/api/content_reading/${id}/vocabularies`)
 }
 
+
+const getPageAllGrammar = async (page, size) => {
+    console.log("After", page, size)
+    return axios.get(`/api/grammars/all?page=${page - 1}&size=${size}`)
+}
+
+const handleAddGrammar = async (contentReadingId, grammarId) => {
+    return axios.patch(`/api/content_reading/${contentReadingId}/add_grammar/${grammarId}`)
+}
+
+const handleRemoveGrammar = async (contentReadingId, grammarId) => {
+    return axios.patch(`/api/content_reading/${contentReadingId}/remove_grammar/${grammarId}`)
+}
+
+const getGrammarByContentReadingId = async (id) => {
+    return axios.get(`/api/content_reading/${id}/grammars`)
+}
 export {
     getPageContentReading, handleUpdateContent, fetchAllContentReading, fetchAllContentCategoryReading, handleCreateContent, handleDeleteContent,
-    getPageAllVocabulary, handleAddVocabulary, handleRemoveVocabulary, getVocabularyByContentReadingId
+    getPageAllVocabulary, handleAddVocabulary, handleRemoveVocabulary, getVocabularyByContentReadingId, getPageAllGrammar, handleAddGrammar, handleRemoveGrammar, getGrammarByContentReadingId
 
 }
