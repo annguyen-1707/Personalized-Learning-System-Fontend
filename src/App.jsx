@@ -31,6 +31,11 @@ import ListeningContentManagement from "./pages/content/ContentListeningManageme
 import UpgradePage from "./pages/Upgrade/UpgradePage";
 import VnpayReturn from "./pages/Upgrade/VnpayReturn.jsx";
 import ParentPage from "./pages/HomePage/ParentPage.jsx";
+import ListeningPage from "./pages/ListeningPage/ListeningPage";
+import ListeningDetailPage from "./pages/ListeningPage/ListeningDetailPage";
+import QuestionManagement from "./pages/content/QuestionManagement";
+import ExerciseManagement from "./pages/courses/ExerciseManagement";
+import LearningPage from "./pages/LearningPage/LearningPage";
 
 function App() {
   return (
@@ -65,10 +70,15 @@ function App() {
             path="/await-confirmation"
             element={<AwaitEmailConfirmation />}
           />
-
+          {/* Listening routes */}
+          <Route path="/" element={<Layout />}>
+          <Route path="/listening" element={<ListeningPage />} />
+          <Route path="/listening/:id" element={<ListeningDetailPage />} />
+          </Route>
           {/* Public routes */}
           <Route path="/" element={<Layout />}>
             <Route index element={<HomePage />} />
+            <Route path="learning" element={<LearningPage />} />
           </Route>
 
           {/* Admin routes */}
@@ -93,8 +103,16 @@ function App() {
               element={<VocabularyManagement />}
             />
             <Route
+              path="/admin/content_reading/:contentReadingId/grammar"
+              element={<GrammarManagement />}
+            />
+            <Route
               path="/admin/content_listening"
               element={<ListeningContentManagement />}
+            />
+            <Route
+              path="/admin/content_listening/:contentListeningId/question"
+              element={<QuestionManagement />}
             />
             <Route path="/admin" element={<Dashboard />} />
             <Route path="/admin/system-logs" element={<SystemLogs />} />
@@ -107,6 +125,10 @@ function App() {
             <Route
               path="courses/:subjectId/lessons/:lessonId/content"
               element={<ContentManagement />}
+            />
+            <Route
+              path="/admin/courses/:subjectId/lessons/:lessonId/exercises/:exerciseId"
+              element={<ExerciseManagement />}
             />
             <Route
               path="/admin/content/reading/:contentId/vocabulary"

@@ -68,9 +68,7 @@ const handleUpdateContent = async (id, data) => {
             image: imageUrl,
             category: data.category,
         };
-        console.log("4")
         const response = await axios.patch(`/api/content_speaking/${id}`, formData);
-        console.log("5")
         return response;
     } catch (error) {
         const allErrors = error.response?.data?.data?.map(e => `${e.message}`).join(", ");
@@ -83,4 +81,7 @@ const getPageContentSpeaking = async (page, size) => {
     return axios.get(`/api/content_speaking?page=${page}&size=${size}`)
 }
 
-export { getPageContentSpeaking, handleUpdateContent, fetchAllContentSpeaking, fetchAllContentCategorySpeaking, handleCreateContent, handleDeleteContent }
+export {
+    getPageContentSpeaking, handleUpdateContent, fetchAllContentSpeaking, fetchAllContentCategorySpeaking,
+    handleCreateContent, handleDeleteContent
+};
