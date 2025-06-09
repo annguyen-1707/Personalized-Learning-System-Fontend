@@ -1,35 +1,30 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import { FiEdit2, FiSettings, FiDownload, FiTrendingUp } from 'react-icons/fi'
 import LearningProgress from './components/LearningProgress'
-import AchievementsList from './components/AchievementsList'
-import StudyStreak from './components/StudyStreak'
 import VocabularyProgress from './components/VocabularyProgress'
 import GrammarProgress from './components/GrammarProgress'
-import StudyReminders from './components/StudyReminders'
-import MyList from './components/MyList'
 import { useNavigate } from "react-router-dom";
+import { getLearningProgressFromAPI } from '../../services/ProfileService'
+import ExerciseProgress from './components/ExerciseProgress'
 
 function ProfilePage() {
   const [activeTab, setActiveTab] = useState('overview')
   const navigate = useNavigate();
+  const [learningProgress, setLearningProgress] = useState();
   // Example user data - in a real app, this would come from your backend
-  const user = {
-    name: '',
-    email: '',
-    level: '',
-    joinDate: '',
-    avatar: 'https://images.pexels.com/photos/614810/pexels-photo-614810.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2',
-    progress: {
-      vocabulary: 65,
-      grammar: 45,
-      exercises: 78,
-    },
-    streak: {
-      current: 15,
-      longest: 30,
-      lastStudied: '2024-03-15',
-    },
+
+  useEffect(() => {
+    // Fetch learning progress data when the component mounts
+    getLearningProgress();
+  }, []);
+
+  const getLearningProgress = async () => {
+    var res = await getLearningProgressFromAPI();
+    console.log("data", res);
+    if (res && res.data) {
+      setLearningProgress(res.data);
+    }
   }
 
   return (
@@ -45,15 +40,15 @@ function ProfilePage() {
           <div className="flex flex-col sm:flex-row items-center">
             <div className="-mt-16 relative">
               <img
-                src={user.avatar}
-                alt={user.name}
+                src={'https://images.pexels.com/photos/614810/pexels-photo-614810.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2'}
+                alt={"Profile Avatar"}
                 className="w-32 h-32 rounded-full border-4 border-white shadow-lg"
               />
               <button className="absolute bottom-0 right-0 p-2 bg-white rounded-full shadow-md text-gray-600 hover:text-primary-500">
                 <FiEdit2 className="h-5 w-5" />
               </button>
             </div>
-                <div className="mt-6 sm:mt-0 sm:ml-auto">
+            <div className="mt-6 sm:mt-0 sm:ml-auto">
               <button
                 className="btn btn-secondary flex items-center"
                 onClick={() => navigate("/profile/edit")}
@@ -71,44 +66,23 @@ function ProfilePage() {
         <nav className="-mb-px flex space-x-8">
           <button
             onClick={() => setActiveTab('overview')}
-            className={`pb-4 px-1 border-b-2 font-medium text-sm ${
-              activeTab === 'overview'
-                ? 'border-primary-500 text-primary-600'
-                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-            }`}
+            className={`pb-4 px-1 border-b-2 font-medium text-sm ${activeTab === 'overview'
+              ? 'border-primary-500 text-primary-600'
+              : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
           >
             Overview
           </button>
           <button
             onClick={() => setActiveTab('progress')}
-            className={`pb-4 px-1 border-b-2 font-medium text-sm ${
-              activeTab === 'progress'
-                ? 'border-primary-500 text-primary-600'
-                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-            }`}
+            className={`pb-4 px-1 border-b-2 font-medium text-sm ${activeTab === 'progress'
+              ? 'border-primary-500 text-primary-600'
+              : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
           >
             Progress
           </button>
-          <button
-            onClick={() => setActiveTab('achievements')}
-            className={`pb-4 px-1 border-b-2 font-medium text-sm ${
-              activeTab === 'achievements'
-                ? 'border-primary-500 text-primary-600'
-                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-            }`}
-          >
-            Achievements
-          </button>
-          <button
-            onClick={() => setActiveTab('mylist')}
-            className={`pb-4 px-1 border-b-2 font-medium text-sm ${
-              activeTab === 'mylist'
-                ? 'border-primary-500 text-primary-600'
-                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-            }`}
-          >
-            My List
-          </button>
+
         </nav>
       </div>
 
@@ -118,25 +92,16 @@ function ProfilePage() {
         <div className="lg:col-span-2">
           {activeTab === 'overview' && (
             <div className="space-y-8">
-              <LearningProgress progress={user.progress} />
-              <StudyStreak streak={user.streak} />
-              <StudyReminders />
+              <LearningProgress progress={learningProgress} />
             </div>
           )}
-          
+
           {activeTab === 'progress' && (
             <div className="space-y-8">
               <VocabularyProgress />
               <GrammarProgress />
+              <ExerciseProgress />
             </div>
-          )}
-          
-          {activeTab === 'achievements' && (
-            <AchievementsList />
-          )}
-          
-          {activeTab === 'mylist' && (
-            <MyList />
           )}
         </div>
 
@@ -152,19 +117,20 @@ function ProfilePage() {
             <div className="space-y-4">
               <div className="flex justify-between items-center">
                 <span className="text-gray-600">Words Learned</span>
-                <span className="font-medium text-gray-900">487</span>
+                <span className="font-medium text-gray-900">{learningProgress?.totalVocabularyLearn}</span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-gray-600">Grammar Points</span>
-                <span className="font-medium text-gray-900">64</span>
+                <span className="font-medium text-gray-900">{learningProgress?.totalGrammarLearn}</span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-gray-600">Quizzes Completed</span>
-                <span className="font-medium text-gray-900">32</span>
+                <span className="font-medium text-gray-900">{learningProgress?.exerciseCompleted}</span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-gray-600">Study Hours</span>
-                <span className="font-medium text-gray-900">45.5</span>
+                <span className="text-gray-600">Percentage Complete</span>
+                <span className="font-medium text-gray-900">{(learningProgress?.totalVocabularyLearn + learningProgress?.totalGrammarLearn + learningProgress?.exerciseCompleted)
+                  / (learningProgress?.totalVocabularyAllSubject + learningProgress?.totalGrammarAllSubject + learningProgress?.exerciseAllSubject) * 100}% </span>
               </div>
             </div>
           </motion.div>
