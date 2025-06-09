@@ -1,0 +1,33 @@
+
+const getAllSubjects = async (page) => {
+    const userId = 1;
+    const res = await fetch(`api/subjects/students?userId=${userId}&page=${page}`);
+    if (!res.ok) {
+        let data = await res.json();
+        return data;
+    }
+    let data = await res.json();
+    return data.data;
+}
+const enrollInCourse = async (subjectId) => {
+    const userId = 1;
+    const res = await fetch(`api/subject-enrollments?subjectId=${subjectId}&userId=${userId}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    });
+    if (!res.ok) {
+        let data = await res.json();
+        return data;
+    }
+    let data = await res.json();
+    return data;
+}
+
+export const LearningPaggService = {
+    getAllSubjects,
+    enrollInCourse
+};              
+// export default LearningPaggService;
+export default LearningPaggService;

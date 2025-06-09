@@ -441,6 +441,28 @@ export function DataProvider({ children }) {
     return data;
   };
 
+  // Exercise and Resource CRUD operations
+
+ const  getLessonExercisesById = async (lessonId, page) => {
+  const res = await fetch(`/api/exercise-questions?lessonId=${lessonId}&page=${page}`);
+  if (!res.ok) {
+    const data = await res.json();
+    return data;
+  }
+  const data = await res.json();
+  return data.data;
+ }
+
+ const getExerciseDetailsById = async (exerciseId) => {
+   const res = await fetch(`/api/exercise-questions/exercise-details?exerciseId=${exerciseId}`);
+   if (!res.ok) {
+     const data = await res.json();
+     return data;
+   }
+   const data = await res.json();
+   return data.data;
+ };
+
   const addExercise = (item) => {
     const newItem = { ...item, id: Date.now().toString() };
     setExercises([...exercises, newItem]);
@@ -532,6 +554,8 @@ export function DataProvider({ children }) {
     fetchPartOfSpeech,
     getSubjectById,
     fetchGrammar,
+    getLessonExercisesById,
+    getExerciseDetailsById
   };
 
   return <DataContext.Provider value={value}>{children}</DataContext.Provider>;
