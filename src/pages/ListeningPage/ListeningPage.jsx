@@ -11,10 +11,17 @@ function ListeningListPage() {
   useEffect(() => {
     const fetchListeningContents = async () => {
       try {
-        const res = await axios.get("http://localhost:8080/api/listening-contents");
+       const userId = localStorage.getItem("userId");
+        if (!userId) {
+          setListeningContents(listeningContentsData); // fallback if no userId
+          setError("No user ID found, showing sample data.");
+          setLoading(false);
+          return;
+        }
+       const res = await axios.post(`http://localhost:8080/api/user/contents_listening/${userId}`);
         setListeningContents(res.data);
-    } catch (err) {
-        setListeningContents(listeningContentsData); // fallback nếu backend lỗi
+      } catch (err) {
+        setListeningContents(listeningContentsData); // fallback if backend fails
         setError("Cannot connect to backend, showing sample data.");
       } finally {
         setLoading(false);
