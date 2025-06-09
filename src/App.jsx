@@ -28,6 +28,9 @@ import DialogueManagement from "./pages/content/DialogueManagement";
 import OAuthCallBack from "./pages/auth/OAuthCallBack";
 import ContentReadingManagement from "./pages/content/ContentReadingManagement";
 import ListeningContentManagement from "./pages/content/ContentListeningManagement";
+import UpgradePage from "./pages/Upgrade/UpgradePage";
+import VnpayReturn from "./pages/Upgrade/VnpayReturn.jsx";
+import ParentPage from "./pages/HomePage/ParentPage.jsx";
 import ListeningPage from "./pages/ListeningPage/ListeningPage";
 import ListeningDetailPage from "./pages/ListeningPage/ListeningDetailPage";
 import QuestionManagement from "./pages/content/QuestionManagement";
@@ -40,11 +43,20 @@ function App() {
       <DataProvider>
         <Routes>
           {/* Auth routes */}
+          <Route path="/" element={<Layout />}>
+            <Route path="/upgrade" element={<UpgradePage />} />
+            <Route path="/vnpay-return" element={<VnpayReturn />} />
+          </Route>
+          
+          <Route path="/parentPage" element={<ParentPage />} />
+
           <Route path="oauth-callback" element={<OAuthCallBack />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register1" element={<RegisterP1 />} />
           <Route path="/register2" element={<RegisterP2 />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/admin/login" element={<Login />} />
+
           {/*ProfilePage routes*/}
           <Route path="/" element={<Layout />}>
             <Route path="profile" element={<ProfilePage />} />

@@ -1,4 +1,5 @@
 import { createContext, useContext, useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom'; // ✅ thêm dòng này
 
 const AuthContext = createContext();
 
@@ -9,6 +10,7 @@ export function useAuth() {
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate(); // ✅ thêm dòng này
 
 useEffect(() => {
   const checkLogin = async () => {
@@ -69,10 +71,19 @@ useEffect(() => {
         headers: { Authorization: `Bearer ${data.data.accessToken}` }
       });
       const userData = await userRes.json();
-      if (!userRes.ok) {
+      if (!userRes.status === "OK") {
         throw new Error(userData.message || 'Failed to fetch user data');
       }
       setUser(userData.data);
+      const role = userData.data.role?.authority;
+    if (role === "ROLE_PARENT") {
+      navigate("/parentpage");
+    } else if (role === "ROLE_USER") {
+      navigate("/");
+    } else {
+      navigate("/admin");
+    }
+
     } catch (error) {
       console.error('Login failed:', error);
       throw new Error('Login failed');
@@ -97,7 +108,7 @@ useEffect(() => {
       console.error("OAuth2 login failed", error);
     }
   };
-const register2 = async (email ,fullName, dob, address, gender, phone) => {
+const register2 = async (email ,fullName, dob, address, gender, phone, role) => {
     setLoading(true);
     try {
       console.log("✅ Register2 called with email:", email);
@@ -107,7 +118,7 @@ const register2 = async (email ,fullName, dob, address, gender, phone) => {
       const response = await fetch(`http://localhost:8080/auth/complete-profile?email=${email}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ fullName, gender, dob, address, phone }),
+        body: JSON.stringify({ fullName, gender, dob, address, phone, role }),
         credentials: 'include',
       });
 
