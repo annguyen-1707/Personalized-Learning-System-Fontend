@@ -29,7 +29,6 @@ function Login() {
     try {
       setError('');
       await login(email, password);
-      navigate('/');
     } catch (err) {
       setError('Failed to sign in');
     }
