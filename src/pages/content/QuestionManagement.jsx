@@ -359,26 +359,28 @@ function QuestionManagement() {
         </div>
       </div>
       {/* Phan trang */}
-      <ReactPaginate
-        nextLabel="next >"
-        onPageChange={handlePageClick}
-        pageRangeDisplayed={3} // giới hạn trang bên trái 1 2 3 .... 99 100
-        marginPagesDisplayed={2} // giới hạn trang bên phải 1 2 3 .... 99 100
-        pageCount={pageCount}
-        previousLabel="< previous"
-        pageClassName="page-item"
-        pageLinkClassName="page-link"
-        previousClassName="page-item"
-        previousLinkClassName="page-link"
-        nextClassName="page-item"
-        nextLinkClassName="page-link"
-        breakLabel="..."
-        breakClassName="page-item"
-        breakLinkClassName="page-link"
-        containerClassName="pagination"
-        activeClassName="active"
-        renderOnZeroPageCount={null}
-      />
+      <div className="mt-4">
+        <ReactPaginate
+          nextLabel="next >"
+          onPageChange={handlePageClick}
+          pageRangeDisplayed={3} // giới hạn trang bên trái 1 2 3 .... 99 100
+          marginPagesDisplayed={2} // giới hạn trang bên phải 1 2 3 .... 99 100
+          pageCount={pageCount}
+          previousLabel="< previous"
+          pageClassName="page-item"
+          pageLinkClassName="page-link"
+          previousClassName="page-item"
+          previousLinkClassName="page-link"
+          nextClassName="page-item"
+          nextLinkClassName="page-link"
+          breakLabel="..."
+          breakClassName="page-item"
+          breakLinkClassName="page-link"
+          containerClassName="pagination"
+          activeClassName="active"
+          renderOnZeroPageCount={null}
+        />
+      </div>
     </div>
   );
 }

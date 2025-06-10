@@ -24,6 +24,7 @@ import {
   Headphones,
   Search,
   Filter,
+  Layers
 } from "lucide-react";
 import { a, div, s } from "framer-motion/client";
 import ReactPaginate from "react-paginate";
@@ -48,6 +49,7 @@ function ContentManagement() {
     fetchPartOfSpeech,
     getSubjectById,
     fetchGrammar,
+    getLessonExercisesById,
   } = useData();
 
   const [subject, setSubject] = useState(null);
@@ -68,6 +70,7 @@ function ContentManagement() {
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("all");
   const [grammars, setGrammars] = useState([]);
+  const [lessonExercises, setLessonExercises] = useState([]);
 
   const handlePageClick = (event) => {
     const selectedPage = event.selected;
@@ -104,6 +107,14 @@ function ContentManagement() {
     return searchMatch && levelMatch;
   });
 
+  const filteredExercises = lessonExercises.filter((exercise) => {
+    const searchMatch =
+      search === "" ||
+      exercise.title?.toLowerCase().includes(search.toLowerCase())
+
+    return searchMatch;
+  });
+
   const getSubject = async () => {
     try {
       const subject = await getSubjectById(subjectId);
@@ -117,15 +128,28 @@ function ContentManagement() {
 
   const getLessons = async () => {
     try {
-      console.log("Fetching lesson with ID:", lessonId);
-
       const lessons = await getLessonById(lessonId);
-      console.log("Fetched lesson:", lessons);
       if (lessons) {
         setLesson(lessons);
       }
     } catch (error) {
       console.error("Error in getLessons:", error);
+    }
+  };
+
+  const getLessonExercises = async () => {
+    try {
+      const lessonExercises = await getLessonExercisesById(
+        lessonId,
+        currentPage
+      );
+      if (lessonExercises) {
+        setLessonExercises(lessonExercises.content);
+        setTotalPages(lessonExercises.page.totalPages);
+        setTotalElements(lessonExercises.page.totalElements);
+      }
+    } catch (error) {
+      console.error("Error in getLessonExercises:", error);
     }
   };
 
@@ -148,7 +172,6 @@ function ContentManagement() {
 
   const getVocabulary = async () => {
     try {
-      console.log("lessonid", lessonId, "currentPage", currentPage);
       const vocabularies = await fetchVocabulary(lessonId, currentPage);
       if (vocabularies) {
         setVocabularies(vocabularies.content);
@@ -206,6 +229,7 @@ function ContentManagement() {
     getLevels();
     getPartOfSpeech();
     getGrammar();
+    getLessonExercises();
 
     // Set default form data based on active tab
     switch (activeTab) {
@@ -238,8 +262,6 @@ function ContentManagement() {
           title: "",
           duration: "",
           content: "",
-          difficulty: "",
-          exerciseType: "",
           lessonId: lessonId,
         });
         break;
@@ -1289,26 +1311,29 @@ function ContentManagement() {
       case "exercises":
         return (
           <div className="divide-y divide-gray-200">
-            {lessonExercises.length > 0 ? (
-              lessonExercises.map((item) => (
+            {filteredExercises.length > 0 ? (
+              filteredExercises.map((item) => (
                 <div
                   key={item.id}
                   className="p-4 hover:bg-gray-50 animate-fade-in"
                 >
                   <div className="flex justify-between items-start">
-                    <div>
-                      <div className="flex items-center">
-                        <h3 className="text-lg font-medium text-gray-900">
+                    <div className="flex items-center space-x-4">
+                      <div className="h-12 w-12 rounded-lg bg-primary-50 flex items-center justify-center">
+                        <Dumbbell className="h-6 w-6 text-primary-600" />
+                      </div>
+                      <div>
+                        <h3 className="text-xl font-semibold text-gray-900">
                           {item.title}
                         </h3>
-                      </div>
-                      <div className="mt-2 text-xs text-gray-500">
-                        <span className="font-medium">Content preview:</span>
-                        <span className="font-mono bg-gray-50 p-1 rounded ml-1">
-                          {item.content.length > 50
-                            ? item.content.substring(0, 50) + "..."
-                            : item.content}
-                        </span>
+                        <div className="flex items-center mt-1 space-x-4">
+                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                            ⏱ {item.duration} minutes
+                          </span>
+                          <span className="text-sm text-gray-500">
+                            {item.content?.length || 0} questions
+                          </span>
+                        </div>
                       </div>
                     </div>
                     <div className="flex items-center">
@@ -1329,7 +1354,14 @@ function ContentManagement() {
                           </button>
                         </div>
                       ) : (
-                        <>
+                       <div className="flex items-center space-x-2">
+                          <Link
+                            to={`/admin/courses/${subject.subjectId}/lessons/${lessonId}/exercises/${item.id}`}
+                            className="text-secondary-600 hover:text-secondary-800"
+                            title="Manage Lessons"
+                          >
+                            <Layers size={16} />
+                          </Link>
                           <button
                             onClick={() => startEdit(item)}
                             className="text-primary-600 hover:text-primary-800 mr-2"
@@ -1344,7 +1376,7 @@ function ContentManagement() {
                           >
                             <Trash2 size={16} />
                           </button>
-                        </>
+                        </div>
                       )}
                     </div>
                   </div>

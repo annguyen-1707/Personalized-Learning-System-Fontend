@@ -28,9 +28,14 @@ import DialogueManagement from "./pages/content/DialogueManagement";
 import OAuthCallBack from "./pages/auth/OAuthCallBack";
 import ContentReadingManagement from "./pages/content/ContentReadingManagement";
 import ListeningContentManagement from "./pages/content/ContentListeningManagement";
+import UpgradePage from "./pages/Upgrade/UpgradePage";
+import VnpayReturn from "./pages/Upgrade/VnpayReturn.jsx";
+import ParentPage from "./pages/HomePage/ParentPage.jsx";
 import ListeningPage from "./pages/ListeningPage/ListeningPage";
 import ListeningDetailPage from "./pages/ListeningPage/ListeningDetailPage";
 import QuestionManagement from "./pages/content/QuestionManagement";
+import ExerciseManagement from "./pages/courses/ExerciseManagement";
+import LearningPage from "./pages/LearningPage/LearningPage";
 
 function App() {
   return (
@@ -38,11 +43,20 @@ function App() {
       <DataProvider>
         <Routes>
           {/* Auth routes */}
+          <Route path="/" element={<Layout />}>
+            <Route path="/upgrade" element={<UpgradePage />} />
+            <Route path="/vnpay-return" element={<VnpayReturn />} />
+          </Route>
+          
+          <Route path="/parentPage" element={<ParentPage />} />
+
           <Route path="oauth-callback" element={<OAuthCallBack />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register1" element={<RegisterP1 />} />
           <Route path="/register2" element={<RegisterP2 />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/admin/login" element={<Login />} />
+
           {/*ProfilePage routes*/}
           <Route path="/" element={<Layout />}>
             <Route path="profile" element={<ProfilePage />} />
@@ -64,6 +78,7 @@ function App() {
           {/* Public routes */}
           <Route path="/" element={<Layout />}>
             <Route index element={<HomePage />} />
+            <Route path="learning" element={<LearningPage />} />
           </Route>
 
           {/* Admin routes */}
@@ -88,6 +103,10 @@ function App() {
               element={<VocabularyManagement />}
             />
             <Route
+              path="/admin/content_reading/:contentReadingId/grammar"
+              element={<GrammarManagement />}
+            />
+            <Route
               path="/admin/content_listening"
               element={<ListeningContentManagement />}
             />
@@ -106,6 +125,10 @@ function App() {
             <Route
               path="courses/:subjectId/lessons/:lessonId/content"
               element={<ContentManagement />}
+            />
+            <Route
+              path="/admin/courses/:subjectId/lessons/:lessonId/exercises/:exerciseId"
+              element={<ExerciseManagement />}
             />
             <Route
               path="/admin/content/reading/:contentId/vocabulary"
