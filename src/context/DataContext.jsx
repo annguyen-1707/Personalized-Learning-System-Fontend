@@ -28,7 +28,12 @@ export function DataProvider({ children }) {
 
   // api for fetching days "/api/subjects" and "/api/lessons?subjectId={subjectId}"
   const fetchSubjects = async (page) => {
-    const response = await fetch(`/api/subjects?page=${page}`);
+    const response = await fetch(`/api/subjects?page=${page}`, {
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${localStorage.getItem('accessToken')}`
+      }
+    });
     const data = await response.json();
     if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
     return data.data;
@@ -39,8 +44,12 @@ export function DataProvider({ children }) {
   const lessonsFetch = async (subjectId, page) => {
     try {
       const response = await fetch(
-        `/api/lessons?subjectId=${subjectId}&page=${page}`
-      );
+        `/api/lessons?subjectId=${subjectId}&page=${page}`, {
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${localStorage.getItem('accessToken')}`
+        }
+      });
       if (!response.ok)
         throw new Error(`HTTP error! status: ${response.status}`);
       const data = await response.json();
@@ -52,7 +61,12 @@ export function DataProvider({ children }) {
 
   const fetchLessonStatus = async () => {
     try {
-      const response = await fetch("/api/lessons/status");
+      const response = await fetch("/api/lessons/status" , {
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${localStorage.getItem('accessToken')}`
+        }
+      });
       if (!response.ok)
         throw new Error(`HTTP error! status: ${response.status}`);
       const data = await response.json();
@@ -66,7 +80,12 @@ export function DataProvider({ children }) {
 
   const getSubjectById = async (id) => {
     try {
-      const response = await fetch(`/api/subjects/${id}`);
+      const response = await fetch(`/api/subjects/${id}`, {
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${localStorage.getItem('accessToken')}`
+        }
+      });
       if (!response.ok) {
         const data = await response.json();
         return data;
@@ -85,6 +104,7 @@ export function DataProvider({ children }) {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          'authorization': `Bearer ${localStorage.getItem('accessToken')}`
         },
         body: JSON.stringify(subject),
       });
@@ -108,6 +128,7 @@ export function DataProvider({ children }) {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
+          'authorization': `Bearer ${localStorage.getItem('accessToken')}`
         },
         body: JSON.stringify(subject),
       });
@@ -129,6 +150,10 @@ export function DataProvider({ children }) {
     try {
       const response = await fetch(`/api/subjects/${id}`, {
         method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${localStorage.getItem('accessToken')}`
+        }
       });
 
       if (!response.ok) {
@@ -153,7 +178,12 @@ export function DataProvider({ children }) {
 
   const getLessonById = async (id) => {
     try {
-      const response = await fetch(`/api/lessons/${id}`);
+      const response = await fetch(`/api/lessons/${id}`, {
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${localStorage.getItem('accessToken')}`
+        }
+      });
       if (!response.ok) {
         const data = await response.json();
         setErrorMessage(data.message || "failed to fetch lesson");
