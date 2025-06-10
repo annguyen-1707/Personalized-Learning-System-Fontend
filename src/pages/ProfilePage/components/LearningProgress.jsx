@@ -3,8 +3,6 @@ import { CircularProgressbar, buildStyles } from 'react-circular-progressbar'
 import 'react-circular-progressbar/dist/styles.css'
 
 function LearningProgress({ progress }) {
-  console.log('LearningProgress component rendered with progress:', progress)
-
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -18,7 +16,7 @@ function LearningProgress({ progress }) {
           <div className="w-24 h-24 mb-4">
             <CircularProgressbar
               value={(progress?.totalVocabularyLearn / progress?.totalVocabularyAllSubject) * 100}
-              text={`${(progress?.totalVocabularyLearn / progress?.totalVocabularyAllSubject) * 100}%`}
+              text={`${Math.floor((progress?.totalVocabularyLearn / progress?.totalVocabularyAllSubject) * 100)}%`}
               styles={buildStyles({
                 textSize: '20px',
                 pathColor: '#3E64FF',
@@ -34,8 +32,8 @@ function LearningProgress({ progress }) {
         <div className="flex flex-col items-center">
           <div className="w-24 h-24 mb-4">
             <CircularProgressbar
-              value={progress}
-              text={`${(progress?.totalGrammarLearn / progress?.totalGrammarAllSubject) * 100}%`}
+              value={(progress?.totalGrammarLearn / progress?.totalGrammarAllSubject) * 100}
+              text={`${Math.floor((progress?.totalGrammarLearn / progress?.totalGrammarAllSubject) * 100)}%`}
               styles={buildStyles({
                 textSize: '20px',
                 pathColor: '#FF9F43',
@@ -51,8 +49,8 @@ function LearningProgress({ progress }) {
         <div className="flex flex-col items-center">
           <div className="w-24 h-24 mb-4">
             <CircularProgressbar
-              value={progress}
-              text={`${(progress?.exerciseCompleted / progress?.exerciseAllSubject) * 100}%`}
+              value={(progress?.exerciseCompleted / progress?.exerciseAllSubject) * 100}
+              text={`${Math.floor((progress?.exerciseCompleted / progress?.exerciseAllSubject) * 100)}%`}
               styles={buildStyles({
                 textSize: '20px',
                 pathColor: '#38A169',

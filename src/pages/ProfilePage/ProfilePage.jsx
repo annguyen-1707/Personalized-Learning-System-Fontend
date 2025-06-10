@@ -98,9 +98,9 @@ function ProfilePage() {
 
           {activeTab === 'progress' && (
             <div className="space-y-8">
-              <VocabularyProgress />
-              <GrammarProgress />
-              <ExerciseProgress />
+              <VocabularyProgress progress={learningProgress} />
+              <GrammarProgress progress={learningProgress} />
+              <ExerciseProgress progress={learningProgress} />
             </div>
           )}
         </div>
@@ -129,8 +129,8 @@ function ProfilePage() {
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-gray-600">Percentage Complete</span>
-                <span className="font-medium text-gray-900">{(learningProgress?.totalVocabularyLearn + learningProgress?.totalGrammarLearn + learningProgress?.exerciseCompleted)
-                  / (learningProgress?.totalVocabularyAllSubject + learningProgress?.totalGrammarAllSubject + learningProgress?.exerciseAllSubject) * 100}% </span>
+                <span className="font-medium text-gray-900">{Math.floor((learningProgress?.totalVocabularyLearn + learningProgress?.totalGrammarLearn + learningProgress?.exerciseCompleted)
+                  / (learningProgress?.totalVocabularyAllSubject + learningProgress?.totalGrammarAllSubject + learningProgress?.exerciseAllSubject) * 100)}% </span>
               </div>
             </div>
           </motion.div>
