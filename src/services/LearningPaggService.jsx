@@ -14,7 +14,8 @@ const enrollInCourse = async (subjectId) => {
     const res = await fetch(`api/subject-enrollments?subjectId=${subjectId}&userId=${userId}`, {
         method: 'POST',
         headers: {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
         }
     });
     if (!res.ok) {
