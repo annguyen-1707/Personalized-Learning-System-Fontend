@@ -2,6 +2,11 @@ import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useData } from "../../context/DataContext";
 import { toast } from "react-toastify";
+import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import { MultiSectionDigitalClock } from "@mui/x-date-pickers/MultiSectionDigitalClock";
+import dayjs from "dayjs";
+
 import {
   ArrowLeft,
   Book,
@@ -35,16 +40,14 @@ function ContentManagement() {
     addExercise,
     updateExercise,
     deleteExercise,
-    addResource,
     updateResource,
-    deleteResource,
     addLog,
-    fetchSubjects,
     fetchVocabulary,
     getLessonById,
     fetchLevels,
     fetchPartOfSpeech,
     getSubjectById,
+    fetchGrammar,
   } = useData();
 
   const [subject, setSubject] = useState(null);
@@ -64,6 +67,7 @@ function ContentManagement() {
   const [errorMessages, setErrorMessages] = useState("");
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("all");
+  const [grammars, setGrammars] = useState([]);
 
   const handlePageClick = (event) => {
     const selectedPage = event.selected;
@@ -82,6 +86,20 @@ function ContentManagement() {
       vocabulary.example?.toLowerCase().includes(search.toLowerCase());
 
     const levelMatch = filter === "all" || vocabulary.jlptLevel === filter;
+
+    return searchMatch && levelMatch;
+  });
+
+  const filteredGrammars = grammars.filter((grammar) => {
+    const searchMatch =
+      search === "" ||
+      grammar.titleJp?.toLowerCase().includes(search.toLowerCase()) ||
+      grammar.example?.toLowerCase().includes(search.toLowerCase()) ||
+      grammar.meaning?.toLowerCase().includes(search.toLowerCase()) ||
+      grammar.structure?.toLowerCase().includes(search.toLowerCase()) ||
+      grammar.usage?.toLowerCase().includes(search.toLowerCase());
+
+    const levelMatch = filter === "all" || grammar.jlptLevel === filter;
 
     return searchMatch && levelMatch;
   });
@@ -113,11 +131,20 @@ function ContentManagement() {
 
   const jlptLevelClassMap = {
     N5: "bg-success-50 text-success-700",
-    N4: "bg-teal-50 text-teal-700",
+    N4: "bg-primary-50 text-primary-700",
     N3: "bg-warning-50 text-warning-700",
     N2: "bg-orange-50 text-orange-700",
     N1: "bg-error-50 text-error-700",
   };
+
+  function formatDate(dateString) {
+    if (!dateString) return null;
+    const date = new Date(dateString);
+    return new Intl.DateTimeFormat("en-GB", {
+      dateStyle: "medium",
+      timeStyle: "short",
+    }).format(date);
+  }
 
   const getVocabulary = async () => {
     try {
@@ -155,6 +182,19 @@ function ContentManagement() {
     }
   };
 
+  const getGrammar = async () => {
+    try {
+      const grammar = await fetchGrammar(lessonId, currentPage);
+      if (grammar) {
+        setGrammars(grammar.content);
+        setTotalPages(grammar.page.totalPages);
+        setTotalElements(grammar.page.totalElements);
+      }
+    } catch (error) {
+      console.error("Error in getGrammar:", error);
+    }
+  };
+
   // Reset form when changing tabs
   useEffect(() => {
     setIsAdding(false);
@@ -165,9 +205,7 @@ function ContentManagement() {
     getVocabulary();
     getLevels();
     getPartOfSpeech();
-    console.log("Fetching vocabulary for lessonId:", lessonId);
-    console.log("Current page:", currentPage);
-    console.log("Total elements:", totalElements);
+    getGrammar();
 
     // Set default form data based on active tab
     switch (activeTab) {
@@ -186,35 +224,29 @@ function ContentManagement() {
         break;
       case "grammar":
         setFormData({
-          title: "",
-          explanation: "",
-          examples: "",
-          notes: "",
+          titleJp: "",
+          structure: "",
+          meaning: "",
+          usage: "",
+          example: "",
+          jlptLevel: "",
+          lessonId: lessonId,
         });
         break;
       case "exercises":
         setFormData({
           title: "",
-          type: "multiple-choice",
-          instructions: "",
+          duration: "",
           content: "",
-          difficulty: "easy",
-        });
-        break;
-      case "reading":
-      case "listening":
-      case "speaking":
-        setFormData({
-          title: "",
-          description: "",
-          url: "",
-          level: "beginner",
+          difficulty: "",
+          exerciseType: "",
+          lessonId: lessonId,
         });
         break;
       default:
         setFormData({});
     }
-  }, [activeTab, lessonId, subjectId, currentPage, totalElements]);
+  }, [activeTab, lessonId, subjectId, currentPage]);
 
   const handleAddSubmit = async (e) => {
     e.preventDefault();
@@ -246,15 +278,21 @@ function ContentManagement() {
       case "grammar":
         response = await addGrammar({
           ...formData,
-          examples: formData.examples.split("\n"),
         });
+        getGrammar();
         if (response.status === "error") {
+          if (!Array.isArray(response.data)) {
+            setErrorMessages(response.message);
+            return;
+          }
           const errorMap = {};
           response.data.forEach((err) => {
             errorMap[err.field] = err.message;
           });
-          setErrors(errorMap);
-          return;
+          if (Object.keys(errorMap).length > 1) {
+            setErrors(errorMap);
+            return;
+          }
         }
         toast.success("Grammar added successfully!");
         logAction = "Grammar Added";
@@ -322,14 +360,24 @@ function ContentManagement() {
         break;
 
       case "grammar":
-        updateGrammar(isEditing, {
-          ...formData,
-          examples:
-            typeof formData.examples === "string"
-              ? formData.examples.split("\n")
-              : formData.examples,
-        });
-        logAction = "Grammar Updated";
+        const res = await updateGrammar(isEditing, { ...formData });
+        getGrammar();
+        if (res.status === "error") {
+          const errorMap = {};
+          if (Array.isArray(res.data)) {
+            res.data.forEach((err) => {
+              errorMap[err.field] = err.message;
+            });
+          } else {
+            setErrorMessages(res.message);
+          }
+          setErrors(errorMap);
+          return;
+        }
+        toast.success("Grammar updated successfully!");
+        setIsEditing(null);
+        resetForm();
+        setErrors({});
         break;
       case "exercises":
         updateExercise(isEditing, formData);
@@ -371,8 +419,13 @@ function ContentManagement() {
         toast.success("Vocabulary deleted successfully!");
         break;
       case "grammar":
-        await deleteGrammar(id);
-        logAction = "Grammar Deleted";
+        const res = await deleteGrammar(id);
+        getGrammar();
+        if (res.status === "error") {
+          toast.error("Failed to delete grammar");
+          return;
+        }
+        toast.success("Grammar deleted successfully!");
         break;
       case "exercises":
         await deleteExercise(id);
@@ -410,21 +463,21 @@ function ContentManagement() {
         break;
       case "grammar":
         editData = {
-          title: item.title,
-          explanation: item.explanation,
-          examples: Array.isArray(item.examples)
-            ? item.examples.join("\n")
-            : item.examples,
-          notes: item.notes,
+          titleJp: item.titleJp,
+          structure: item.structure,
+          meaning: item.meaning,
+          usage: item.usage,
+          example: item.example,
+          jlptLevel: item.jlptLevel,
+          lessonId: lessonId,
         };
         break;
       case "exercises":
         editData = {
           title: item.title,
-          type: item.type,
-          instructions: item.instructions,
+          duration: item.duration,
           content: item.content,
-          difficulty: item.difficulty,
+          lessonId: lessonId,
         };
         break;
       default:
@@ -432,7 +485,7 @@ function ContentManagement() {
     }
 
     setFormData(editData);
-    setIsEditing(item.vocabularyId);
+    setIsEditing(item.vocabularyId || item.grammarId || item.exerciseId);
     setIsAdding(false);
   };
 
@@ -454,29 +507,21 @@ function ContentManagement() {
         break;
       case "grammar":
         setFormData({
-          title: "",
-          explanation: "",
+          titleJp: "",
+          structure: "",
+          meaning: "",
+          usage: "",
           examples: "",
-          notes: "",
+          jlptLevel: "",
+          lessonId: lessonId,
         });
         break;
       case "exercises":
         setFormData({
           title: "",
-          type: "multiple-choice",
-          instructions: "",
+          duration: "",
           content: "",
-          difficulty: "easy",
-        });
-        break;
-      case "reading":
-      case "listening":
-      case "speaking":
-        setFormData({
-          title: "",
-          description: "",
-          url: "",
-          level: "beginner",
+          lessonId: lessonId,
         });
         break;
       default:
@@ -522,6 +567,13 @@ function ContentManagement() {
 
   // Render form based on active tab
   const renderForm = () => {
+    const DemoItem = ({ label, children }) => (
+      <div className="mb-2">
+        <p className="text-xs text-gray-500 mb-1">{label}</p>
+        {children}
+      </div>
+    );
+
     switch (activeTab) {
       case "vocabulary":
         return (
@@ -759,86 +811,168 @@ function ContentManagement() {
 
       case "grammar":
         return (
-          <div className="grid grid-cols-1 gap-4 mb-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+            {errorMessages && (
+              <div className="col-span-2">
+                <p className="text-red-500 text-sm">{errorMessages}</p>
+              </div>
+            )}
             <div>
               <label
                 htmlFor="title"
                 className="block text-sm font-medium text-gray-700 mb-1"
               >
-                Grammar Point Title
+                Grammar Title (Japanese)
               </label>
               <input
                 id="title"
                 type="text"
-                required
-                value={formData.title || ""}
+                value={formData.titleJp || ""}
                 onChange={(e) =>
-                  setFormData({ ...formData, title: e.target.value })
+                  setFormData({ ...formData, titleJp: e.target.value })
                 }
+                className={`input border rounded px-3 py-2 w-full ${
+                  errors.titleJp
+                    ? "border-red-500 focus:border-red-500 bg-red-50"
+                    : "border-gray-300 focus:border-blue-500 bg-white"
+                }`}
               />
+              {errors.titleJp && (
+                <p className="text-red-500 text-xs mt-1">{errors.titleJp}</p>
+              )}
             </div>
 
             <div>
               <label
-                htmlFor="explanation"
+                htmlFor="structure"
                 className="block text-sm font-medium text-gray-700 mb-1"
               >
-                Explanation
+                Structure
               </label>
               <textarea
-                id="explanation"
-                rows={3}
-                required
-                value={formData.explanation || ""}
+                id="structure"
+                rows={1}
+                value={formData.structure || ""}
                 onChange={(e) =>
-                  setFormData({ ...formData, explanation: e.target.value })
+                  setFormData({ ...formData, structure: e.target.value })
                 }
-                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
+                className={`w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 
+                focus:outline-none focus:ring-1 focus:ring-primary-500 ${
+                  errors.structure
+                    ? "border-red-500 focus:border-red-500 bg-red-50"
+                    : "border-gray-300 focus:border-blue-500 bg-white"
+                }`}
               />
+              {errors.structure && (
+                <p className="text-red-500 text-xs mt-1">{errors.structure}</p>
+              )}
             </div>
 
             <div>
               <label
-                htmlFor="examples"
+                htmlFor="meaning"
                 className="block text-sm font-medium text-gray-700 mb-1"
               >
-                Examples (one per line)
+                Meaning
               </label>
               <textarea
-                id="examples"
-                rows={3}
-                required
-                value={
-                  typeof formData.examples === "string"
-                    ? formData.examples
-                    : Array.isArray(formData.examples)
-                    ? formData.examples.join("\n")
-                    : ""
-                }
-                onChange={(e) =>
-                  setFormData({ ...formData, examples: e.target.value })
-                }
-                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
-                placeholder="I play tennis every Sunday.&#10;She works in a bank.&#10;They don't like coffee."
-              />
-            </div>
-
-            <div>
-              <label
-                htmlFor="notes"
-                className="block text-sm font-medium text-gray-700 mb-1"
-              >
-                Additional Notes
-              </label>
-              <textarea
-                id="notes"
+                id="meaning"
                 rows={2}
-                value={formData.notes || ""}
+                value={formData.meaning || ""}
                 onChange={(e) =>
-                  setFormData({ ...formData, notes: e.target.value })
+                  setFormData({ ...formData, meaning: e.target.value })
                 }
-                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
+                className={`w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 ${
+                  errors.meaning
+                    ? "border-red-500 focus:border-red-500 bg-red-50"
+                    : "border-gray-300 focus:border-blue-500 bg-white"
+                }`}
               />
+              {errors.meaning && (
+                <p className="text-red-500 text-xs mt-1">{errors.meaning}</p>
+              )}
+            </div>
+
+            <div>
+              <label
+                htmlFor="example"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
+                Example
+              </label>
+              <textarea
+                id="example"
+                rows={2}
+                value={formData.example || ""}
+                onChange={(e) =>
+                  setFormData({ ...formData, example: e.target.value })
+                }
+                className={`w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 ${
+                  errors.example
+                    ? "border-red-500 focus:border-red-500 bg-red-50"
+                    : "border-gray-300 focus:border-blue-500 bg-white"
+                }`}
+                placeholder="例えば、これは例文です。"
+              />
+              {errors.example && (
+                <p className="text-red-500 text-xs mt-1">{errors.example}</p>
+              )}
+            </div>
+
+            <div>
+              <label
+                htmlFor="usage"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
+                Usage
+              </label>
+              <textarea
+                id="usage"
+                rows={1}
+                value={formData.usage || ""}
+                onChange={(e) =>
+                  setFormData({ ...formData, usage: e.target.value })
+                }
+                className={`w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 ${
+                  errors.usage
+                    ? "border-red-500 focus:border-red-500 bg-red-50"
+                    : "border-gray-300 focus:border-blue-500 bg-white"
+                }`}
+              />
+              {errors.usage && (
+                <p className="text-red-500 text-xs mt-1">{errors.usage}</p>
+              )}
+            </div>
+
+            <div className="">
+              <label
+                htmlFor="jlptLevel"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
+                JLPT Level
+              </label>
+              <select
+                id="jlptLevel"
+                value={formData.jlptLevel}
+                onChange={(e) =>
+                  setFormData({ ...formData, jlptLevel: e.target.value })
+                }
+                className={`input border rounded px-3 py-2 w-full ${
+                  errors.jlptLevel
+                    ? "border-red-500 focus:border-red-500 bg-red-50"
+                    : "border-gray-300 focus:border-blue-500 bg-white"
+                }`}
+              >
+                <option value="">Select...</option>
+                {levels.map((level) => (
+                  <option key={level} value={level}>
+                    {level}
+                  </option>
+                ))}
+              </select>
+              {errors.jlptLevel && (
+                <p className="text-red-500 text-xs mt-1">{errors.jlptLevel}</p>
+              )}
             </div>
           </div>
         );
@@ -846,7 +980,7 @@ function ContentManagement() {
       case "exercises":
         return (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-            <div className="md:col-span-2">
+            <div className="">
               <label
                 htmlFor="title"
                 className="block text-sm font-medium text-gray-700 mb-1"
@@ -856,7 +990,6 @@ function ContentManagement() {
               <input
                 id="title"
                 type="text"
-                required
                 value={formData.title || ""}
                 onChange={(e) =>
                   setFormData({ ...formData, title: e.target.value })
@@ -864,66 +997,31 @@ function ContentManagement() {
               />
             </div>
 
-            <div>
+            <div className="">
               <label
-                htmlFor="type"
+                htmlFor="duration"
                 className="block text-sm font-medium text-gray-700 mb-1"
               >
-                Exercise Type
+                Set Time
               </label>
-              <select
-                id="type"
-                value={formData.type || "multiple-choice"}
-                onChange={(e) =>
-                  setFormData({ ...formData, type: e.target.value })
-                }
-                className="rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 w-full"
-              >
-                <option value="multiple-choice">Multiple Choice</option>
-                <option value="fill-in-the-blank">Fill in the Blank</option>
-                <option value="sentence-building">Sentence Building</option>
-                <option value="writing">Writing</option>
-              </select>
-            </div>
-
-            <div>
-              <label
-                htmlFor="difficulty"
-                className="block text-sm font-medium text-gray-700 mb-1"
-              >
-                Difficulty
-              </label>
-              <select
-                id="difficulty"
-                value={formData.difficulty || "easy"}
-                onChange={(e) =>
-                  setFormData({ ...formData, difficulty: e.target.value })
-                }
-                className="rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 w-full"
-              >
-                <option value="easy">Easy</option>
-                <option value="medium">Medium</option>
-                <option value="hard">Hard</option>
-              </select>
-            </div>
-
-            <div className="md:col-span-2">
-              <label
-                htmlFor="instructions"
-                className="block text-sm font-medium text-gray-700 mb-1"
-              >
-                Instructions
-              </label>
-              <textarea
-                id="instructions"
-                rows={2}
-                required
-                value={formData.instructions || ""}
-                onChange={(e) =>
-                  setFormData({ ...formData, instructions: e.target.value })
-                }
-                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
-              />
+              <LocalizationProvider dateAdapter={AdapterDayjs}>
+                <DemoItem label={'"minutes" and "seconds"'}>
+                  <MultiSectionDigitalClock
+                    views={["minutes", "seconds"]}
+                    value={
+                      formData.duration
+                        ? dayjs(formData.duration, "mm:ss")
+                        : null
+                    }
+                    onChange={(value) =>
+                      setFormData({
+                        ...formData,
+                        duration: value?.format?.("mm:ss"),
+                      })
+                    }
+                  />
+                </DemoItem>
+              </LocalizationProvider>
             </div>
 
             <div className="md:col-span-2">
@@ -942,7 +1040,7 @@ function ContentManagement() {
                   setFormData({ ...formData, content: e.target.value })
                 }
                 className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 font-mono"
-                placeholder={`{"questions":[{"question":"What is the capital of France?","options":["Paris","London","Berlin","Madrid"],"answer":"Paris"}]}`}
+                placeholder={`[{"questionText": "Thủ đô của Thái Lan là gì?","answerQuestionRequests": [{"answerText": "Hà Nội","isCorrect": true},{"answerText": "Hồ Chí Minh","isCorrect": false},{"answerText": "Đà Nẵng","isCorrect": false},{"answerText": "Huế","isCorrect": false}]}]`}
               />
             </div>
           </div>
@@ -1074,318 +1172,202 @@ function ContentManagement() {
 
       case "grammar":
         return (
-          <div>Grammar</div>
-          // <div className="divide-y divide-gray-200">
-          //   {lessonGrammar.length > 0 ? (
-          //     lessonGrammar.map((item) => (
-          //       <div
-          //         key={item.id}
-          //         className="p-4 hover:bg-gray-50 animate-fade-in"
-          //       >
-          //         <div className="flex justify-between items-start">
-          //           <div className="w-full pr-8">
-          //             <h3 className="text-lg font-medium text-gray-900">
-          //               {item.title}
-          //             </h3>
-          //             <p className="text-sm text-gray-700 mt-2">
-          //               {item.explanation}
-          //             </p>
+          <div className="divide-y divide-gray-200">
+            {filteredGrammars.length > 0 ? (
+              filteredGrammars.map((item) => {
+                const formattedDate = formatDate(item.updatedAt);
 
-          //             {item.examples.length > 0 && (
-          //               <div className="mt-3">
-          //                 <p className="text-xs font-medium text-gray-500 uppercase">
-          //                   Examples:
-          //                 </p>
-          //                 <ul className="mt-1 space-y-1">
-          //                   {item.examples.map((example, index) => (
-          //                     <li
-          //                       key={index}
-          //                       className="text-sm text-gray-700 pl-3 border-l-2 border-primary-200"
-          //                     >
-          //                       {example}
-          //                     </li>
-          //                   ))}
-          //                 </ul>
-          //               </div>
-          //             )}
+                return (
+                  <div
+                    key={item.grammarId}
+                    className="p-4 hover:bg-gray-50 animate-fade-in"
+                  >
+                    <div className="flex justify-between items-start">
+                      <div className="w-full">
+                        <div className="flex items-center justify-between">
+                          <h3 className="text-lg font-semibold text-gray-900">
+                            {item.titleJp}
+                          </h3>
+                          <span
+                            className={`ml-2 text-xs font-medium px-2 py-1 rounded ${
+                              jlptLevelClassMap[item.jlptLevel]
+                            }`}
+                          >
+                            {item.jlptLevel}
+                          </span>
+                        </div>
 
-          //             {item.notes && (
-          //               <div className="mt-3 text-sm text-gray-500 bg-gray-50 p-2 rounded">
-          //                 <span className="font-medium">Note:</span>{" "}
-          //                 {item.notes}
-          //               </div>
-          //             )}
-          //           </div>
-          //           <div className="flex items-center flex-shrink-0">
-          //             {showDeleteConfirm === item.id ? (
-          //               <div className="flex items-center space-x-2">
-          //                 <span className="text-xs text-gray-500">Delete?</span>
-          //                 <button
-          //                   onClick={() => handleDelete(item.id)}
-          //                   className="text-error-500 hover:text-error-700"
-          //                 >
-          //                   <Check size={16} />
-          //                 </button>
-          //                 <button
-          //                   onClick={() => setShowDeleteConfirm(null)}
-          //                   className="text-gray-500 hover:text-gray-700"
-          //                 >
-          //                   <X size={16} />
-          //                 </button>
-          //               </div>
-          //             ) : (
-          //               <>
-          //                 <button
-          //                   onClick={() => startEdit(item)}
-          //                   className="text-primary-600 hover:text-primary-800 mr-2"
-          //                   disabled={isAdding || isEditing}
-          //                 >
-          //                   <Edit size={16} />
-          //                 </button>
-          //                 <button
-          //                   onClick={() => setShowDeleteConfirm(item.id)}
-          //                   className="text-error-500 hover:text-error-700"
-          //                   disabled={isAdding || isEditing}
-          //                 >
-          //                   <Trash2 size={16} />
-          //                 </button>
-          //               </>
-          //             )}
-          //           </div>
-          //         </div>
-          //       </div>
-          //     ))
-          //   ) : (
-          //     <div className="p-6 text-center text-gray-500">
-          //       <Pencil className="h-10 w-10 mx-auto mb-2 text-gray-400" />
-          //       <p>No grammar points have been added to this lesson yet.</p>
-          //       <button
-          //         onClick={() => {
-          //           setIsAdding(true);
-          //           setIsEditing(null);
-          //         }}
-          //         className="mt-2 text-primary-600 hover:text-primary-800 font-medium"
-          //         disabled={isAdding || isEditing}
-          //       >
-          //         Add your first grammar point
-          //       </button>
-          //     </div>
-          //   )}
-          // </div>
+                        <p className="text-sm text-gray-500 mt-1">
+                          <strong>Structure:</strong> {item.structure}
+                        </p>
+
+                        <p className="text-sm text-gray-700 mt-1">
+                          <strong>Meaning:</strong> {item.meaning}
+                        </p>
+
+                        {item.example && (
+                          <p className="text-sm text-gray-700 italic mt-2">
+                            <strong>Example:</strong> “{item.example}”
+                          </p>
+                        )}
+
+                        <div className="text-xs text-gray-400 mt-2 flex justify-between items-center">
+                          <span>
+                            <strong>usage:</strong> {item.usage}
+                          </span>
+                          {formattedDate && (
+                            <span>
+                              <strong>Updated:</strong> {formattedDate}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="flex items-center ml-4">
+                        {showDeleteConfirm === item.grammarId ? (
+                          <div className="flex items-center space-x-2">
+                            <span className="text-xs text-gray-500">
+                              Delete?
+                            </span>
+                            <button
+                              onClick={() => handleDelete(item.grammarId)}
+                              className="text-error-500 hover:text-error-700"
+                            >
+                              <Check size={16} />
+                            </button>
+                            <button
+                              onClick={() => setShowDeleteConfirm(null)}
+                              className="text-gray-500 hover:text-gray-700"
+                            >
+                              <X size={16} />
+                            </button>
+                          </div>
+                        ) : (
+                          <>
+                            <button
+                              onClick={() => startEdit(item)}
+                              className="text-primary-600 hover:text-primary-800 mr-2"
+                              disabled={isAdding || isEditing}
+                            >
+                              <Edit size={16} />
+                            </button>
+                            <button
+                              onClick={() =>
+                                setShowDeleteConfirm(item.grammarId)
+                              }
+                              className="text-error-500 hover:text-error-700"
+                              disabled={isAdding || isEditing}
+                            >
+                              <Trash2 size={16} />
+                            </button>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })
+            ) : (
+              <div className="p-6 text-center text-gray-500">
+                <BookOpen className="h-10 w-10 mx-auto mb-2 text-gray-400" />
+                <p>No grammar has been added to this lesson yet.</p>
+                <button
+                  onClick={() => {
+                    setIsAdding(true);
+                    setIsEditing(null);
+                  }}
+                  className="mt-2 text-primary-600 hover:text-primary-800 font-medium"
+                  disabled={isAdding || isEditing}
+                >
+                  Add your first grammar item
+                </button>
+              </div>
+            )}
+          </div>
         );
 
       case "exercises":
         return (
-          <div>Exercises</div>
-          // <div className="divide-y divide-gray-200">
-          //   {lessonExercises.length > 0 ? (
-          //     lessonExercises.map((item) => (
-          //       <div
-          //         key={item.id}
-          //         className="p-4 hover:bg-gray-50 animate-fade-in"
-          //       >
-          //         <div className="flex justify-between items-start">
-          //           <div>
-          //             <div className="flex items-center">
-          //               <h3 className="text-lg font-medium text-gray-900">
-          //                 {item.title}
-          //               </h3>
-          //               <span
-          //                 className={`ml-2 badge ${
-          //                   item.difficulty === "easy"
-          //                     ? "bg-success-50 text-success-700"
-          //                     : item.difficulty === "medium"
-          //                     ? "bg-warning-50 text-warning-700"
-          //                     : "bg-error-50 text-error-700"
-          //                 }`}
-          //               >
-          //                 {item.difficulty}
-          //               </span>
-          //               <span className="ml-2 badge bg-primary-50 text-primary-700">
-          //                 {item.type
-          //                   .split("-")
-          //                   .map(
-          //                     (word) =>
-          //                       word.charAt(0).toUpperCase() + word.slice(1)
-          //                   )
-          //                   .join(" ")}
-          //               </span>
-          //             </div>
-          //             <p className="text-sm text-gray-700 mt-1">
-          //               {item.instructions}
-          //             </p>
-          //             <div className="mt-2 text-xs text-gray-500">
-          //               <span className="font-medium">Content preview:</span>
-          //               <span className="font-mono bg-gray-50 p-1 rounded ml-1">
-          //                 {item.content.length > 50
-          //                   ? item.content.substring(0, 50) + "..."
-          //                   : item.content}
-          //               </span>
-          //             </div>
-          //           </div>
-          //           <div className="flex items-center">
-          //             {showDeleteConfirm === item.id ? (
-          //               <div className="flex items-center space-x-2">
-          //                 <span className="text-xs text-gray-500">Delete?</span>
-          //                 <button
-          //                   onClick={() => handleDelete(item.id)}
-          //                   className="text-error-500 hover:text-error-700"
-          //                 >
-          //                   <Check size={16} />
-          //                 </button>
-          //                 <button
-          //                   onClick={() => setShowDeleteConfirm(null)}
-          //                   className="text-gray-500 hover:text-gray-700"
-          //                 >
-          //                   <X size={16} />
-          //                 </button>
-          //               </div>
-          //             ) : (
-          //               <>
-          //                 <button
-          //                   onClick={() => startEdit(item)}
-          //                   className="text-primary-600 hover:text-primary-800 mr-2"
-          //                   disabled={isAdding || isEditing}
-          //                 >
-          //                   <Edit size={16} />
-          //                 </button>
-          //                 <button
-          //                   onClick={() => setShowDeleteConfirm(item.id)}
-          //                   className="text-error-500 hover:text-error-700"
-          //                   disabled={isAdding || isEditing}
-          //                 >
-          //                   <Trash2 size={16} />
-          //                 </button>
-          //               </>
-          //             )}
-          //           </div>
-          //         </div>
-          //       </div>
-          //     ))
-          //   ) : (
-          //     <div className="p-6 text-center text-gray-500">
-          //       <Dumbbell className="h-10 w-10 mx-auto mb-2 text-gray-400" />
-          //       <p>No exercises have been added to this lesson yet.</p>
-          //       <button
-          //         onClick={() => {
-          //           setIsAdding(true);
-          //           setIsEditing(null);
-          //         }}
-          //         className="mt-2 text-primary-600 hover:text-primary-800 font-medium"
-          //         disabled={isAdding || isEditing}
-          //       >
-          //         Add your first exercise
-          //       </button>
-          //     </div>
-          //   )}
-          // </div>
+          <div className="divide-y divide-gray-200">
+            {lessonExercises.length > 0 ? (
+              lessonExercises.map((item) => (
+                <div
+                  key={item.id}
+                  className="p-4 hover:bg-gray-50 animate-fade-in"
+                >
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <div className="flex items-center">
+                        <h3 className="text-lg font-medium text-gray-900">
+                          {item.title}
+                        </h3>
+                      </div>
+                      <div className="mt-2 text-xs text-gray-500">
+                        <span className="font-medium">Content preview:</span>
+                        <span className="font-mono bg-gray-50 p-1 rounded ml-1">
+                          {item.content.length > 50
+                            ? item.content.substring(0, 50) + "..."
+                            : item.content}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="flex items-center">
+                      {showDeleteConfirm === item.id ? (
+                        <div className="flex items-center space-x-2">
+                          <span className="text-xs text-gray-500">Delete?</span>
+                          <button
+                            onClick={() => handleDelete(item.id)}
+                            className="text-error-500 hover:text-error-700"
+                          >
+                            <Check size={16} />
+                          </button>
+                          <button
+                            onClick={() => setShowDeleteConfirm(null)}
+                            className="text-gray-500 hover:text-gray-700"
+                          >
+                            <X size={16} />
+                          </button>
+                        </div>
+                      ) : (
+                        <>
+                          <button
+                            onClick={() => startEdit(item)}
+                            className="text-primary-600 hover:text-primary-800 mr-2"
+                            disabled={isAdding || isEditing}
+                          >
+                            <Edit size={16} />
+                          </button>
+                          <button
+                            onClick={() => setShowDeleteConfirm(item.id)}
+                            className="text-error-500 hover:text-error-700"
+                            disabled={isAdding || isEditing}
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="p-6 text-center text-gray-500">
+                <Dumbbell className="h-10 w-10 mx-auto mb-2 text-gray-400" />
+                <p>No exercises have been added to this lesson yet.</p>
+                <button
+                  onClick={() => {
+                    setIsAdding(true);
+                    setIsEditing(null);
+                  }}
+                  className="mt-2 text-primary-600 hover:text-primary-800 font-medium"
+                  disabled={isAdding || isEditing}
+                >
+                  Add your first exercise
+                </button>
+              </div>
+            )}
+          </div>
         );
-
-      // case "reading":
-      // case "listening":
-      // case "speaking": {
-      //   const resources =
-      //     activeTab === "reading"
-      //       ? readingResources
-      //       : activeTab === "listening"
-      //       ? listeningResources
-      //       : speakingResources;
-
-      //   const TabIcon = getTabIcon(activeTab);
-
-      //   return (
-      //     <div className="divide-y divide-gray-200">
-      //       {resources.length > 0 ? (
-      //         resources.map((item) => (
-      //           <div
-      //             key={item.id}
-      //             className="p-4 hover:bg-gray-50 animate-fade-in"
-      //           >
-      //             <div className="flex justify-between items-start">
-      //               <div>
-      //                 <div className="flex items-center">
-      //                   <h3 className="text-lg font-medium text-gray-900">
-      //                     {item.title}
-      //                   </h3>
-      //                   <span className="ml-2 badge bg-primary-50 text-primary-700">
-      //                     {item.level === "all-levels"
-      //                       ? "All Levels"
-      //                       : item.level.charAt(0).toUpperCase() +
-      //                         item.level.slice(1)}
-      //                   </span>
-      //                 </div>
-      //                 <p className="text-sm text-gray-700 mt-1">
-      //                   {item.description}
-      //                 </p>
-      //                 <a
-      //                   href={item.url}
-      //                   target="_blank"
-      //                   rel="noopener noreferrer"
-      //                   className="mt-2 text-sm text-primary-600 hover:text-primary-800 flex items-center"
-      //                 >
-      //                   View Resource
-      //                   <ExternalLink size={12} className="ml-1" />
-      //                 </a>
-      //               </div>
-      //               <div className="flex items-center">
-      //                 {showDeleteConfirm === item.id ? (
-      //                   <div className="flex items-center space-x-2">
-      //                     <span className="text-xs text-gray-500">Delete?</span>
-      //                     <button
-      //                       onClick={() => handleDelete(item.id)}
-      //                       className="text-error-500 hover:text-error-700"
-      //                     >
-      //                       <Check size={16} />
-      //                     </button>
-      //                     <button
-      //                       onClick={() => setShowDeleteConfirm(null)}
-      //                       className="text-gray-500 hover:text-gray-700"
-      //                     >
-      //                       <X size={16} />
-      //                     </button>
-      //                   </div>
-      //                 ) : (
-      //                   <>
-      //                     <button
-      //                       onClick={() => startEdit(item)}
-      //                       className="text-primary-600 hover:text-primary-800 mr-2"
-      //                       disabled={isAdding || isEditing}
-      //                     >
-      //                       <Edit size={16} />
-      //                     </button>
-      //                     <button
-      //                       onClick={() => setShowDeleteConfirm(item.id)}
-      //                       className="text-error-500 hover:text-error-700"
-      //                       disabled={isAdding || isEditing}
-      //                     >
-      //                       <Trash2 size={16} />
-      //                     </button>
-      //                   </>
-      //                 )}
-      //               </div>
-      //             </div>
-      //           </div>
-      //         ))
-      //       ) : (
-      //         <div className="p-6 text-center text-gray-500">
-      //           <TabIcon className="h-10 w-10 mx-auto mb-2 text-gray-400" />
-      //           <p>No {activeTab} resources have been added yet.</p>
-      //           <button
-      //             onClick={() => {
-      //               setIsAdding(true);
-      //               setIsEditing(null);
-      //             }}
-      //             className="mt-2 text-primary-600 hover:text-primary-800 font-medium"
-      //             disabled={isAdding || isEditing}
-      //           >
-      //             Add your first {activeTab} resource
-      //           </button>
-      //         </div>
-      //       )}
-      //     </div>
-      //   );
-      // }
-
       default:
         return null;
     }
