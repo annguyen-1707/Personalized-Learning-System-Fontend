@@ -66,7 +66,7 @@ function LearningPage() {
             } border border-gray-300`}
             onClick={() => setSelected("all")}
           >
-            All Levels
+            Explore
           </button>
           <button
             type="button"
@@ -97,7 +97,6 @@ function LearningPage() {
       <div className="mt-12 grid gap-8 md:grid-cols-2 lg:grid-cols-3">
         {filteredCourses.map((course, index) => {
           const subject = selected === "my-courses" ? course.subject : course;
-          console.log("subject", subject);
           return (
             <motion.div
               key={course.subjectId || course.progressId}
@@ -105,7 +104,7 @@ function LearningPage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.1 }}
             >
-              <CourseCard subject={subject} selected={selected} />
+              <CourseCard subject={subject} progressStatus={course.progressStatus} selected={selected} />
             </motion.div>
           );
         })}

@@ -3,15 +3,17 @@ import { MdPeopleAlt } from "react-icons/md";
 import { useState } from "react";
 import LearningPaggService from "../../../services/LearningPaggService";
 
-function CourseCard({ subject, selected }) {
+function CourseCard({ subject, selected, progressStatus }) {
   const [showEnrollDialog, setShowEnrollDialog] = useState(false);
   const { enrollInCourse } = LearningPaggService;
+  console.log("progressStatus", progressStatus);
 
-  const handleStartLearning = (e) => {
+  const handleStartLearning = async (e) => {
     e.preventDefault();
     if (selected === "all") {
       setShowEnrollDialog(true);
     } else {
+      await enrollInCourse(subject.subjectId);
       window.location.href = `/learning/${subject.subjectId}/lesson-1`;
     }
   };
@@ -49,14 +51,22 @@ function CourseCard({ subject, selected }) {
 
           <MdPeopleAlt className="flex-shrink-0 mr-1.5 h-5 w-5 text-gray-400" />
           <span>{subject.countUsers}</span>
+          {progressStatus && (
+            <>
+              <span className="mx-2">•</span>
+              <span className={`text-sm font-medium ${progressStatus === "IN_PROGRESS" ? "text-yellow-500" : "text-green-500"}`}>
+                {progressStatus === "IN_PROGRESS" ? "In Progress..." : "Completed"}
+              </span>
+            </>
+          )}
         </div>
 
         <div className="mt-6">
           <button
             onClick={handleStartLearning}
-            className="w-full inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary-500 hover:bg-primary-600"
+            className={`w-full inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary-500 hover:bg-primary-600"`}
           >
-            Start Learning
+            {selected === "all" ? "Start Learning" : (progressStatus === "IN_PROGRESS" ? "Resume Learning" : "Review")}
           </button>
         </div>
       </div>
