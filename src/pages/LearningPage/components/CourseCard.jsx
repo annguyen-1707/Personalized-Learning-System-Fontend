@@ -1,53 +1,56 @@
-import { Link } from 'react-router-dom'
-import { FiClock, FiBook, FiBarChart2 } from 'react-icons/fi'
+import { FiBook } from "react-icons/fi";
 import { MdPeopleAlt } from "react-icons/md";
-import { useState } from 'react';
+import { useState } from "react";
 import LearningPaggService from "../../../services/LearningPaggService";
 
-function CourseCard({ course }) {
+function CourseCard({ subject, selected }) {
   const [showEnrollDialog, setShowEnrollDialog] = useState(false);
   const { enrollInCourse } = LearningPaggService;
 
   const handleStartLearning = (e) => {
     e.preventDefault();
-    setShowEnrollDialog(true);
+    if (selected === "all") {
+      setShowEnrollDialog(true);
+    } else {
+      window.location.href = `/learning/${subject.subjectId}/lesson-1`;
+    }
   };
 
   const handleConfirmEnroll = async () => {
-    await enrollInCourse(course.subjectId);
+    await enrollInCourse(subject.subjectId);
     setShowEnrollDialog(false);
-    window.location.href = `/learning/${course.subjectId}/lesson-1`;
+    window.location.href = `/learning/${subject.subjectId}/lesson-1`;
   };
 
-  return (
-    <div className="card h-full overflow-hidden card-hover">
+  const renderCardContent = () => (
+    <>
       <div className="relative">
-        <img 
-          src={'https://via.placeholder.com/300x200'} 
-          alt={course.subjectName} 
+        <img
+          src={"https://via.placeholder.com/300x200"}
+          alt={subject.subjectName}
           className="w-full h-48 object-cover"
         />
         <div className="absolute top-0 right-0 m-2">
-          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-300`}>
-            {course.subjectCode}
+          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-300">
+            {subject.subjectCode}
           </span>
         </div>
       </div>
-      
+
       <div className="p-6">
-        <h3 className="text-xl font-semibold text-gray-900">{course.subjectName}</h3>
-        <p className="mt-2 text-gray-600 line-clamp-2">{course.description}</p>
-        
+        <h3 className="text-xl font-semibold text-gray-900">{subject.subjectName}</h3>
+        <p className="mt-2 text-gray-600 line-clamp-2">{subject.description}</p>
+
         <div className="mt-4 flex items-center text-sm text-gray-500">
           <FiBook className="flex-shrink-0 mr-1.5 h-5 w-5 text-gray-400" />
-          <span>{course.countLessons} Lessons</span>
-          
+          <span>{subject.countLessons} Lessons</span>
+
           <span className="mx-2">•</span>
 
           <MdPeopleAlt className="flex-shrink-0 mr-1.5 h-5 w-5 text-gray-400" />
-          <span>{course.countUsers}</span>
+          <span>{subject.countUsers}</span>
         </div>
-        
+
         <div className="mt-6">
           <button
             onClick={handleStartLearning}
@@ -57,14 +60,20 @@ function CourseCard({ course }) {
           </button>
         </div>
       </div>
+    </>
+  );
 
-      {/* Enrollment Confirmation Dialog */}
-      {showEnrollDialog && (
+  return (
+    <div className="card h-full overflow-hidden card-hover">
+      {renderCardContent()}
+
+      {/* Enrollment Confirmation Dialog chỉ hiện khi ở tab all */}
+      {selected === "all" && showEnrollDialog && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
             <h3 className="text-lg font-semibold mb-4">Enroll in Course</h3>
             <p className="text-gray-600 mb-6">
-              Are you sure you want to enroll in {course.subjectName}? This will give you access to all course materials and lessons.
+              Are you sure you want to enroll in {subject.subjectName}? This will give you access to all course materials and lessons.
             </p>
             <div className="flex justify-end space-x-4">
               <button
@@ -84,7 +93,7 @@ function CourseCard({ course }) {
         </div>
       )}
     </div>
-  )
+  );
 }
 
-export default CourseCard
+export default CourseCard;
