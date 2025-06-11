@@ -36,6 +36,7 @@ import ListeningDetailPage from "./pages/ListeningPage/ListeningDetailPage";
 import QuestionManagement from "./pages/content/QuestionManagement";
 import ExerciseManagement from "./pages/courses/ExerciseManagement";
 import LearningPage from "./pages/LearningPage/LearningPage";
+import CourseContentPage from "./pages/LearningPage/components/CourseContent.jsx";
 
 function App() {
   return (
@@ -47,7 +48,7 @@ function App() {
             <Route path="/upgrade" element={<UpgradePage />} />
             <Route path="/vnpay-return" element={<VnpayReturn />} />
           </Route>
-          
+
           <Route path="/parentPage" element={<ParentPage />} />
 
           <Route path="oauth-callback" element={<OAuthCallBack />} />
@@ -72,13 +73,14 @@ function App() {
           />
           {/* Listening routes */}
           <Route path="/" element={<Layout />}>
-          <Route path="/listening" element={<ListeningPage />} />
-          <Route path="/listening/:id" element={<ListeningDetailPage />} />
+            <Route path="/listening" element={<ListeningPage />} />
+            <Route path="/listening/:id" element={<ListeningDetailPage />} />
           </Route>
           {/* Public routes */}
           <Route path="/" element={<Layout />}>
             <Route index element={<HomePage />} />
             <Route path="learning" element={<LearningPage />} />
+            <Route path="learning/:subjectId" element={<CourseContentPage />} />
           </Route>
 
           {/* Admin routes */}

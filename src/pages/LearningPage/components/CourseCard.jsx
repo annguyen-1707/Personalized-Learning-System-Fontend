@@ -14,14 +14,14 @@ function CourseCard({ subject, selected, progressStatus }) {
       setShowEnrollDialog(true);
     } else {
       await enrollInCourse(subject.subjectId);
-      window.location.href = `/learning/${subject.subjectId}/lesson-1`;
+      window.location.href = `/learning/${subject.subjectId}`;
     }
   };
 
   const handleConfirmEnroll = async () => {
     await enrollInCourse(subject.subjectId);
     setShowEnrollDialog(false);
-    window.location.href = `/learning/${subject.subjectId}/lesson-1`;
+    window.location.href = `/learning/${subject.subjectId}`;
   };
 
   const renderCardContent = () => (
@@ -40,7 +40,9 @@ function CourseCard({ subject, selected, progressStatus }) {
       </div>
 
       <div className="p-6">
-        <h3 className="text-xl font-semibold text-gray-900">{subject.subjectName}</h3>
+        <h3 className="text-xl font-semibold text-gray-900">
+          {subject.subjectName}
+        </h3>
         <p className="mt-2 text-gray-600 line-clamp-2">{subject.description}</p>
 
         <div className="mt-4 flex items-center text-sm text-gray-500">
@@ -54,8 +56,16 @@ function CourseCard({ subject, selected, progressStatus }) {
           {progressStatus && (
             <>
               <span className="mx-2">•</span>
-              <span className={`text-sm font-medium ${progressStatus === "IN_PROGRESS" ? "text-yellow-500" : "text-green-500"}`}>
-                {progressStatus === "IN_PROGRESS" ? "In Progress..." : "Completed"}
+              <span
+                className={`text-sm font-medium ${
+                  progressStatus === "IN_PROGRESS"
+                    ? "text-yellow-500"
+                    : "text-green-500"
+                }`}
+              >
+                {progressStatus === "IN_PROGRESS"
+                  ? "In Progress..."
+                  : "Completed"}
               </span>
             </>
           )}
@@ -66,7 +76,11 @@ function CourseCard({ subject, selected, progressStatus }) {
             onClick={handleStartLearning}
             className={`w-full inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary-500 hover:bg-primary-600"`}
           >
-            {selected === "all" ? "Start Learning" : (progressStatus === "IN_PROGRESS" ? "Resume Learning" : "Review")}
+            {selected === "all"
+              ? "Start Learning"
+              : progressStatus === "IN_PROGRESS"
+              ? "Resume Learning"
+              : "Review"}
           </button>
         </div>
       </div>
@@ -83,7 +97,8 @@ function CourseCard({ subject, selected, progressStatus }) {
           <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
             <h3 className="text-lg font-semibold mb-4">Enroll in Course</h3>
             <p className="text-gray-600 mb-6">
-              Are you sure you want to enroll in {subject.subjectName}? This will give you access to all course materials and lessons.
+              Are you sure you want to enroll in {subject.subjectName}? This
+              will give you access to all course materials and lessons.
             </p>
             <div className="flex justify-end space-x-4">
               <button
