@@ -1,9 +1,9 @@
 import { motion } from 'framer-motion'
 import { useEffect, useState } from 'react';
 import { FiBook, FiCheckCircle, FiChevronDown, FiClock } from 'react-icons/fi'
-import { getProgressExerciseFromAPI } from '../../../services/ProfileService';
+import { getProgressExerciseFromAPI } from '../../../services/ParentService';
 
-function ExerciseProgress({ progress }) {
+function ExerciseProgress({ progress, studentId }) {
     // Example exercise progress data - in a real app, this would come from your backend
     const [exerciseProgresses, setExerciseProgress] = useState({});
     const [displayLimit, setDisplayLimit] = useState(3); // Mặc định hiển thị 3 từ
@@ -13,7 +13,7 @@ function ExerciseProgress({ progress }) {
     }, []);
 
     const getExerciseProgress = async () => {
-        var res = await getProgressExerciseFromAPI();
+        var res = await getProgressExerciseFromAPI(studentId);
         if (res && res.data) {
             setExerciseProgress(res.data);
             console.log("Exercise Progress Data:", res.data);

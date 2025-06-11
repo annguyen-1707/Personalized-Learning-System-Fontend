@@ -1,28 +1,28 @@
 import { motion } from 'framer-motion'
 import { useEffect, useState } from 'react';
 import { FiBook, FiCheckCircle, FiChevronDown, FiClock } from 'react-icons/fi'
-import { getProgressGrammarFromAPI } from '../../../services/ProfileService';
+import { getProgressVocabularyFromAPI } from '../../../services/ParentService';
 
-function GrammarProgress({ progress }) {
-  // Example grammar progress data - in a real app, this would come from your backend
-  const [grammarProgresses, setGrammarProgress] = useState({});
+function VocabularyProgress({ progress, studentId }) {
+  // Example vocabulary progress data - in a real app, this would come from your backend
+  const [vocabularyProgresses, setVocabularyProgress] = useState({});
   const [displayLimit, setDisplayLimit] = useState(3); // Mặc định hiển thị 3 từ
 
   useEffect(() => {
-    getGrammarProgress();
+    getVocabularyProgress();
   }, []);
 
-  const getGrammarProgress = async () => {
-    var res = await getProgressGrammarFromAPI();
+  const getVocabularyProgress = async () => {
+    var res = await getProgressVocabularyFromAPI(studentId);
     if (res && res.data) {
-      setGrammarProgress(res.data);
-      console.log("Grammar Progress Data:", res.data);
+      setVocabularyProgress(res.data);
+      console.log("Vocabulary Progress Data:", res.data);
     }
   }
 
   const toggleDisplayLimit = () => {
     // Nếu đang hiển thị 3 từ, chuyển sang hiển thị tất cả; nếu không, quay lại 3 từ
-    setDisplayLimit(displayLimit === 3 ? grammarProgresses.recentlyLearnGrammarResponses.length : 3);
+    setDisplayLimit(displayLimit === 3 ? vocabularyProgresses.recentlyLearnVocabularyRespons.length : 3);
   };
 
   const getStatusClass = (status) => {
@@ -44,11 +44,11 @@ function GrammarProgress({ progress }) {
       className="bg-white rounded-lg shadow-md p-6"
     >
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-lg font-medium text-gray-900">Grammar Progress</h2>
+        <h2 className="text-lg font-medium text-gray-900">Vocabulary Progress</h2>
         <div className="flex items-center text-sm text-primary-600">
           <FiBook className="mr-1" />
 
-          <span>{progress?.totalGrammarLearn} grammar learned</span>
+          <span>{progress?.totalVocabularyLearn} words learned</span>
         </div>
       </div>
 
@@ -56,9 +56,9 @@ function GrammarProgress({ progress }) {
         <div>
           <h3 className="text-sm font-medium text-gray-900 mb-4">Progress by Subject</h3>
           <div className="space-y-4">
-            {Array.isArray(grammarProgresses.countLearnBySubjectResponses) &&
-              grammarProgresses.countLearnBySubjectResponses.length > 0 ? (
-              grammarProgresses.countLearnBySubjectResponses.map(({ subject, countLearn, countAll, subjectId }) => {
+            {Array.isArray(vocabularyProgresses.countLearnBySubjectResponses) &&
+              vocabularyProgresses.countLearnBySubjectResponses.length > 0 ? (
+              vocabularyProgresses.countLearnBySubjectResponses.map(({ subject, countLearn, countAll, subjectId }) => {
                 return (
                   <div key={subjectId}>
                     <div className="flex items-center justify-between mb-1">
@@ -68,7 +68,7 @@ function GrammarProgress({ progress }) {
                     </div>
                     <div className="w-full bg-gray-200 rounded-full h-2">
                       <div
-                        className="h-2 rounded-full bg-accent-500"
+                        className="h-2 rounded-full bg-primary-500"
                         style={{ width: `${Math.floor((countLearn / countAll) * 100)}%` }}
                       ></div>
                     </div>
@@ -85,9 +85,9 @@ function GrammarProgress({ progress }) {
         <div>
           <h3 className="text-sm font-medium text-gray-900 mb-4">Recently Learned Words</h3>
           <div className="space-y-3">
-            {Array.isArray(grammarProgresses.recentlyLearnGrammarResponses) && grammarProgresses.recentlyLearnGrammarResponses.length > 0 ? (
+            {Array.isArray(vocabularyProgresses.recentlyLearnVocabularyRespons) && vocabularyProgresses.recentlyLearnVocabularyRespons.length > 0 ? (
               <>
-                {grammarProgresses.recentlyLearnGrammarResponses.slice(0, displayLimit).map(({ grammar, progressStatus, reviewedAt }, index) => (
+                {vocabularyProgresses.recentlyLearnVocabularyRespons.slice(0, displayLimit).map(({ vocabulary, progressStatus, reviewedAt }, index) => (
                   <motion.div
                     key={index}
                     initial={{ opacity: 0, x: -20 }}
@@ -97,11 +97,11 @@ function GrammarProgress({ progress }) {
                   >
                     <div>
                       <div className="flex items-center">
-                        <span className="text-lg font-medium text-gray-900">{grammar.titleJp}</span>
-                        <span className="ml-2 text-sm text-gray-600">{grammar.structure}</span>
+                        <span className="text-lg font-medium text-gray-900">{vocabulary.kana}</span>
+                        <span className="ml-2 text-sm text-gray-600">{vocabulary.romaji}</span>
                       </div>
 
-                      <div className="text-sm text-gray-600">{grammar.meaning}</div>
+                      <div className="text-sm text-gray-600">{vocabulary.meaning}</div>
                     </div>
                     <div className="flex items-center text-sm text-gray-500">
                       <FiClock className="mr-1" />
@@ -114,7 +114,7 @@ function GrammarProgress({ progress }) {
                     </div>
                   </motion.div>
                 ))}
-                {grammarProgresses.recentlyLearnGrammarResponses.length > 3 && (
+                {vocabularyProgresses.recentlyLearnVocabularyRespons.length > 3 && (
                   <button
                     onClick={toggleDisplayLimit}
                     className="flex items-center text-sm text-primary-600 hover:text-primary-800 mt-2"
@@ -127,7 +127,7 @@ function GrammarProgress({ progress }) {
                 )}
               </>
             ) : (
-              <p className="text-gray-500 text-center">No recently learned grammar</p>
+              <p className="text-gray-500 text-center">No recently learned words</p>
             )}
           </div>
         </div>
@@ -136,11 +136,11 @@ function GrammarProgress({ progress }) {
         <div className="flex flex-wrap gap-4 pt-4 border-t border-gray-200">
           {/* <button className="btn btn-primary flex items-center">
             <FiBook className="mr-2" />
-            Review Grammar
+            Review Vocabulary
           </button> */}
           {/* <button className="btn btn-secondary flex items-center">
             <FiCheckCircle className="mr-2" />
-            Take Grammar Quiz
+            Take Vocabulary Quiz
           </button> */}
         </div>
       </div>
@@ -148,4 +148,4 @@ function GrammarProgress({ progress }) {
   )
 }
 
-export default GrammarProgress
+export default VocabularyProgress

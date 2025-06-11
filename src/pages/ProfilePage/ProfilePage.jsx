@@ -4,19 +4,22 @@ import { FiEdit2, FiSettings, FiDownload, FiTrendingUp } from 'react-icons/fi'
 import LearningProgress from './components/LearningProgress'
 import VocabularyProgress from './components/VocabularyProgress'
 import GrammarProgress from './components/GrammarProgress'
+import StudentInformation from './components/StudentInformation'
 import { useNavigate } from "react-router-dom";
-import { getLearningProgressFromAPI } from '../../services/ProfileService'
+import { getLearningProgressFromAPI, getStudentInfoFromAPI } from '../../services/ProfileService'
 import ExerciseProgress from './components/ExerciseProgress'
 
 function ProfilePage() {
   const [activeTab, setActiveTab] = useState('overview')
   const navigate = useNavigate();
   const [learningProgress, setLearningProgress] = useState();
+  const [studentInfo, setStudentInfo] = useState({}); // State to hold student information
   // Example user data - in a real app, this would come from your backend
 
   useEffect(() => {
     // Fetch learning progress data when the component mounts
     getLearningProgress();
+    getStudentInformation();
   }, []);
 
   const getLearningProgress = async () => {
@@ -24,6 +27,14 @@ function ProfilePage() {
     console.log("data", res);
     if (res && res.data) {
       setLearningProgress(res.data);
+    }
+  }
+
+  const getStudentInformation = async () => {
+    var res = await getStudentInfoFromAPI();
+    console.log("Student Info:", res);
+    if (res && res.data) {
+      setStudentInfo(res.data);
     }
   }
 
@@ -40,9 +51,13 @@ function ProfilePage() {
           <div className="flex flex-col sm:flex-row items-center">
             <div className="-mt-16 relative">
               <img
-                src={'https://images.pexels.com/photos/614810/pexels-photo-614810.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2'}
-                alt={"Profile Avatar"}
-                className="w-32 h-32 rounded-full border-4 border-white shadow-lg"
+                src={
+                  studentInfo?.avatar
+                    ? `http://localhost:8080/images/avatar/${studentInfo.avatar}`
+                    : 'https://images.pexels.com/photos/614810/pexels-photo-614810.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2'
+                }
+                alt="Profile Avatar"
+                className="w-32 h-32 rounded-full border-4 border-white shadow-lg object-cover"
               />
               <button className="absolute bottom-0 right-0 p-2 bg-white rounded-full shadow-md text-gray-600 hover:text-primary-500">
                 <FiEdit2 className="h-5 w-5" />
@@ -82,6 +97,15 @@ function ProfilePage() {
           >
             Progress
           </button>
+          <button
+            onClick={() => setActiveTab('information')}
+            className={`pb-4 px-1 border-b-2 font-medium text-sm ${activeTab === 'information'
+              ? 'border-primary-500 text-primary-600'
+              : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+          >
+            Information
+          </button>
 
         </nav>
       </div>
@@ -98,9 +122,14 @@ function ProfilePage() {
 
           {activeTab === 'progress' && (
             <div className="space-y-8">
-              <VocabularyProgress />
-              <GrammarProgress />
-              <ExerciseProgress />
+              <VocabularyProgress progress={learningProgress} />
+              <GrammarProgress progress={learningProgress} />
+              <ExerciseProgress progress={learningProgress} />
+            </div>
+          )}
+          {activeTab === 'information' && (
+            <div className="space-y-8">
+              <StudentInformation />
             </div>
           )}
         </div>
@@ -129,8 +158,8 @@ function ProfilePage() {
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-gray-600">Percentage Complete</span>
-                <span className="font-medium text-gray-900">{(learningProgress?.totalVocabularyLearn + learningProgress?.totalGrammarLearn + learningProgress?.exerciseCompleted)
-                  / (learningProgress?.totalVocabularyAllSubject + learningProgress?.totalGrammarAllSubject + learningProgress?.exerciseAllSubject) * 100}% </span>
+                <span className="font-medium text-gray-900">{Math.floor((learningProgress?.totalVocabularyLearn + learningProgress?.totalGrammarLearn + learningProgress?.exerciseCompleted)
+                  / (learningProgress?.totalVocabularyAllSubject + learningProgress?.totalGrammarAllSubject + learningProgress?.exerciseAllSubject) * 100)}% </span>
               </div>
             </div>
           </motion.div>
