@@ -65,8 +65,6 @@ function ParentPage() {
 
   return (
     <div>
-      <Header />
-
       <div className="max-w-4xl mx-auto p-6 space-y-6">
         <h2 className="text-3xl font-bold text-gray-800">Hello, {user?.name} 👋</h2>
         <p className="text-lg text-gray-600">Below is the list of students you are managing:</p>
@@ -115,7 +113,7 @@ function ParentPage() {
                 {renderStatus(student.status)}
               </div>
               <Link
-                to={`/student/${student.id}`}
+                to={`/parentPage/${student.id}/view_children`}
                 className="inline-block mt-2 text-primary-600 hover:underline text-sm font-medium"
               >
                 View Details
@@ -125,7 +123,6 @@ function ParentPage() {
         </div>
       </div>
 
-      <Footer />
     </div>
   );
 }

@@ -3,6 +3,7 @@ import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 import Layout from "./components/layout/Layout";
+import LayoutParent from "./components/layout/LayoutParent";
 import Login from "./pages/auth/Login";
 import RegisterP1 from "./pages/auth/RegisterP1";
 import ForgotPassword from "./pages/auth/ForgotPassword";
@@ -30,7 +31,8 @@ import ContentReadingManagement from "./pages/content/ContentReadingManagement";
 import ListeningContentManagement from "./pages/content/ContentListeningManagement";
 import UpgradePage from "./pages/Upgrade/UpgradePage";
 import VnpayReturn from "./pages/Upgrade/VnpayReturn.jsx";
-import ParentPage from "./pages/HomePage/ParentPage.jsx";
+import ParentPage from "./pages/Parent/ParentPage.jsx";
+import ViewChildren from "./pages/Parent/ViewChildren.jsx";
 import ListeningPage from "./pages/ListeningPage/ListeningPage";
 import ListeningDetailPage from "./pages/ListeningPage/ListeningDetailPage";
 import QuestionManagement from "./pages/content/QuestionManagement";
@@ -47,9 +49,11 @@ function App() {
             <Route path="/upgrade" element={<UpgradePage />} />
             <Route path="/vnpay-return" element={<VnpayReturn />} />
           </Route>
-          
-          <Route path="/parentPage" element={<ParentPage />} />
 
+          <Route path="/" element={<LayoutParent />}>
+            <Route path="/parentPage" element={<ParentPage />} />
+            <Route path="/parentPage/:studentId/view_children" element={<ViewChildren />} />
+          </Route>
           <Route path="oauth-callback" element={<OAuthCallBack />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register1" element={<RegisterP1 />} />
@@ -57,9 +61,9 @@ function App() {
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/admin/login" element={<Login />} />
 
-          {/*ProfilePage routes*/}
+          {/*ProfilePage routes*/}1
           <Route path="/" element={<Layout />}>
-            <Route path="profile" element={<ProfilePage />} />
+            <Route path="/profile" element={<ProfilePage />} />
             <Route path="/profile/edit" element={<EditProfilePage />} />
             <Route
               path="/profile/change-password"
@@ -72,8 +76,8 @@ function App() {
           />
           {/* Listening routes */}
           <Route path="/" element={<Layout />}>
-          <Route path="/listening" element={<ListeningPage />} />
-          <Route path="/listening/:id" element={<ListeningDetailPage />} />
+            <Route path="/listening" element={<ListeningPage />} />
+            <Route path="/listening/:id" element={<ListeningDetailPage />} />
           </Route>
           {/* Public routes */}
           <Route path="/" element={<Layout />}>
