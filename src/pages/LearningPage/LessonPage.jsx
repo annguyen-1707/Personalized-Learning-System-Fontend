@@ -11,6 +11,8 @@ import {
 } from "react-icons/fi";
 import { motion } from "framer-motion";
 import LessonContent from "./components/LessonContent";
+import LessonVocabulary from "./components/LessonVocabulary";
+import LessonGrammar from "./components/LessonGrammar";
 
 function LessonPage() {
   const { subjectId, lessonId } = useParams();
@@ -30,8 +32,14 @@ function LessonPage() {
         );
         const lessonsList = lessonsData.data || [];
         const currentIndex = lessonsList.findIndex(
-          (l) => l.lessonId === parseFloat(lessonId)
+          (l) => String(l.lessonId) === lessonId
         );
+        console.log("lessonId param:", lessonId);
+        console.log(
+          "lessonsList:",
+          lessonsList.map((l) => l.lessonId)
+        );
+        console.log("currentIndex:", currentIndex);
         if (currentIndex !== -1) {
           setCurrentLessonIndex(currentIndex);
           setLesson(lessonsList[currentIndex]);
@@ -50,10 +58,11 @@ function LessonPage() {
         }
       } catch (error) {
         console.error("Error fetching course or lesson:", error);
+      } finally {
+        setLoading(false);
       }
     };
     getLesson();
-    setLoading(false);
   }, [subjectId, lessonId]);
 
   if (loading) {
