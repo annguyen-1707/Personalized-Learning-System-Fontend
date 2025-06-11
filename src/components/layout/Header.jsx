@@ -3,7 +3,7 @@ import { FiMenu, FiUser, FiBell, FiSearch } from 'react-icons/fi';
 import Logo from '../common/Logo';
 import { useAuth } from '../../context/AuthContext';
 
-function Header({ setSidebarOpen }) {
+function Header({ setSidebarOpen, onNotificationClick }) {
   const { user, setUser } = useAuth(); 
   const navigate = useNavigate();
 
@@ -26,7 +26,7 @@ function Header({ setSidebarOpen }) {
             <button
               type="button"
               className="p-2 rounded-md text-gray-500 lg:hidden"
-              onClick={() => setSidebarOpen(true)}
+              onClick={() => setSidebarOpen && setSidebarOpen(true)}
             >
               <span className="sr-only">Open sidebar</span>
               <FiMenu className="h-6 w-6" aria-hidden="true" />
@@ -37,8 +37,7 @@ function Header({ setSidebarOpen }) {
           </div>
 
           {/* Search */}
-          {user?.role?.authority !== "ROLE_PARENT"
- && (
+          {user?.role?.authority !== "ROLE_PARENT" && (
             <div className="flex-1 max-w-md mx-4 hidden md:flex">
               <div className="w-full relative">
                 <FiSearch className="absolute inset-y-0 left-3 h-5 w-5 text-gray-400" />
@@ -55,7 +54,11 @@ function Header({ setSidebarOpen }) {
           <div className="flex items-center space-x-4">
             {user ? (
               <>
-                <button type="button" className="p-1 rounded-full text-gray-500 hover:text-gray-700">
+                <button
+                  type="button"
+                  className="p-1 rounded-full text-gray-500 hover:text-gray-700"
+                  onClick={onNotificationClick}
+                >
                   <span className="sr-only">Notifications</span>
                   <FiBell className="h-6 w-6" />
                 </button>
