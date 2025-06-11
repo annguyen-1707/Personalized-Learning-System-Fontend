@@ -5,7 +5,7 @@ import Sidebar from './Sidebar'
 import Footer from './Footer'
 import { motion } from 'framer-motion'
 
-function Layout() {
+function Layout({ onNotificationClick }) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
 
   return (
@@ -18,7 +18,7 @@ function Layout() {
 
       {/* Main content */}
       <div className="flex flex-col flex-1 overflow-hidden">
-        <Header setSidebarOpen={setSidebarOpen} />
+        <Header setSidebarOpen={setSidebarOpen} onNotificationClick={onNotificationClick} />
         
         <main className="flex-1 overflow-y-auto">
           <motion.div
