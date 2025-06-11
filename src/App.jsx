@@ -40,6 +40,8 @@ import QuestionManagement from "./pages/content/QuestionManagement";
 import ExerciseManagement from "./pages/courses/ExerciseManagement";
 import LearningPage from "./pages/LearningPage/LearningPage";
 import NotificationSlider from "./pages/HomePage/Notification.jsx";
+import CourseContentPage from "./pages/LearningPage/components/CourseContent.jsx";
+import LessonPage from "./pages/LearningPage/LessonPage.jsx";
 
 function App() {
   const [notificationOpen, setNotificationOpen] = useState(false);
@@ -48,7 +50,6 @@ function App() {
     <AuthProvider>
       <DataProvider>
         <Routes>
-          {/* Gom tất cả route con vào trong 1 Layout duy nhất */}
           <Route
             path="/"
             element={<Layout onNotificationClick={() => setNotificationOpen(true)} />}
@@ -65,11 +66,16 @@ function App() {
             {/* Thêm các route con khác nếu cần */}
           </Route>
 
-          {/* Các route khác giữ nguyên */}
-          <Route path="/parentPage" element={<LayoutParent />}>
-            <Route index element={<ParentPage />} />
-            <Route path=":studentId/view_children" element={<ViewChildren />} />
+          // <Route path="/parentPage" element={<LayoutParent />}>
+          //   <Route index element={<ParentPage />} />
+          //   <Route path=":studentId/view_children" element={<ViewChildren />} />
+          // <Route path="/parentPage" element={<ParentPage />} />
+
+          <Route path="/" element={<LayoutParent />}>
+            <Route path="/parentPage" element={<ParentPage />} />
+            <Route path="/parentPage/:studentId/view_children" element={<ViewChildren />} />
           </Route>
+
           <Route path="oauth-callback" element={<OAuthCallBack />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register1" element={<RegisterP1 />} />
@@ -78,7 +84,36 @@ function App() {
           <Route path="/admin/login" element={<Login />} />
           <Route path="/await-confirmation" element={<AwaitEmailConfirmation />} />
 
-          {/* Admin routes giữ nguyên */}
+          {/*ProfilePage routes*/}1
+          <Route path="/" element={<Layout />}>
+            <Route path="/profile" element={<ProfilePage />} />
+            <Route path="/profile/edit" element={<EditProfilePage />} />
+            <Route
+              path="/profile/change-password"
+              element={<ChangePasswordPage />}
+            />
+          </Route>
+          <Route
+            path="/await-confirmation"
+            element={<AwaitEmailConfirmation />}
+          />
+          {/* Listening routes */}
+          <Route path="/" element={<Layout />}>
+            <Route path="/listening" element={<ListeningPage />} />
+            <Route path="/listening/:id" element={<ListeningDetailPage />} />
+          </Route>
+          {/* Public routes */}
+          <Route path="/" element={<Layout />}>
+            <Route index element={<HomePage />} />
+            <Route path="learning" element={<LearningPage />} />
+            <Route path="learning/:subjectId" element={<CourseContentPage />} />
+            <Route
+              path="learning/:subjectId/lesson/:lessonId"
+              element={<LessonPage />}
+            />
+          </Route>
+
+
           <Route path="/admin" element={<MainLayout />}>
             <Route path="content_speaking" element={<ContentSpeakingManagement />} />
             <Route path="content_speaking/:contentSpeakingId/dialogue" element={<DialogueManagement />} />
