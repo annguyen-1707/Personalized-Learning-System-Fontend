@@ -214,7 +214,7 @@ function CourseContentPage() {
                           {/* Action Button */}
                           <div className="ml-4">
                             <Link
-                              to={`/learning/${subjectId}/${lesson.lessonId}`}
+                              to={`/learning/${subjectId}/lesson/${lesson.lessonId}`}
                               className={`inline-flex items-center px-4 py-2 rounded-md text-sm font-medium ${
                                 isCompleted
                                   ? "bg-success-100 text-success-700 hover:bg-success-200"

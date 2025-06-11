@@ -37,6 +37,7 @@ import QuestionManagement from "./pages/content/QuestionManagement";
 import ExerciseManagement from "./pages/courses/ExerciseManagement";
 import LearningPage from "./pages/LearningPage/LearningPage";
 import CourseContentPage from "./pages/LearningPage/components/CourseContent.jsx";
+import LessonPage from "./pages/LearningPage/LessonPage.jsx";
 
 function App() {
   return (
@@ -81,6 +82,10 @@ function App() {
             <Route index element={<HomePage />} />
             <Route path="learning" element={<LearningPage />} />
             <Route path="learning/:subjectId" element={<CourseContentPage />} />
+            <Route
+              path="learning/:subjectId/lesson/:lessonId"
+              element={<LessonPage />}
+            />
           </Route>
 
           {/* Admin routes */}

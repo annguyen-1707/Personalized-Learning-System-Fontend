@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
+import { CourseContentService } from "../../services/CourseContentService";
+
 import {
   FiArrowLeft,
   FiArrowRight,
@@ -8,31 +10,38 @@ import {
   FiCheck,
 } from "react-icons/fi";
 import { motion } from "framer-motion";
-import { coursesData } from "../../data/coursesData";
 import LessonContent from "./components/LessonContent";
-import LessonVocabulary from "./components/LessonVocabulary";
-import LessonGrammar from "./components/LessonGrammar";
-import LessonExercises from "./components/LessonExercises";
 
 function LessonPage() {
-  const { courseId, lessonId } = useParams();
+  const { subjectId, lessonId } = useParams();
   const [activeTab, setActiveTab] = useState("content");
-  const [course, setCourse] = useState(null);
   const [lesson, setLesson] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     // Find the course and lesson based on the URL parameters
-    const foundCourse = coursesData.find((c) => c.id === courseId);
-    if (foundCourse) {
-      setCourse(foundCourse);
-      const foundLesson = foundCourse.lessons.find((l) => l.id === lessonId);
-      if (foundLesson) {
-        setLesson(foundLesson);
+    const getLesson = async () => {
+      try {
+        const lessonsData = await CourseContentService.getLessonsBySubjectId(
+          subjectId
+        );
+        console.log("lesson: ", lessonsData);
+        const foundLesson = lessonsData.data.find(
+          (l) => l.id === parseInt(lessonId)
+        );
+
+        if (foundLesson) {
+          setLesson(foundLesson);
+        } else {
+          setLesson(null);
+        }
+      } catch (error) {
+        console.error("Error fetching course or lesson:", error);
       }
-    }
+    };
+    getLesson();
     setLoading(false);
-  }, [courseId, lessonId]);
+  }, [subjectId, lessonId]);
 
   if (loading) {
     return (
@@ -42,7 +51,7 @@ function LessonPage() {
     );
   }
 
-  if (!course || !lesson) {
+  if (!lesson) {
     return (
       <div className="text-center py-12">
         <h2 className="text-2xl font-bold text-gray-900">Lesson not found</h2>
@@ -61,12 +70,12 @@ function LessonPage() {
   }
 
   // Find the current lesson index to determine previous and next lessons
-  const currentLessonIndex = course.lessons.findIndex((l) => l.id === lessonId);
+  const currentLessonIndex = lesson.findIndex((l) => l.id === lessonId);
   const prevLesson =
-    currentLessonIndex > 0 ? course.lessons[currentLessonIndex - 1] : null;
+    currentLessonIndex > 0 ? lesson[currentLessonIndex - 1] : null;
   const nextLesson =
-    currentLessonIndex < course.lessons.length - 1
-      ? course.lessons[currentLessonIndex + 1]
+    currentLessonIndex < lesson.length - 1
+      ? lesson[currentLessonIndex + 1]
       : null;
 
   return (
@@ -95,7 +104,7 @@ function LessonPage() {
             </button>
           </div>
           <p className="mt-2 opacity-90">
-            {course.title} - Lesson {currentLessonIndex + 1}
+            {lesson.name} - Lesson {currentLessonIndex + 1}
           </p>
         </div>
 
@@ -157,7 +166,7 @@ function LessonPage() {
         <div className="flex justify-between items-center p-6 bg-gray-50 border-t border-gray-200">
           {prevLesson ? (
             <Link
-              to={`/learning/${courseId}/${prevLesson.id}`}
+              to={`/learning/${subjectId}/lesson/${prevLesson.lessonId}`}
               className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md bg-white hover:bg-gray-50"
             >
               <FiArrowLeft className="mr-2" />
@@ -169,7 +178,7 @@ function LessonPage() {
 
           {nextLesson ? (
             <Link
-              to={`/learning/${courseId}/${nextLesson.id}`}
+              to={`/learning/${subjectId}/lesson/${nextLesson.lessonId}`}
               className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary-500 hover:bg-primary-600"
             >
               Next Lesson

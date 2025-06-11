@@ -2,6 +2,16 @@ import { motion } from "framer-motion";
 import { FiVolume2, FiDownload } from "react-icons/fi";
 
 function LessonContent({ lesson }) {
+  if (!lesson) {
+    return (
+      <div className="text-center py-12">
+        <h2 className="text-2xl font-bold text-gray-900">Lesson not found</h2>
+        <p className="mt-4 text-gray-600">
+          The lesson you are looking for does not exist or has been removed.
+        </p>
+      </div>
+    );
+  }
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -10,13 +20,45 @@ function LessonContent({ lesson }) {
     >
       <h2>Lesson Content</h2>
 
-      {lesson.introduction && (
+      {/* Description */}
+      {lesson.description && (
+        <div className="mb-6">
+          <h3 className="text-xl font-semibold">Description</h3>
+          <p>{lesson.description}</p>
+        </div>
+      )}
+
+      {/* Video or Thumbnail */}
+      <div className="mb-6">
+        {lesson.videoUrl ? (
+          <div className="aspect-video">
+            <iframe
+              src={lesson.videoUrl}
+              title="Lesson Video"
+              className="w-full h-full rounded-lg border"
+              allowFullScreen
+            ></iframe>
+          </div>
+        ) : lesson.thumbnailUrl ? (
+          <div>
+            <img
+              src={lesson.thumbnailUrl}
+              alt="Lesson Thumbnail"
+              className="w-full max-w-2xl rounded-lg border"
+            />
+          </div>
+        ) : null}
+      </div>
+
+      {/* Introduction */}
+      {lesson.name && (
         <div className="mb-8">
           <h3>Introduction</h3>
           <p>{lesson.introduction}</p>
         </div>
       )}
 
+      {/* Dialogs */}
       {lesson.dialogs && lesson.dialogs.length > 0 && (
         <div className="mb-8">
           <h3>Dialogue</h3>
@@ -37,6 +79,7 @@ function LessonContent({ lesson }) {
         </div>
       )}
 
+      {/* Main Content */}
       {lesson.content && (
         <div className="mb-8">
           <h3>Main Content</h3>
@@ -44,6 +87,7 @@ function LessonContent({ lesson }) {
         </div>
       )}
 
+      {/* Examples */}
       {lesson.examples && lesson.examples.length > 0 && (
         <div className="mb-8">
           <h3>Examples</h3>
@@ -65,6 +109,7 @@ function LessonContent({ lesson }) {
         </div>
       )}
 
+      {/* Cultural Notes */}
       {lesson.culturalNotes && (
         <div className="mb-8">
           <h3>Cultural Notes</h3>
@@ -74,6 +119,7 @@ function LessonContent({ lesson }) {
         </div>
       )}
 
+      {/* Additional Resources */}
       {lesson.resources && lesson.resources.length > 0 && (
         <div className="mb-8">
           <h3>Additional Resources</h3>
