@@ -48,11 +48,23 @@ const getProgressByLessonId = async (lessonId) => {
   }
 };
 
+const getExercisesByLessonId = async (lessonId) => {
+  try {
+    const response = await axios.get(
+      `/api/exercise-questions?lessonId=${lessonId}`
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching exercises by lesson ID:", error);
+    throw new Error("Failed to fetch exercises");
+  }
+};
 export const CourseContentService = {
   getCourseContentById,
   getProgressCourseBySubjectId,
   getLessonsBySubjectId,
   getProgressByLessonId,
+  getExercisesByLessonId,
 };
 
 export default CourseContentService;

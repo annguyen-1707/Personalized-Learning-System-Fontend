@@ -13,6 +13,7 @@ import { motion } from "framer-motion";
 import LessonContent from "./components/LessonContent";
 import LessonVocabulary from "./components/LessonVocabulary";
 import LessonGrammar from "./components/LessonGrammar";
+import LessonExercises from "./components/LessonExercises";
 
 function LessonPage() {
   const { subjectId, lessonId } = useParams();
@@ -34,12 +35,6 @@ function LessonPage() {
         const currentIndex = lessonsList.findIndex(
           (l) => String(l.lessonId) === lessonId
         );
-        console.log("lessonId param:", lessonId);
-        console.log(
-          "lessonsList:",
-          lessonsList.map((l) => l.lessonId)
-        );
-        console.log("currentIndex:", currentIndex);
         if (currentIndex !== -1) {
           setCurrentLessonIndex(currentIndex);
           setLesson(lessonsList[currentIndex]);
@@ -172,7 +167,9 @@ function LessonPage() {
           {activeTab === "content" && <LessonContent lesson={lesson} />}
           {activeTab === "vocabulary" && <LessonVocabulary lesson={lesson} />}
           {activeTab === "grammar" && <LessonGrammar lesson={lesson} />}
-          {activeTab === "exercises" && <LessonExercises lesson={lesson} />}
+          {activeTab === "exercises" && (
+            <LessonExercises lessonId={lesson.lessonId} />
+          )}
         </div>
 
         {/* Lesson navigation */}
