@@ -16,7 +16,10 @@ function LessonPage() {
   const { subjectId, lessonId } = useParams();
   const [activeTab, setActiveTab] = useState("content");
   const [lesson, setLesson] = useState(null);
+  const [prevLesson, setPrevLesson] = useState(null);
+  const [nextLesson, setNextLesson] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [currentLessonIndex, setCurrentLessonIndex] = useState(null);
 
   useEffect(() => {
     // Find the course and lesson based on the URL parameters
@@ -25,15 +28,25 @@ function LessonPage() {
         const lessonsData = await CourseContentService.getLessonsBySubjectId(
           subjectId
         );
-        console.log("lesson: ", lessonsData);
-        const foundLesson = lessonsData.data.find(
-          (l) => l.id === parseInt(lessonId)
+        const lessonsList = lessonsData.data || [];
+        const currentIndex = lessonsList.findIndex(
+          (l) => l.lessonId === parseFloat(lessonId)
         );
-
-        if (foundLesson) {
-          setLesson(foundLesson);
+        if (currentIndex !== -1) {
+          setCurrentLessonIndex(currentIndex);
+          setLesson(lessonsList[currentIndex]);
+          setPrevLesson(
+            currentIndex > 0 ? lessonsList[currentIndex - 1] : null
+          );
+          setNextLesson(
+            currentIndex < lessonsList.length - 1
+              ? lessonsList[currentIndex + 1]
+              : null
+          );
         } else {
           setLesson(null);
+          setPrevLesson(null);
+          setNextLesson(null);
         }
       } catch (error) {
         console.error("Error fetching course or lesson:", error);
@@ -60,7 +73,7 @@ function LessonPage() {
           page.
         </p>
         <Link
-          to="/learning"
+          to={`/learning/${subjectId}`}
           className="mt-6 inline-flex items-center px-4 py-2 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-primary-500 hover:bg-primary-600"
         >
           Back to Courses
@@ -69,20 +82,11 @@ function LessonPage() {
     );
   }
 
-  // Find the current lesson index to determine previous and next lessons
-  const currentLessonIndex = lesson.findIndex((l) => l.id === lessonId);
-  const prevLesson =
-    currentLessonIndex > 0 ? lesson[currentLessonIndex - 1] : null;
-  const nextLesson =
-    currentLessonIndex < lesson.length - 1
-      ? lesson[currentLessonIndex + 1]
-      : null;
-
   return (
     <div className="max-w-7xl mx-auto">
       <div className="mb-6">
         <Link
-          to="/learning"
+          to={`/learning/${subjectId}`}
           className="inline-flex items-center text-primary-600 hover:text-primary-700"
         >
           <FiArrowLeft className="mr-2" />
@@ -99,12 +103,12 @@ function LessonPage() {
         <div className="bg-primary-500 text-white p-6">
           <div className="flex justify-between items-center">
             <h1 className="text-2xl font-bold">{lesson.title}</h1>
-            <button className="p-2 rounded-full hover:bg-primary-400 transition-colors">
-              <FiBookmark className="h-5 w-5" />
-            </button>
           </div>
           <p className="mt-2 opacity-90">
-            {lesson.name} - Lesson {currentLessonIndex + 1}
+            {lesson.name}
+            {currentLessonIndex !== null
+              ? ` - Lesson ${currentLessonIndex + 1}`
+              : ""}
           </p>
         </div>
 
