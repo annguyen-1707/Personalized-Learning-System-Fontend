@@ -65,15 +65,10 @@ function App() {
             <Route path="learning" element={<LearningPage />} />
             {/* Thêm các route con khác nếu cần */}
           </Route>
-
-          // <Route path="/parentPage" element={<LayoutParent />}>
-          //   <Route index element={<ParentPage />} />
-          //   <Route path=":studentId/view_children" element={<ViewChildren />} />
-          // <Route path="/parentPage" element={<ParentPage />} />
-
-          <Route path="/" element={<LayoutParent />}>
-            <Route path="/parentPage" element={<ParentPage />} />
-            <Route path="/parentPage/:studentId/view_children" element={<ViewChildren />} />
+          
+          <Route path="/parentPage" element={<LayoutParent />}>
+            <Route index element={<ParentPage />} />
+            <Route path=":studentId/view_children" element={<ViewChildren />} />
           </Route>
 
           <Route path="oauth-callback" element={<OAuthCallBack />} />

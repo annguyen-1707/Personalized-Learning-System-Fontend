@@ -5,12 +5,13 @@ import LearningProgress from './components/LearningProgress'
 import VocabularyProgress from './components/VocabularyProgress'
 import GrammarProgress from './components/GrammarProgress'
 import StudentInformation from './components/StudentInformation'
-import { useNavigate, useParams } from "react-router-dom";
 import { getLearningProgressFromAPI, getStudentInfoFromAPI } from '../../services/ParentService'
 import ExerciseProgress from './components/ExerciseProgress'
+import { useParams } from "react-router-dom";
+
 
 function ViewChildren() {
-    const studentId = 1;
+    const studentId = useParams();
     const [activeTab, setActiveTab] = useState('overview')
     const [learningProgress, setLearningProgress] = useState();
     const [studentInfo, setStudentInfo] = useState(null); // State to hold student information
