@@ -17,7 +17,7 @@ function CourseContentPage() {
   const [loading, setLoading] = useState(true);
   const [completedLessons, setCompletedLessons] = useState([]);
   const [lessons, setLessons] = useState([]);
-  const { getCourseContentById, getLessonsBySubjectId, getProgressByLessonId } =
+  const { getCourseContentById, getLessonsBySubjectId, getProgressByLessonId, } =
     CourseContentService;
 
   const fetchCourseContent = async () => {
@@ -35,7 +35,6 @@ function CourseContentPage() {
     try {
       const lessonsData = await getLessonsBySubjectId(subjectId);
       setLessons(lessonsData.data);
-      // Fetch progress for each lesson
       const progressPromises = lessonsData.data.map((lesson) =>
         getProgressByLessonId(lesson.lessonId)
       );
@@ -53,6 +52,7 @@ function CourseContentPage() {
   useEffect(() => {
     fetchCourseContent();
     fetchLessons();
+    debugger
   }, [subjectId]);
 
   if (loading) {

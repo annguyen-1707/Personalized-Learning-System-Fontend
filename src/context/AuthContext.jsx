@@ -12,49 +12,49 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate(); // ✅ thêm dòng này
 
-  useEffect(() => {
-    const checkLogin = async () => {
-      try {
-        const response = await fetch("http://localhost:8080/auth/check-login", {
-          method: "GET",
-          credentials: "include",
-        });
+  // useEffect(() => {
+  //   const checkLogin = async () => {
+  //     try {
+  //       const response = await fetch("http://localhost:8080/auth/check-login", {
+  //         method: "GET",
+  //         credentials: "include",
+  //       });
 
-        if (response.ok) {
-          const data = await response.json(); // ← Lấy dữ liệu từ check-login
-          const accessToken = data.data.accessToken;
-          localStorage.setItem("accessToken", accessToken);
+  //       if (response.ok) {
+  //         const data = await response.json(); // ← Lấy dữ liệu từ check-login
+  //         const accessToken = data.data.accessToken;
+  //         localStorage.setItem("accessToken", accessToken);
 
-          // Gọi API lấy thông tin người dùng
-          const userRes = await fetch("http://localhost:8080/auth/user", {
-            headers: { Authorization: `Bearer ${accessToken}` },
-          });
+  //         // Gọi API lấy thông tin người dùng
+  //         const userRes = await fetch("http://localhost:8080/auth/user", {
+  //           headers: { Authorization: `Bearer ${accessToken}` },
+  //         });
 
-          const userData = await userRes.json();
+  //         const userData = await userRes.json();
 
-          if (userRes.ok) {
-            setUser(userData.data);
-            const role = userData.data.roleName;
-            if (role === "PARENT") {
-              navigate("/parentpage");
-            } else if (role === "USER") {
-              navigate("/");
-            } else {
-              navigate("/admin");
-            }
-          } else {
-            throw new Error(userData.message || 'Failed to fetch user data');
-          }
-        } else {
-          setUser(null);
-        }
-      } catch (error) {
-        console.error("Error checking login status:", error);
-        setUser(null);
-      }
-    };
-    checkLogin();
-  }, [setUser]);
+  //         if (userRes.ok) {
+  //           setUser(userData.data);
+  //           const role = userData.data.roleName;
+  //           if (role === "PARENT") {
+  //             navigate("/parentpage");
+  //           } else if (role === "USER") {
+  //             navigate("/");
+  //           } else {
+  //             navigate("/admin");
+  //           }
+  //         } else {
+  //           throw new Error(userData.message || 'Failed to fetch user data');
+  //         }
+  //       } else {
+  //         setUser(null);
+  //       }
+  //     } catch (error) {
+  //       console.error("Error checking login status:", error);
+  //       setUser(null);
+  //     }
+  //   };
+  //   checkLogin();
+  // }, [setUser]);
 
 
   //login
