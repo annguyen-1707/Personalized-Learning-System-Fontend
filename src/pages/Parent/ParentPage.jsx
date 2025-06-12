@@ -1,35 +1,21 @@
-import Header from "../../components/layout/Header";
-import Footer from "../../components/layout/Footer";
+
 import { Link } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContext';
+import { useAuth  } from '../../context/AuthContext';
 import { useState } from 'react';
 import axios from '../../services/customixe-axios';
 
 function ParentPage() {
   const { user } = useAuth();
   const [inviteCode, setInviteCode] = useState(null);
-  const [loading, setLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const studentList = [
-    {
-      id: 1,
-      name: 'Nguyen Van A',
-      level: 'Grade 5',
-      membership: 'VIP',
-      status: 'ACTIVE',
-    },
-    {
-      id: 2,
-      name: 'Tran Thi B',
-      level: 'Grade 3',
-      membership: 'NORMAL',
-      status: 'INACTIVE',
-    },
-  ];
+if ( !user || !user.children) {
+  return <div>Đang tải thông tin người dùng...</div>;
+}
 
   const generateInviteCode = async () => {
     try {
-      setLoading(true);
+      setIsLoading(true);
       const response = await axios.get('/api/parent-student/generateCode'); // gọi đến backend
       if (response.data === "") {
         alert("You can only create 3 students");
@@ -41,7 +27,7 @@ function ParentPage() {
       console.error("Error generating invite code:", error);
       alert("Failed to generate invite code. Please try again.");
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   };
 
@@ -81,9 +67,9 @@ function ParentPage() {
           <button
             onClick={generateInviteCode}
             className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:opacity-50"
-            disabled={loading}
+            disabled={isLoading}
           >
-            {loading ? "Generating..." : "Generate Invite Code"}
+            {isLoading ? "Generating..." : "Generate Invite Code"}
           </button>
 
           {inviteCode && (
@@ -108,10 +94,11 @@ function ParentPage() {
         </div>
 
         {/* Student list */}
+
        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
   {user.children.map((student) => (
     <div
-      key={student.id}
+      key={student.user.userId}
       className="border rounded-2xl p-5 shadow-md bg-white hover:shadow-lg transition duration-300"
     >
       <div className="flex flex-col space-y-1 mb-3">
@@ -129,11 +116,12 @@ function ParentPage() {
       </div>
 
       <Link
-        to={`/student/${student.id}`}
+        to={`/parentPage/${student.user.userId}/view_children`}
         className="inline-block text-blue-600 hover:underline text-sm font-medium"
       >
         🔍 View Details
       </Link>
+
             </div>
           ))}
         </div>

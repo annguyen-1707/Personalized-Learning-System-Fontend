@@ -1,12 +1,10 @@
 import { Link, useLocation } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { useEffect, useState } from 'react'
-import { useAuth } from '../../context/AuthContext'
 
 function UpgradePage() {
   const [plans, setPlans] = useState([])
   const [hoveredIndex, setHoveredIndex] = useState(null)
-  const { user } = useAuth();
   const [text, setText] = useState('');
   const location = useLocation(); // để lấy location.state
   const [notification, setNotification] = useState('');
@@ -15,10 +13,6 @@ function UpgradePage() {
 
  const handleBuy = async (amount) => {
   const accessToken = localStorage.getItem('accessToken');
-  let userId = 1;
-  if (user) {
-    userId = user.userId;
-  }
 
   try {
     const response = await fetch(`http://localhost:8080/payment/getMembershipOfUser`, {
@@ -32,14 +26,14 @@ function UpgradePage() {
    let confirmed = false;
 
 if (inforData.data) {
-  const isOk = window.confirm("Your membership is still active. Are you sure you want to continue?");
+  const isOk = window.confirm(inforData.data + ". Do you want to buy it!");
   if (!isOk) {
     return;
   }
   confirmed = true;
   setText('Action cancelled.');
 } else {
-  const confirmBuy = window.confirm("You don't have a membership. Are you sure you want to buy one?");
+  const confirmBuy = window.confirm("Deo Co tien");
   if (!confirmBuy) {
     setText('Action cancelled.');
     return;
@@ -49,7 +43,7 @@ if (inforData.data) {
 }
 
 if (confirmed) {
-   const paymentResponse = await fetch("http://localhost:8080/payment", {
+   const paymentResponse = await fetch("http://localhost:8080/notification/sendParent", {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

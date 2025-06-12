@@ -10,58 +10,66 @@ export function useAuth() {
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
   const navigate = useNavigate(); // ✅ thêm dòng này
 
-  useEffect(() => {
-    const checkLogin = async () => {
-      try {
-        const response = await fetch("http://localhost:8080/auth/check-login", {
-          method: "GET",
-          credentials: "include",
-        });
+  // useEffect(() => {
+  //   const checkLogin = async () => {
+  //     try {
+  //       const response = await fetch("http://localhost:8080/auth/check-login", {
+  //         method: "GET",
+  //         credentials: "include",
+  //       });
 
-        if (response.ok) {
-          const data = await response.json(); // ← Lấy dữ liệu từ check-login
-          const accessToken = data.data.accessToken;
-          localStorage.setItem("accessToken", accessToken);
+  //       if (response.ok) {
+  //         const data = await response.json(); // ← Lấy dữ liệu từ check-login
+  //         const accessToken = data.data.accessToken;
+  //         localStorage.setItem("accessToken", accessToken);
 
-          // Gọi API lấy thông tin người dùng
-          const userRes = await fetch("http://localhost:8080/auth/user", {
-            headers: { Authorization: `Bearer ${accessToken}` },
-          });
+  //         // Gọi API lấy thông tin người dùng
+  //         const userRes = await fetch("http://localhost:8080/auth/user", {
+  //           headers: { Authorization: `Bearer ${accessToken}` },
+  //         });
 
-          const userData = await userRes.json();
+  //         const userData = await userRes.json();
 
-          if (userRes.ok) {
-            setUser(userData.data);
-            const role = userData.data.roleName;
-            if (role === "PARENT") {
-              navigate("/parentpage");
-            } else if (role === "USER") {
-              navigate("/");
-            } else {
-              navigate("/admin");
-            }
-          } else {
-            throw new Error(userData.message || 'Failed to fetch user data');
-          }
-        } else {
-          setUser(null);
-        }
-      } catch (error) {
-        console.error("Error checking login status:", error);
-        setUser(null);
-      }
-    };
-    checkLogin();
-  }, [setUser]);
+  //         if (userRes.ok) {
+  //           setUser(userData.data);
+  //           const role = userData.data.roleName;
+  //           if (role === "PARENT") {
+  //             navigate("/parentpage");
+  //           } else if (role === "USER") {
+  //             navigate("/");
+  //           } else {
+  //             navigate("/admin");
+  //           }
+  //         } else {
+  //           throw new Error(userData.message || 'Failed to fetch user data');
+  //         }
+  //       } else {
+  //         setUser(null);
+  //       }
+  //     } catch (error) {
+  //       console.error("Error checking login status:", error);
+  //       setUser(null);
+  //     }
+  //   };
+  //   checkLogin();
+  // }, [setUser]);
 
 
   //login
-  const login = async (email, password) => {
+  const login = async (email, password, isAdminLogin) => {
+    setIsAdmin(isAdminLogin)
     setLoading(true);
+    let api = 'http://localhost:8080/auth/login'
+    let apiUser = 'http://localhost:8080/auth/user'
     try {
-      const res = await fetch('http://localhost:8080/auth/login', {
+      if (isAdminLogin) {
+        api = 'http://localhost:8080/admin/login'
+        apiUser = 'http://localhost:8080/admin/user'
+      }
+      const res = await fetch(api, {
         method: 'Post',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
@@ -70,12 +78,12 @@ export function AuthProvider({ children }) {
 
       const data = await res.json()
       if (!res.ok) {
-        throw new Error(data.message || 'Login failed');
+        throw new Error(data.message || 'Account or pasword is not right');
       }
 
       localStorage.setItem("accessToken", data.data.accessToken);
 
-      const userRes = await fetch('http://localhost:8080/auth/user', {
+      const userRes = await fetch(apiUser, {
         headers: { Authorization: `Bearer ${data.data.accessToken}` }
       });
       const userData = await userRes.json();
@@ -193,6 +201,7 @@ export function AuthProvider({ children }) {
     user,
     setUser,
     loading,
+    isAdmin,
     login,
     loginWithProvider,
     register1,

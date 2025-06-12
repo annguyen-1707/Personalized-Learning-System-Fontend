@@ -58,6 +58,7 @@ function LessonPage() {
       }
     };
     getLesson();
+    debugger
   }, [subjectId, lessonId]);
 
   if (loading) {
