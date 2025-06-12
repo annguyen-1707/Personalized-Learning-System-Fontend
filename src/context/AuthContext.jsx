@@ -12,41 +12,49 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate(); // ✅ thêm dòng này
 
-useEffect(() => {
-  const checkLogin = async () => {
-    try {
-      const response = await fetch("http://localhost:8080/auth/check-login", {
-        method: "GET",
-        credentials: "include",
-      });
-
-      if (response.ok) {
-        const data = await response.json(); // ← Lấy dữ liệu từ check-login
-        const accessToken = data.data.accessToken;
-        localStorage.setItem("accessToken", accessToken);
-
-        // Gọi API lấy thông tin người dùng
-        const userRes = await fetch("http://localhost:8080/auth/user", {
-          headers: { Authorization: `Bearer ${accessToken}` },
+  useEffect(() => {
+    const checkLogin = async () => {
+      try {
+        const response = await fetch("http://localhost:8080/auth/check-login", {
+          method: "GET",
+          credentials: "include",
         });
 
-        const userData = await userRes.json();
+        if (response.ok) {
+          const data = await response.json(); // ← Lấy dữ liệu từ check-login
+          const accessToken = data.data.accessToken;
+          localStorage.setItem("accessToken", accessToken);
 
-        if (userRes.ok) {
-          setUser(userData.data);
+          // Gọi API lấy thông tin người dùng
+          const userRes = await fetch("http://localhost:8080/auth/user", {
+            headers: { Authorization: `Bearer ${accessToken}` },
+          });
+
+          const userData = await userRes.json();
+
+          if (userRes.ok) {
+            setUser(userData.data);
+            const role = userData.data.roleName;
+            if (role === "PARENT") {
+              navigate("/parentpage");
+            } else if (role === "USER") {
+              navigate("/");
+            } else {
+              navigate("/admin");
+            }
+          } else {
+            throw new Error(userData.message || 'Failed to fetch user data');
+          }
         } else {
-          throw new Error(userData.message || 'Failed to fetch user data');
+          setUser(null);
         }
-      } else {
+      } catch (error) {
+        console.error("Error checking login status:", error);
         setUser(null);
       }
-    } catch (error) {
-      console.error("Error checking login status:", error);
-      setUser(null);
-    }
-  };
-  checkLogin();
-}, [setUser]);
+    };
+    checkLogin();
+  }, [setUser]);
 
 
   //login
@@ -75,14 +83,14 @@ useEffect(() => {
         throw new Error(userData.message || 'Failed to fetch user data');
       }
       setUser(userData.data);
-      const role = userData.data.role?.authority;
-    if (role === "ROLE_PARENT") {
-      navigate("/parentpage");
-    } else if (role === "ROLE_USER") {
-      navigate("/");
-    } else {
-      navigate("/admin");
-    }
+      const role = userData.data.roleName;
+      if (role === "PARENT") {
+        navigate("/parentpage");
+      } else if (role === "USER") {
+        navigate("/");
+      } else {
+        navigate("/admin");
+      }
 
     } catch (error) {
       console.error('Login failed:', error);
@@ -108,11 +116,11 @@ useEffect(() => {
       console.error("OAuth2 login failed", error);
     }
   };
-const register2 = async (email ,fullName, dob, address, gender, phone, role) => {
+  const register2 = async (email, fullName, dob, address, gender, phone, role) => {
     setLoading(true);
     try {
       console.log("✅ Register2 called with email:", email);
-      if(email === null || email === undefined) {
+      if (email === null || email === undefined) {
         email = localStorage.getItem("email")
       }
       const response = await fetch(`http://localhost:8080/auth/complete-profile?email=${email}`, {
@@ -139,20 +147,26 @@ const register2 = async (email ,fullName, dob, address, gender, phone, role) => 
 
   const register1 = async (email, password) => {
     setLoading(true);
+    const accessToken = localStorage.getItem('accessToken');
     try {
       const response = await fetch('http://localhost:8080/auth', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          ...(accessToken && { Authorization: `Bearer ${accessToken}` })
         },
         body: JSON.stringify({ email, password }),
         credentials: 'include', // nếu dùng allowCredentials(true)
       });
 
       localStorage.setItem("email", email);
-      if (!response.ok) {
-        throw new Error('Email already exists or registration failed');
+      const responseData = await response.json();
+      if (!response.ok || responseData.status === "FAIL") {
+        alert(responseData.message || "Something went wrong");
+        return;
       }
+      navigate(`/await-confirmation?email=${encodeURIComponent(email)}`);
+
 
     } catch (error) {
       console.error('Registration failed:', error);

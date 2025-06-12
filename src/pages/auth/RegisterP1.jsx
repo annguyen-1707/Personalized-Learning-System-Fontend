@@ -23,7 +23,7 @@ function RegisterP1() {
     try {
       setError('');
       await register1(email, password);
-      navigate(`/await-confirmation?email=${encodeURIComponent(email)}`);
+
     } catch (err) {
       setError('Failed to create an account');
     }
