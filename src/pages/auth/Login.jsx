@@ -4,13 +4,14 @@ import { useAuth } from '../../context/AuthContext';
 import { BookOpen, Mail, Lock, Github, ToggleLeft as Google, Facebook } from 'lucide-react';
 
 function Login() {
-  const navigate = useNavigate();
   const { login, loginWithProvider, loading } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const location = useLocation();
   const [successMessage, setSuccessMessage] = useState('');
+  const isAdminLogin = location.pathname.startsWith('/admin');
+
 
   useEffect(() => {
     if (location.state?.successMessage) {
@@ -28,7 +29,7 @@ function Login() {
     e.preventDefault();
     try {
       setError('');
-      await login(email, password);
+      await login(email, password, isAdminLogin);
     } catch (err) {
       setError('Failed to sign in');
     }
@@ -38,7 +39,7 @@ function Login() {
     try {
       setError('');
       await loginWithProvider(provider);
-      
+
     } catch (err) {
       setError(`Failed to sign in with ${provider}`);
     }
@@ -55,12 +56,14 @@ function Login() {
         <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
           Sign in to your account
         </h2>
-        <p className="mt-2 text-center text-sm text-gray-600">
-          Or{' '}
-          <Link to="/register1" className="font-medium text-primary-600 hover:text-primary-500">
-            create a new account
-          </Link>
-        </p>
+        {!isAdminLogin && (
+          <p className="mt-2 text-center text-sm text-gray-600">
+            Or{' '}
+            <Link to="/register1" className="font-medium text-primary-600 hover:text-primary-500">
+              create a new account
+            </Link>
+          </p>
+        )}
       </div>
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
@@ -87,8 +90,8 @@ function Login() {
                 <input
                   id="email"
                   name="email"
-                  type="email"
-                  autoComplete="email"
+                  type={isAdminLogin ? 'text' : 'email'}
+                  autoComplete={isAdminLogin ? 'username' : 'email'}
                   required
                   className="pl-10"
                   value={email}
@@ -120,11 +123,13 @@ function Login() {
 
             <div className="flex items-center justify-between">
 
-              <div className="text-sm">
-                <Link to="/forgot-password" className="font-medium text-primary-600 hover:text-primary-500">
-                  Forgot your password?
-                </Link>
-              </div>
+              {!isAdminLogin && (
+                <div className="text-sm">
+                  <Link to="/forgot-password" className="font-medium text-primary-600 hover:text-primary-500">
+                    Forgot your password?
+                  </Link>
+                </div>
+              )}
             </div>
 
             <div>
@@ -146,28 +151,22 @@ function Login() {
           </form>
 
           <div className="mt-6">
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-300" />
-              </div>
-              <div className="relative flex justify-center text-sm">
-                <span className="px-2 bg-white text-gray-500">Or continue with</span>
-              </div>
-            </div>
-
-            <div className="mt-6 grid grid-cols-2 gap-3">
+            <div className={`flex gap-3 ${isAdminLogin ? 'justify-center' : 'justify-between'}`}>
               <button
                 onClick={() => handleProviderLogin('google')}
-                className="btn-outline py-2 px-4 flex justify-center items-center"
+                className="btn-outline py-2 px-4 flex justify-center items-center w-40"
               >
                 <Google className="h-5 w-5" />
               </button>
-              <button
-                onClick={() => handleProviderLogin('facebook')}
-                className="btn-outline py-2 px-4 flex justify-center items-center"
-              >
-                <Facebook className="h-5 w-5" />
-              </button>
+
+              {!isAdminLogin && (
+                <button
+                  onClick={() => handleProviderLogin('facebook')}
+                  className="btn-outline py-2 px-4 flex justify-center items-center w-40"
+                >
+                  <Facebook className="h-5 w-5" />
+                </button>
+              )}
             </div>
           </div>
         </div>

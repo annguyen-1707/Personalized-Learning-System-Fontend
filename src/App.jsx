@@ -70,14 +70,13 @@ function App() {
             <Route path="learning" element={<LearningPage />} />
             {/* Thêm các route con khác nếu cần */}
           </Route>
-          
+
+
           <Route path="/" element={<LayoutParent />}>
             <Route path="/parentPage" element={<ParentPage />} />
-            <Route
-              path="/parentPage/:studentId/view_children"
-              element={<ViewChildren />}
-            />
+            <Route path="/parentPage/:studentId/view_children" element={<ViewChildren />} />
           </Route>
+
           <Route path="oauth-callback" element={<OAuthCallBack />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register1" element={<RegisterP1 />} />
