@@ -4,7 +4,7 @@ import Logo from '../common/Logo';
 import { useAuth } from '../../context/AuthContext';
 
 function Header({ setSidebarOpen, onNotificationClick }) {
-  const { user, setUser } = useAuth(); 
+  const { user, setUser } = useAuth();
   const navigate = useNavigate();
 
   const handleLogout = async () => {

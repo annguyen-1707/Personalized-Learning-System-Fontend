@@ -1,6 +1,7 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import { FiBell, FiClock, FiPlus, FiTrash2 } from 'react-icons/fi'
+import { getStudyReminderFromAPI, handleDeleteStudyReminderFromAPI } from '../../../services/ProfileService'
 
 function StudyReminders() {
   const [reminders, setReminders] = useState([
@@ -20,7 +21,19 @@ function StudyReminders() {
     },
   ])
 
-  const allDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+  useEffect(() => {
+    getStudyReminder();
+  }, [])
+
+  const getStudyReminder = async () => {
+    var res = getStudyReminderFromAPI();
+    console.log("study reminder", res)
+    if (res && res.data) {
+      setReminders(res.data)
+    }
+  }
+
+  const allDays = ['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY', 'SUNDAY']
 
   const toggleDay = (reminderId, day) => {
     setReminders(reminders.map(reminder => {
@@ -44,7 +57,7 @@ function StudyReminders() {
   }
 
   const deleteReminder = (reminderId) => {
-    setReminders(reminders.filter(reminder => reminder.id !== reminderId))
+    handleDeleteStudyReminderFromAPI(reminderId)
   }
 
   return (
@@ -84,8 +97,8 @@ function StudyReminders() {
                 <button
                   onClick={() => toggleReminder(reminder.id)}
                   className={`p-2 rounded-full ${reminder.active
-                      ? 'text-primary-500 hover:bg-primary-100'
-                      : 'text-gray-400 hover:bg-gray-200'
+                    ? 'text-primary-500 hover:bg-primary-100'
+                    : 'text-gray-400 hover:bg-gray-200'
                     }`}
                 >
                   <FiBell className="h-5 w-5" />
@@ -105,8 +118,8 @@ function StudyReminders() {
                   key={day}
                   onClick={() => toggleDay(reminder.id, day)}
                   className={`px-3 py-1 rounded-full text-sm font-medium ${reminder.days.includes(day)
-                      ? 'bg-primary-500 text-white'
-                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                    ? 'bg-primary-500 text-white'
+                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                     } ${!reminder.active && 'opacity-50'}`}
                   disabled={!reminder.active}
                 >
