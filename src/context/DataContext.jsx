@@ -1,16 +1,11 @@
-import { createContext, useContext, useState, useEffect } from "react";
+import { createContext, useContext, useState} from "react";
 import {
   mockAdmins,
   mockUsers,
   mockSystemLogs,
-  mockVocabulary,
-  mockGrammar,
   mockExercises,
   mockResources,
 } from "../data/mockData";
-import { data } from "autoprefixer";
-import { s } from "framer-motion/client";
-
 const DataContext = createContext();
 
 export function useData() {
@@ -25,14 +20,11 @@ export function DataProvider({ children }) {
     page: { totalPages: 0, number: 0, totalElements: 0 },
   });
   const [logs, setLogs] = useState(mockSystemLogs);
-  const [vocabulary, setVocabulary] = useState(mockVocabulary);
-  const [grammar, setGrammar] = useState(mockGrammar);
   const [exercises, setExercises] = useState(mockExercises);
   const [resources, setResources] = useState(mockResources);
-  const [subjects, setSubjects] = useState({});
   const [errorMessage, setErrorMessage] = useState([]);
-  const [errors, setErrors] = useState({});
-  const [lessonStatus, setLessonStatus] = useState([]);
+  const [vocabulary, setVocabulary] = useState([]);
+  const [grammar, setGrammar] = useState([]);
 
   // api for fetching days "/api/subjects" and "/api/lessons?subjectId={subjectId}"
   const fetchSubjects = async (page) => {
@@ -388,23 +380,88 @@ export function DataProvider({ children }) {
     return data;
   };
 
-  const addGrammar = (item) => {
-    const newItem = { ...item, id: Date.now().toString() };
+
+  // Grammar CRUD operations
+
+  const fetchGrammar = async (lessonId, page) => {
+      const response = await fetch(`/api/grammars?lessonId=${lessonId}&page=${page}`);
+      if (!response.ok) {
+        const data = await response.json();
+        return data;
+      }
+      const data = await response.json();
+      return data.data;
+  };
+
+ const addGrammar = async (item) => {
+    const res = await fetch("/api/grammars", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(item),
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      return data;
+    }
+    const newItem = { ...data.data };
     setGrammar([...grammar, newItem]);
     return newItem;
   };
 
-  const updateGrammar = (id, updatedItem) => {
+  const updateGrammar = async (id, updatedItem) => {
+    const res = await fetch(`/api/grammars/${id}`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(updatedItem),
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      return data;
+    }
     setGrammar(
       grammar.map((item) =>
-        item.id === id ? { ...item, ...updatedItem } : item
+        item.id === id ? { ...item, ...data.data } : item
       )
     );
+    return data.data;
   };
 
-  const deleteGrammar = (id) => {
-    setGrammar(grammar.filter((item) => item.id !== id));
+  const deleteGrammar = async (id) => {
+    const res = await fetch(`/api/grammars/${id}`, {
+      method: "DELETE",
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      return data;
+    }
+    return data;
   };
+
+  // Exercise and Resource CRUD operations
+
+ const  getLessonExercisesById = async (lessonId, page) => {
+  const res = await fetch(`/api/exercise-questions?lessonId=${lessonId}&page=${page}`);
+  if (!res.ok) {
+    const data = await res.json();
+    return data;
+  }
+  const data = await res.json();
+  return data.data;
+ }
+
+ const getExerciseDetailsById = async (exerciseId) => {
+   const res = await fetch(`/api/exercise-questions/exercise-details?exerciseId=${exerciseId}`);
+   if (!res.ok) {
+     const data = await res.json();
+     return data;
+   }
+   const data = await res.json();
+   return data.data;
+ };
 
   const addExercise = (item) => {
     const newItem = { ...item, id: Date.now().toString() };
@@ -460,13 +517,8 @@ export function DataProvider({ children }) {
     users,
     lessons,
     logs,
-    vocabulary,
     exercises,
-    resources,
-    subjects,
     errorMessage,
-    lessonStatus,
-    errors,
     addAdmin,
     updateAdmin,
     deleteAdmin,
@@ -501,6 +553,9 @@ export function DataProvider({ children }) {
     fetchLevels,
     fetchPartOfSpeech,
     getSubjectById,
+    fetchGrammar,
+    getLessonExercisesById,
+    getExerciseDetailsById
   };
 
   return <DataContext.Provider value={value}>{children}</DataContext.Provider>;
