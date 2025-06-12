@@ -70,10 +70,7 @@ function App() {
             <Route path="learning" element={<LearningPage />} />
             {/* Thêm các route con khác nếu cần */}
           </Route>
-          {/* <Route path="/parentPage" element={<LayoutParent />}>
-           <Route index element={<ParentPage />} />
-            <Route path=":studentId/view_children" element={<ViewChildren />} />
-          </Route> */}
+          
           <Route path="/" element={<LayoutParent />}>
             <Route path="/parentPage" element={<ParentPage />} />
             <Route
