@@ -31,6 +31,7 @@ import ListeningContentManagement from "./pages/content/ContentListeningManageme
 import UpgradePage from "./pages/Upgrade/UpgradePage";
 import VnpayReturn from "./pages/Upgrade/VnpayReturn.jsx";
 import ParentPage from "./pages/HomePage/ParentPage.jsx";
+import WebSocketTest from "./WebSocketTest.jsx";
 
 function App() {
   return (
@@ -44,7 +45,7 @@ function App() {
           </Route>
           
           <Route path="/parentPage" element={<ParentPage />} />
-
+<Route path="/ws-test" element={<WebSocketTest />} />
           <Route path="oauth-callback" element={<OAuthCallBack />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register1" element={<RegisterP1 />} />

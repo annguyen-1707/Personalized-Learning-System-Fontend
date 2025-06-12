@@ -3,7 +3,7 @@ import Footer from "../../components/layout/Footer";
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useState } from 'react';
-import axios from 'axios';
+import axios from '../../services/customixe-axios';
 
 function ParentPage() {
   const { user } = useAuth();
@@ -30,8 +30,12 @@ function ParentPage() {
   const generateInviteCode = async () => {
     try {
       setLoading(true);
-      const response = await axios.post('/api/invite-code'); // gọi đến backend
-      setInviteCode(response.data.code);
+      const response = await axios.get('/api/parent-student/generateCode'); // gọi đến backend
+      if (response.data === "") {
+        alert("You can only create 3 students");
+        return;
+      }
+      setInviteCode(response.data);
     } catch (error) {
       setInviteCode('AB2XY1');
       console.error("Error generating invite code:", error);
@@ -42,16 +46,16 @@ function ParentPage() {
   };
 
   const renderMembershipBadge = (type) => {
-    if (type === 'VIP') {
+    if (type === 'NORMAL') {
       return (
-        <span className="text-xs bg-yellow-400 text-white px-2 py-0.5 rounded mr-2">
-          VIP
+        <span className="text-xs bg-gray-300 text-gray-700 px-2 py-0.5 rounded mr-2">
+          NORMAL
         </span>
       );
     }
     return (
-      <span className="text-xs bg-gray-300 text-gray-700 px-2 py-0.5 rounded mr-2">
-        Normal
+      <span className="text-xs bg-yellow-400 text-white px-2 py-0.5 rounded mr-2">
+        VIP
       </span>
     );
   };
@@ -59,6 +63,9 @@ function ParentPage() {
   const renderStatus = (status) => {
     if (status === 'ACTIVE') {
       return <span className="text-green-600 text-sm">Active</span>;
+    }
+    if (status === 'BANNED') {
+      return <span className="text-green-600 text-sm">BANNED</span>;
     }
     return <span className="text-gray-500 text-sm">Inactive</span>;
   };
@@ -68,7 +75,7 @@ function ParentPage() {
       <Header />
 
       <div className="max-w-4xl mx-auto p-6 space-y-6">
-        <h2 className="text-3xl font-bold text-gray-800">Hello, {user?.name} 👋</h2>
+        <h2 className="text-3xl font-bold text-gray-800">Hello, {user?.fullName} 👋</h2>
         <p className="text-lg text-gray-600">Below is the list of students you are managing:</p>
 
         {/* Generate invite code section */}
@@ -80,6 +87,7 @@ function ParentPage() {
           >
             {loading ? "Generating..." : "Generate Invite Code"}
           </button>
+
           {inviteCode && (
             <div className="flex items-center space-x-2 mt-3">
               <input
@@ -102,24 +110,32 @@ function ParentPage() {
         </div>
 
         {/* Student list */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-          {studentList.map((student) => (
-            <div
-              key={student.id}
-              className="border rounded-xl p-4 shadow bg-white hover:shadow-md transition"
-            >
-              <h3 className="text-xl font-semibold text-gray-700">{student.name}</h3>
-              <p className="text-gray-500 mb-1">{student.level}</p>
-              <div className="flex items-center space-x-2 mb-2">
-                {renderMembershipBadge(student.membership)}
-                {renderStatus(student.status)}
-              </div>
-              <Link
-                to={`/student/${student.id}`}
-                className="inline-block mt-2 text-primary-600 hover:underline text-sm font-medium"
-              >
-                View Details
-              </Link>
+       <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+  {user.children.map((student) => (
+    <div
+      key={student.id}
+      className="border rounded-2xl p-5 shadow-md bg-white hover:shadow-lg transition duration-300"
+    >
+      <div className="flex flex-col space-y-1 mb-3">
+        <h3 className="text-lg font-semibold text-gray-800">
+          👤 {student.user.fullName}
+        </h3>
+        <p className="text-sm text-gray-600">
+          Gender: {student.user.gender === 'MALE' ? 'Male' : 'Female'}
+        </p>
+      </div>
+
+      <div className="flex items-center space-x-2 mb-3">
+        {renderMembershipBadge(student.user.membershipLevel)}
+        {renderStatus(student.user.status)}
+      </div>
+
+      <Link
+        to={`/student/${student.id}`}
+        className="inline-block text-blue-600 hover:underline text-sm font-medium"
+      >
+        🔍 View Details
+      </Link>
             </div>
           ))}
         </div>
