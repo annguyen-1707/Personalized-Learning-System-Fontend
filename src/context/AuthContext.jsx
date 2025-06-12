@@ -13,49 +13,49 @@ export function AuthProvider({ children }) {
   const [isAdmin, setIsAdmin] = useState(false);
   const navigate = useNavigate(); // ✅ thêm dòng này
 
-  // useEffect(() => {
-  //   const checkLogin = async () => {
-  //     try {
-  //       const response = await fetch("http://localhost:8080/auth/check-login", {
-  //         method: "GET",
-  //         credentials: "include",
-  //       });
+ useEffect(() => {
+  if (!isAdmin) {
+    const checkLogin = async () => {
+      try {
+        const response = await fetch("http://localhost:8080/auth/check-login", {
+          method: "GET",
+          credentials: "include",
+        });
 
-  //       if (response.ok) {
-  //         const data = await response.json(); // ← Lấy dữ liệu từ check-login
-  //         const accessToken = data.data.accessToken;
-  //         localStorage.setItem("accessToken", accessToken);
+        if (response.ok) {
+          const data = await response.json();
+          const accessToken = data.data.accessToken;
+          localStorage.setItem("accessToken", accessToken);
 
-  //         // Gọi API lấy thông tin người dùng
-  //         const userRes = await fetch("http://localhost:8080/auth/user", {
-  //           headers: { Authorization: `Bearer ${accessToken}` },
-  //         });
+          const userRes = await fetch("http://localhost:8080/auth/user", {
+            headers: { Authorization: `Bearer ${accessToken}` },
+          });
 
-  //         const userData = await userRes.json();
+          const userData = await userRes.json();
+          setUser(userData.data); // chỉ set user
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    };
+    checkLogin();
+  }
+}, []);
 
-  //         if (userRes.ok) {
-  //           setUser(userData.data);
-  //           const role = userData.data.roleName;
-  //           if (role === "PARENT") {
-  //             navigate("/parentpage");
-  //           } else if (role === "USER") {
-  //             navigate("/");
-  //           } else {
-  //             navigate("/admin");
-  //           }
-  //         } else {
-  //           throw new Error(userData.message || 'Failed to fetch user data');
-  //         }
-  //       } else {
-  //         setUser(null);
-  //       }
-  //     } catch (error) {
-  //       console.error("Error checking login status:", error);
-  //       setUser(null);
-  //     }
-  //   };
-  //   checkLogin();
-  // }, [setUser]);
+useEffect(() => {
+  if (user) {
+    const role = user.roleName;
+    if (location.pathname === "/" || location.pathname === "/login") {
+      if (role === "PARENT") {
+        navigate("/parentpage");
+      } else if (role === "USER") {
+        navigate("/");
+      } else {
+        navigate("/admin");
+      }
+    }
+  }
+}, [user]);
 
 
   //login
