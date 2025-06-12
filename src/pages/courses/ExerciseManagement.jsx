@@ -184,7 +184,7 @@ function ExerciseManagement() {
           </div>
           <div>
             <p className="text-sm text-gray-500">Exercise</p>
-            <p className="font-medium">xxx</p>
+            <p className="font-medium"></p>
           </div>
         </div>
       </div>

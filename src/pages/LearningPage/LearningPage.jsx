@@ -5,10 +5,15 @@ import CourseCard from "./components/CourseCard";
 import LearningPaggService from "../../services/LearningPaggService";
 import ReactPaginate from "react-paginate";
 function LearningPage() {
-  const { getAllSubjects } = LearningPaggService;
+  const { getAllSubjectsById, getAllSubjects } = LearningPaggService;
   const [coursesData, setCoursesData] = useState([]);
+  const [myCoursesData, setMyCoursesData] = useState([]);
   const [currentPage, setCurrentPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
+  const [selected, setSelected] = useState("all");
+
+  const filteredCourses = selected === "my-courses" ? myCoursesData : coursesData;
+
 
   const handlePageClick = (event) => {
     const selectedPage = event.selected;
@@ -16,6 +21,13 @@ function LearningPage() {
   };
 
   const fetchCourses = async () => {
+    const data = await getAllSubjectsById(currentPage);
+    setMyCoursesData(data.content);
+    setTotalPages(data.page.totalPages);
+    setCurrentPage(data.page.number);
+  };
+
+  const fetchAllCourses = async () => {
     const data = await getAllSubjects(currentPage);
     setCoursesData(data.content);
     setTotalPages(data.page.totalPages);
@@ -25,6 +37,7 @@ function LearningPage() {
   // Fetch courses when the component mounts
   useEffect(() => {
     fetchCourses();
+    fetchAllCourses();
   }, []);
 
   return (
@@ -42,18 +55,59 @@ function LearningPage() {
         </p>
       </motion.div>
 
+      <div className="mt-8 flex justify-center">
+        <div className="inline-flex rounded-md shadow-sm">
+          <button
+            type="button"
+            className={`px-4 py-2 text-sm font-medium rounded-l-md ${
+              selected === "all"
+                ? "bg-primary-500 text-white"
+                : "bg-white text-gray-700 hover:bg-gray-50"
+            } border border-gray-300`}
+            onClick={() => setSelected("all")}
+          >
+            Explore
+          </button>
+          <button
+            type="button"
+            className={`px-4 py-2 text-sm font-medium ${
+              selected === "my-courses"
+                ? "bg-primary-500 text-white"
+                : "bg-white text-gray-700 hover:bg-gray-50"
+            } border-t border-b border-r border-gray-300`}
+            onClick={() => setSelected("my-courses")}
+          >
+            My learning
+          </button>
+          <button
+            type="button"
+            className={`px-4 py-2 text-sm font-medium ${
+              selected === "suggested"
+                ? "bg-primary-500 text-white"
+                : "bg-white text-gray-700 hover:bg-gray-50"
+            } border-t border-b border-r border-gray-300`}
+            onClick={() => setSelected("suggested")}
+          >
+            Suggested from Parent
+          </button>
+        </div>
+      </div>
+
       {/* Courses grid */}
       <div className="mt-12 grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-        {coursesData.map((course, index) => (
-          <motion.div
-            key={course.id}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: index * 0.1 }}
-          >
-            <CourseCard course={course} />
-          </motion.div>
-        ))}
+        {filteredCourses.map((course, index) => {
+          const subject = selected === "my-courses" ? course.subject : course;
+          return (
+            <motion.div
+              key={course.subjectId || course.progressId}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: index * 0.1 }}
+            >
+              <CourseCard subject={subject} progressStatus={course.progressStatus} selected={selected} />
+            </motion.div>
+          );
+        })}
       </div>
 
       <ReactPaginate
