@@ -1,5 +1,5 @@
 import { Link, useNavigate } from 'react-router-dom';
-import { FiMenu, FiUser, FiBell, FiSearch } from 'react-icons/fi';
+import { FiMenu, FiUser, FiBell, FiSearch, FiUserPlus } from 'react-icons/fi';
 import Logo from '../common/Logo';
 import { useAuth } from '../../context/AuthContext';
 
@@ -64,7 +64,7 @@ function Header({ setSidebarOpen, onNotificationClick }) {
                 </button>
 
                 {/* Chỉ hiển thị Profile nếu không phải là ROLE_PARENT */}
-                {user?.role?.authority !== "ROLE_PARENT" && (
+                {user?.roleName !== "PARENT" && (
                   <Link to="/profile" className="p-1 rounded-full text-gray-500 hover:text-gray-700">
                     <span className="sr-only">Profile</span>
                     <FiUser className="h-6 w-6" />

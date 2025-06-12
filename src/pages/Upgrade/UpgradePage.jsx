@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { useEffect, useState } from 'react'
 import { useAuth } from '../../context/AuthContext'
@@ -21,29 +21,27 @@ function UpgradePage() {
   }
 
   try {
-    const response = await fetch(`http://localhost:8080/payment/getMembershipOfUser?userId=${userId}`, {
+    const response = await fetch(`http://localhost:8080/payment/getMembershipOfUser`, {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${accessToken}`
       }
     });
-
     const inforData = await response.json();
 
    let confirmed = false;
 
 if (inforData.data) {
-  const isOk = window.confirm("Bạn vẫn còn hạn gói thành viên. Bạn có chắc muốn tiếp tục không?");
+  const isOk = window.confirm("Your membership is still active. Are you sure you want to continue?");
   if (!isOk) {
-    setText('Bạn đã hủy thao tác.');
     return;
   }
   confirmed = true;
-  setText('Bạn đã xác nhận tiếp tục.');
+  setText('Action cancelled.');
 } else {
-  const confirmBuy = window.confirm("Bạn chưa có gói thành viên. Bạn có chắc chắn muốn mua không?");
+  const confirmBuy = window.confirm("You don't have a membership. Are you sure you want to buy one?");
   if (!confirmBuy) {
-    setText('Bạn đã hủy thao tác.');
+    setText('Action cancelled.');
     return;
   }
   confirmed = true;
