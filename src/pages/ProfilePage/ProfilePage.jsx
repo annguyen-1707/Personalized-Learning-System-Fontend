@@ -8,6 +8,7 @@ import StudentInformation from './components/StudentInformation'
 import { useNavigate } from "react-router-dom";
 import { getLearningProgressFromAPI, getStudentInfoFromAPI, handleAvatarUploadFromAPI } from '../../services/ProfileService'
 import ExerciseProgress from './components/ExerciseProgress'
+import StudyReminders from './components/StudyReminders'
 
 function ProfilePage() {
   const [activeTab, setActiveTab] = useState('overview')
@@ -136,7 +137,6 @@ function ProfilePage() {
           >
             Information
           </button>
-
         </nav>
       </div>
 
@@ -147,6 +147,7 @@ function ProfilePage() {
           {activeTab === 'overview' && (
             <div className="space-y-8">
               <LearningProgress progress={learningProgress} />
+              <StudyReminders />
             </div>
           )}
 
