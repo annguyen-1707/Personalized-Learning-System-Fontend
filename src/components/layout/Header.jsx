@@ -3,6 +3,8 @@ import { FiMenu, FiUser, FiBell, FiSearch, FiUserPlus } from 'react-icons/fi';
 import Logo from '../common/Logo';
 import { useAuth } from '../../context/AuthContext';
 
+function Header({ setSidebarOpen, onNotificationClick }) {
+  const { user, setUser } = useAuth(); 
 function Header({ setSidebarOpen, onNotificationClick  }) {
   const { user, setUser } = useAuth();
   const navigate = useNavigate();

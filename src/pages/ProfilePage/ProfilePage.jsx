@@ -6,7 +6,7 @@ import VocabularyProgress from './components/VocabularyProgress'
 import GrammarProgress from './components/GrammarProgress'
 import StudentInformation from './components/StudentInformation'
 import { useNavigate } from "react-router-dom";
-import { getLearningProgressFromAPI, getStudentInfoFromAPI } from '../../services/ProfileService'
+import { getLearningProgressFromAPI, getStudentInfoFromAPI, handleAvatarUploadFromAPI } from '../../services/ProfileService'
 import ExerciseProgress from './components/ExerciseProgress'
 
 function ProfilePage() {
@@ -38,6 +38,25 @@ function ProfilePage() {
     }
   }
 
+  const handleAvatarUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    try {
+      const response = await handleAvatarUploadFromAPI(file); // cần await
+      const newAvatarUrl = response?.data;
+
+      if (newAvatarUrl) {
+        setStudentInfo((prev) => ({ ...prev, avatar: newAvatarUrl }));
+      } else {
+        alert("Không nhận được URL ảnh mới.");
+      }
+    } catch (error) {
+      console.error("Upload error:", error);
+      alert("Lỗi khi upload ảnh.");
+    }
+  };
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       {/* Profile Header */}
@@ -49,7 +68,7 @@ function ProfilePage() {
         <div className="bg-primary-500 h-32"></div>
         <div className="px-6 pb-6">
           <div className="flex flex-col sm:flex-row items-center">
-            <div className="-mt-16 relative">
+            <div className="-mt-16 relative group">
               <img
                 src={
                   studentInfo?.avatar
@@ -57,9 +76,20 @@ function ProfilePage() {
                     : 'https://images.pexels.com/photos/614810/pexels-photo-614810.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2'
                 }
                 alt="Profile Avatar"
-                className="w-32 h-32 rounded-full border-4 border-white shadow-lg object-cover"
+                className="w-32 h-32 rounded-full border-4 border-white shadow-lg object-cover cursor-pointer"
+                onClick={() => document.getElementById('avatarUpload').click()}
               />
-              <button className="absolute bottom-0 right-0 p-2 bg-white rounded-full shadow-md text-gray-600 hover:text-primary-500">
+              <input
+                id="avatarUpload"
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handleAvatarUpload}
+              />
+              <button
+                className="absolute bottom-0 right-0 p-2 bg-white rounded-full shadow-md text-gray-600 hover:text-primary-500"
+                onClick={() => document.getElementById('avatarUpload').click()}
+              >
                 <FiEdit2 className="h-5 w-5" />
               </button>
             </div>

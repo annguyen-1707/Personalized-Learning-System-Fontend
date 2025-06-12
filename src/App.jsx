@@ -52,23 +52,29 @@ function App() {
         <Routes>
           <Route
             path="/"
-            element={<Layout onNotificationClick={() => setNotificationOpen(true)} />}
+            element={
+              <Layout onNotificationClick={() => setNotificationOpen(true)} />
+            }
           >
             <Route index element={<HomePage />} />
             <Route path="upgrade" element={<UpgradePage />} />
             <Route path="vnpay-return" element={<VnpayReturn />} />
             <Route path="profile" element={<ProfilePage />} />
             <Route path="profile/edit" element={<EditProfilePage />} />
-            <Route path="profile/change-password" element={<ChangePasswordPage />} />
+            <Route
+              path="profile/change-password"
+              element={<ChangePasswordPage />}
+            />
             <Route path="listening" element={<ListeningPage />} />
             <Route path="listening/:id" element={<ListeningDetailPage />} />
             <Route path="learning" element={<LearningPage />} />
             {/* Thêm các route con khác nếu cần */}
           </Route>
-          
-          <Route path="/parentPage" element={<LayoutParent />}>
-            <Route index element={<ParentPage />} />
-            <Route path=":studentId/view_children" element={<ViewChildren />} />
+
+
+          <Route path="/" element={<LayoutParent />}>
+            <Route path="/parentPage" element={<ParentPage />} />
+            <Route path="/parentPage/:studentId/view_children" element={<ViewChildren />} />
           </Route>
 
           <Route path="oauth-callback" element={<OAuthCallBack />} />
@@ -77,8 +83,10 @@ function App() {
           <Route path="/register2" element={<RegisterP2 />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/admin/login" element={<Login />} />
-          <Route path="/await-confirmation" element={<AwaitEmailConfirmation />} />
-
+          <Route
+            path="/await-confirmation"
+            element={<AwaitEmailConfirmation />}
+          />
           {/*ProfilePage routes*/}1
           <Route path="/" element={<Layout />}>
             <Route path="/profile" element={<ProfilePage />} />
@@ -107,28 +115,65 @@ function App() {
               element={<LessonPage />}
             />
           </Route>
-
-
           <Route path="/admin" element={<MainLayout />}>
-            <Route path="content_speaking" element={<ContentSpeakingManagement />} />
-            <Route path="content_speaking/:contentSpeakingId/dialogue" element={<DialogueManagement />} />
-            <Route path="content_reading" element={<ContentReadingManagement />} />
-            <Route path="content_reading/:contentReadingId/vocabulary" element={<VocabularyManagement />} />
-            <Route path="content_reading/:contentReadingId/grammar" element={<GrammarManagement />} />
-            <Route path="content_listening" element={<ListeningContentManagement />} />
-            <Route path="content_listening/:contentListeningId/question" element={<QuestionManagement />} />
+            <Route
+              path="content_speaking"
+              element={<ContentSpeakingManagement />}
+            />
+            <Route
+              path="content_speaking/:contentSpeakingId/dialogue"
+              element={<DialogueManagement />}
+            />
+            <Route
+              path="content_reading"
+              element={<ContentReadingManagement />}
+            />
+            <Route
+              path="content_reading/:contentReadingId/vocabulary"
+              element={<VocabularyManagement />}
+            />
+            <Route
+              path="content_reading/:contentReadingId/grammar"
+              element={<GrammarManagement />}
+            />
+            <Route
+              path="content_listening"
+              element={<ListeningContentManagement />}
+            />
+            <Route
+              path="content_listening/:contentListeningId/question"
+              element={<QuestionManagement />}
+            />
             <Route index element={<Dashboard />} />
             <Route path="system-logs" element={<SystemLogs />} />
             <Route path="users" element={<UserManagement />} />
             <Route path="courses" element={<CourseManagement />} />
-            <Route path="courses/:subjectId/lessons" element={<LessonManagement />} />
-            <Route path="courses/:subjectId/lessons/:lessonId/content" element={<ContentManagement />} />
-            <Route path="courses/:subjectId/lessons/:lessonId/exercises/:exerciseId" element={<ExerciseManagement />} />
-            <Route path="content/reading/:contentId/vocabulary" element={<VocabularyManagement />} />
-            <Route path="content/reading/:contentId/grammar" element={<GrammarManagement />} />
+            <Route
+              path="courses/:subjectId/lessons"
+              element={<LessonManagement />}
+            />
+            <Route
+              path="courses/:subjectId/lessons/:lessonId/content"
+              element={<ContentManagement />}
+            />
+            <Route
+              path="courses/:subjectId/lessons/:lessonId/exercises/:exerciseId"
+              element={<ExerciseManagement />}
+            />
+            <Route
+              path="content/reading/:contentId/vocabulary"
+              element={<VocabularyManagement />}
+            />
+            <Route
+              path="content/reading/:contentId/grammar"
+              element={<GrammarManagement />}
+            />
           </Route>
         </Routes>
-        <NotificationSlider open={notificationOpen} setOpen={setNotificationOpen} />
+        <NotificationSlider
+          open={notificationOpen}
+          setOpen={setNotificationOpen}
+        />
         <ToastContainer
           position="top-right"
           autoClose={5000}

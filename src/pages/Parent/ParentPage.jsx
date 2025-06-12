@@ -94,7 +94,10 @@ if ( !user || !user.children) {
         </div>
 
         {/* Student list */}
+<<<<<<< HEAD
 
+=======
+>>>>>>> 4c66430e022dc5558bc78a09395fa817046e0843
        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
   {user.children.map((student) => (
     <div
@@ -121,7 +124,10 @@ if ( !user || !user.children) {
       >
         🔍 View Details
       </Link>
+<<<<<<< HEAD
 
+=======
+>>>>>>> 4c66430e022dc5558bc78a09395fa817046e0843
             </div>
           ))}
         </div>
