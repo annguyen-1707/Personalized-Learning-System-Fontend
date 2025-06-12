@@ -38,6 +38,9 @@ import ListeningDetailPage from "./pages/ListeningPage/ListeningDetailPage";
 import QuestionManagement from "./pages/content/QuestionManagement";
 import ExerciseManagement from "./pages/courses/ExerciseManagement";
 import LearningPage from "./pages/LearningPage/LearningPage";
+import ResultsPage from "../../../../React/pls-template-fre-v.2.0/src/pages/QuizPage/ResultsPage.jsx";
+import AnswersPage from "../../../../React/pls-template-fre-v.2.0/src/pages/QuizPage/AnswersPage.jsx";
+import QuizPage from "../../../../React/pls-template-fre-v.2.0/src/pages/QuizPage/QuizPage.jsx";
 
 function App() {
   return (
@@ -82,7 +85,11 @@ function App() {
           {/* Public routes */}
           <Route path="/" element={<Layout />}>
             <Route index element={<HomePage />} />
-            <Route path="learning" element={<LearningPage />} />
+            <Route path="/learning" element={<LearningPage />} />
+            <Route path="/results" element={<ResultsPage />} />
+            <Route path="/answers" element={<AnswersPage />} />
+            <Route path="/quiz/:exerciseId" element={<QuizPage />} />
+
           </Route>
 
           {/* Admin routes */}
