@@ -60,7 +60,7 @@ function StudentInformation() {
           </div>
           <div className="flex items-center">
             <FiShield className="mr-3 text-primary-600" />
-            <span><strong>Role:</strong> {studentInfo.role.name}</span>
+            <span><strong>Role:</strong> {studentInfo.roleName}</span>
           </div>
         </div>
       )}
