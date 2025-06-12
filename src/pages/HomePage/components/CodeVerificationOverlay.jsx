@@ -3,7 +3,6 @@ import { motion } from 'framer-motion';
 import { FiLock, FiMail, FiClock, FiCheckCircle } from 'react-icons/fi';
 import { useAuth } from '../../../context/AuthContext';
 import { FiX } from 'react-icons/fi'; // icon nút đóng
-import webSocketService from '../../../services/websocket';
 import axios from '../../../services/customixe-axios';
 
 export default function ParentVerificationOverlay({ children }) {
@@ -12,41 +11,11 @@ export default function ParentVerificationOverlay({ children }) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [mess, setMess] = useState(`We've sent a verification request to your parent.
-              Please wait while they review your request. cccc`);
+              Please wait while they review your request.`);
   const { user, setUser } = useAuth();
 
 
-  useEffect(() => {
-    const topic = `/topic/parent-approval/${user?.id}`;
-    let subscription;
-
-    const setupWebSocket = async () => {
-      try {
-        await webSocketService.connect();
-        subscription = webSocketService.subscribe(topic, (response) => {
-          if (response.status === 'approved') {
-            setStatus('approved');
-          } else if (response.status === 'rejected') {
-            setStatus('idle');
-            setError('Parent rejected your request');
-          }
-        });
-      } catch (err) {
-        console.error('WebSocket error:', err);
-      }
-    };
-
-    if (user && status === 'pending') {
-      setupWebSocket();
-    }
-    return () => {
-      if (subscription) {
-        webSocketService.unsubscribe(topic);
-      }
-
-    };
-  }, [user, status]);
-
+  
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
@@ -79,7 +48,7 @@ export default function ParentVerificationOverlay({ children }) {
     setUser(null);
   };
 
-  if (status === 'approved' || user === null) {
+  if (status === 'approved' || user === null || user.parent !== null) {
     return children;
   }
 
