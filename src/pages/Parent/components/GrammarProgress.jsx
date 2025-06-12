@@ -1,9 +1,9 @@
 import { motion } from 'framer-motion'
 import { useEffect, useState } from 'react';
 import { FiBook, FiCheckCircle, FiChevronDown, FiClock } from 'react-icons/fi'
-import { getProgressGrammarFromAPI } from '../../../services/ProfileService';
+import { getProgressGrammarFromAPI } from '../../../services/ParentService';
 
-function GrammarProgress({ progress }) {
+function GrammarProgress({ progress, studentId }) {
   // Example grammar progress data - in a real app, this would come from your backend
   const [grammarProgresses, setGrammarProgress] = useState({});
   const [displayLimit, setDisplayLimit] = useState(3); // Mặc định hiển thị 3 từ
@@ -13,7 +13,7 @@ function GrammarProgress({ progress }) {
   }, []);
 
   const getGrammarProgress = async () => {
-    var res = await getProgressGrammarFromAPI();
+    var res = await getProgressGrammarFromAPI(studentId);
     if (res && res.data) {
       setGrammarProgress(res.data);
       console.log("Grammar Progress Data:", res.data);

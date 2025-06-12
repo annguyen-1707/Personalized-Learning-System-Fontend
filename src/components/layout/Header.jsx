@@ -26,7 +26,7 @@ function Header({ setSidebarOpen }) {
             <button
               type="button"
               className="p-2 rounded-md text-gray-500 lg:hidden"
-              onClick={() => setSidebarOpen(true)}
+              onClick={() => setSidebarOpen && setSidebarOpen(true)}
             >
               <span className="sr-only">Open sidebar</span>
               <FiMenu className="h-6 w-6" aria-hidden="true" />
@@ -37,6 +37,18 @@ function Header({ setSidebarOpen }) {
           </div>
 
           {/* Search */}
+          {user?.role?.authority !== "ROLE_PARENT" && (
+            <div className="flex-1 max-w-md mx-4 hidden md:flex">
+              <div className="w-full relative">
+                <FiSearch className="absolute inset-y-0 left-3 h-5 w-5 text-gray-400" />
+                <input
+                  className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-primary-500 focus:border-primary-500 sm:text-sm"
+                  placeholder="Search for lessons, vocabulary..."
+                  type="search"
+                />
+              </div>
+            </div>
+          )}
           {user?.roleName !== "PARENT"
             && (
               <div className="flex-1 max-w-md mx-4 hidden md:flex">
@@ -55,6 +67,11 @@ function Header({ setSidebarOpen }) {
           <div className="flex items-center space-x-4">
             {user ? (
               <>
+                <button
+                  type="button"
+                  className="p-1 rounded-full text-gray-500 hover:text-gray-700"
+                  onClick={onNotificationClick}
+                >
                 {user?.roleName === "PARENT" && (
                   <button
                     onClick={() => navigate("/register1")}
