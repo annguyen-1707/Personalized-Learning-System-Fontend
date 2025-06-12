@@ -3,6 +3,8 @@ import { Link } from "react-router-dom";
 import ReactPaginate from "react-paginate";
 import { CourseContentService } from "../../../services/CourseContentService";
 import { ArrowRight } from "lucide-react";
+import Swal from "sweetalert2";
+import { useNavigate } from "react-router-dom";
 
 const PAGE_SIZE = 5;
 
@@ -10,6 +12,25 @@ function LessonExercises({ lessonId }) {
   const [exercises, setExercises] = useState([]);
   const { getExercisesByLessonId } = CourseContentService;
   const [currentPage, setCurrentPage] = useState(0);
+
+  const navigate = useNavigate();
+
+  const handleStartExercise = (exerciseId) => {
+    Swal.fire({
+      title: "Start Exercise?",
+      text: "Are you sure you want to start this exercise now?",
+      icon: "question",
+      showCancelButton: true,
+      confirmButtonText: "Start",
+      cancelButtonText: "Cancel",
+      confirmButtonColor: "#2563eb",
+      cancelButtonColor: "#9ca3af",
+    }).then((result) => {
+      if (result.isConfirmed) {
+        navigate(`/exercises/${exerciseId}`);
+      }
+    });
+  };
 
   useEffect(() => {
     const fetchExercises = async () => {
@@ -62,18 +83,18 @@ function LessonExercises({ lessonId }) {
                 <p className="text-gray-700 text-sm">{ex.description}</p>
                 {ex.duration && (
                   <p className="text-sm text-gray-500 mt-1 italic">
-                    ⏱ Thời gian làm bài: {ex.duration} phút
+                    ⏱ Duration time: {ex.duration} minutes
                   </p>
                 )}
               </div>
 
-              <Link
-                to={`/exercises/${ex.id}`}
+              <button
+                onClick={() => handleStartExercise(ex.id)}
                 className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg shadow hover:bg-blue-700 transition"
               >
-                Làm bài
+                Do Exercise
                 <ArrowRight className="w-4 h-4" />
-              </Link>
+              </button>
             </div>
           </div>
         ))}
