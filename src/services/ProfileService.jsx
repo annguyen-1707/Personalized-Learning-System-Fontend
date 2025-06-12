@@ -41,6 +41,7 @@ const getStudyReminderFromAPI = async () => {
 }
 
 const handleCreateStudyReminderFromAPI = async (data) => {
+    console.log(data)
     try {
         const response = await axios.post(`/api/study-reminder`, data);
         toast.success("Tạo lời nhắc thành công!");
@@ -54,7 +55,6 @@ const handleCreateStudyReminderFromAPI = async (data) => {
 const handleUpdateStudyReminderFromAPI = async (id, data) => {
     try {
         const response = await axios.patch(`/api/study-reminder/${id}`, data);
-        toast.success("Cập nhật lời nhắc thành công!");
         return response;
     } catch (error) {
         console.error(error);
