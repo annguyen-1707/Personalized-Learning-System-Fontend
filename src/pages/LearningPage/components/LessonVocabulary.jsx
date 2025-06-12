@@ -19,7 +19,7 @@ function LessonVocabulary({ lesson }) {
       utterance.lang = lang;
       window.speechSynthesis.speak(utterance);
     } else {
-      alert("Trình duyệt của bạn không hỗ trợ phát âm.");
+      alert("Your browser does not support speech synthesis.");
     }
   };
 

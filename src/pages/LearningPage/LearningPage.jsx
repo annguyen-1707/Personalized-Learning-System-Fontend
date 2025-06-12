@@ -5,15 +5,16 @@ import CourseCard from "./components/CourseCard";
 import LearningPaggService from "../../services/LearningPaggService";
 import ReactPaginate from "react-paginate";
 function LearningPage() {
-  const { getAllSubjectsById, getAllSubjects } = LearningPaggService;
+  const { getAllSubjectsById, getAllSubjects } =
+    LearningPaggService;
   const [coursesData, setCoursesData] = useState([]);
   const [myCoursesData, setMyCoursesData] = useState([]);
   const [currentPage, setCurrentPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
   const [selected, setSelected] = useState("all");
 
-  const filteredCourses = selected === "my-courses" ? myCoursesData : coursesData;
-
+  const filteredCourses =
+    selected === "my-courses" ? myCoursesData : coursesData;
 
   const handlePageClick = (event) => {
     const selectedPage = event.selected;
@@ -22,16 +23,23 @@ function LearningPage() {
 
   const fetchCourses = async () => {
     const data = await getAllSubjectsById(currentPage);
-    setMyCoursesData(data.content);
-    setTotalPages(data.page.totalPages);
-    setCurrentPage(data.page.number);
+    console.log("Fetched courses:", data);
+    setMyCoursesData(data?.content);
+    setTotalPages(data?.page?.totalPages);
+    setCurrentPage(data?.page?.number);
   };
 
   const fetchAllCourses = async () => {
-    const data = await getAllSubjects(currentPage);
-    setCoursesData(data.content);
-    setTotalPages(data.page.totalPages);
-    setCurrentPage(data.page.number);
+    try {
+      const data = await getAllSubjects(currentPage);
+      setCoursesData(data?.content);
+      setTotalPages(data?.page?.totalPages);
+      setCurrentPage(data?.page?.number);
+    } catch (error) {
+      console.error("Error fetching all courses:", error);
+      setCoursesData([]);
+      setTotalPages(0);
+    }
   };
 
   // Fetch courses when the component mounts
@@ -79,7 +87,7 @@ function LearningPage() {
           >
             My learning
           </button>
-          <button
+          {/* <button
             type="button"
             className={`px-4 py-2 text-sm font-medium ${
               selected === "suggested"
@@ -89,26 +97,36 @@ function LearningPage() {
             onClick={() => setSelected("suggested")}
           >
             Suggested from Parent
-          </button>
+          </button> */}
         </div>
       </div>
 
       {/* Courses grid */}
       <div className="mt-12 grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-        {filteredCourses.map((course, index) => {
-          const subject = selected === "my-courses" ? course.subject : course;
+        {filteredCourses?.map((course, index) => {
+          const subject = selected === "my-courses" ? course?.subject : course;
           return (
             <motion.div
-              key={course.subjectId || course.progressId}
+              key={course?.subjectId || course?.progressId}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.1 }}
             >
-              <CourseCard subject={subject} progressStatus={course.progressStatus} selected={selected} />
+              <CourseCard
+                subject={subject}
+                progressStatus={course?.progressStatus}
+                selected={selected}
+              />
             </motion.div>
           );
         })}
       </div>
+            {/* No courses message */}
+      {filteredCourses?.length === 0 && (
+        <div className="text-center py-12">
+          <p className="text-gray-600">No courses found.</p>
+        </div>
+      )}  
 
       <ReactPaginate
         className="pagination mt-6 justify-center"
@@ -132,28 +150,7 @@ function LearningPage() {
         renderOnZeroPageCount={null}
       />
 
-      {/* No courses message */}
-      {coursesData.length === 0 && (
-        <div className="text-center py-12">
-          <p className="text-gray-600">No courses found.</p>
-        </div>
-      )}
-
-      {/* Need help section */}
-      {/* <div className="mt-16 bg-primary-50 rounded-lg p-8 text-center">
-        <h2 className="text-2xl font-bold text-gray-900">
-          Not sure where to start?
-        </h2>
-        <p className="mt-2 text-lg text-gray-600">
-          Take our placement test to find the perfect course for your level
-        </p>
-        <Link
-          to="/placement-test"
-          className="mt-6 inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-primary-500 hover:bg-primary-600"
-        >
-          Take Placement Test
-        </Link>
-      </div> */}
+  
     </div>
   );
 }
