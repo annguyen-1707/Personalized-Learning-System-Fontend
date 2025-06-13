@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import { FiBell, FiClock, FiPlus, FiTrash2 } from 'react-icons/fi'
 import { getStudyReminderFromAPI, handleCreateStudyReminderFromAPI, handleDeleteStudyReminderFromAPI, handleUpdateStudyReminderFromAPI } from '../../../services/ProfileService'
-import { handleUpdateContent } from '../../../services/ContentListeningService'
 
 function StudyReminders() {
   const [reminders, setReminders] = useState([])
