@@ -1,4 +1,5 @@
 import { createContext, useContext, useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom'; // ✅ thêm dòng này
 
 const AuthContext = createContext();
 
@@ -9,49 +10,66 @@ export function useAuth() {
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const navigate = useNavigate(); // ✅ thêm dòng này
 
-useEffect(() => {
-  const checkLogin = async () => {
-    try {
-      const response = await fetch("http://localhost:8080/auth/check-login", {
-        method: "GET",
-        credentials: "include",
-      });
-
-      if (response.ok) {
-        const data = await response.json(); // ← Lấy dữ liệu từ check-login
-        const accessToken = data.data.accessToken;
-        localStorage.setItem("accessToken", accessToken);
-
-        // Gọi API lấy thông tin người dùng
-        const userRes = await fetch("http://localhost:8080/auth/user", {
-          headers: { Authorization: `Bearer ${accessToken}` },
+ useEffect(() => {
+  if (!isAdmin) {
+    const checkLogin = async () => {
+      try {
+        const response = await fetch("http://localhost:8080/auth/check-login", {
+          method: "GET",
+          credentials: "include",
         });
 
-        const userData = await userRes.json();
+        if (response.ok) {
+          const data = await response.json();
+          const accessToken = data.data.accessToken;
+          localStorage.setItem("accessToken", accessToken);
 
-        if (userRes.ok) {
-          setUser(userData.data);
-        } else {
-          throw new Error(userData.message || 'Failed to fetch user data');
+          const userRes = await fetch("http://localhost:8080/auth/user", {
+            headers: { Authorization: `Bearer ${accessToken}` },
+          });
+
+          const userData = await userRes.json();
+          setUser(userData.data); // chỉ set user
         }
-      } else {
-        setUser(null);
+      } catch (err) {
+        console.error(err);
       }
-    } catch (error) {
-      console.error("Error checking login status:", error);
-      setUser(null);
+    };
+    checkLogin();
+  }
+}, []);
+
+useEffect(() => {
+  if (user) {
+    const role = user.roleName;
+    if (location.pathname === "/" || location.pathname === "/login") {
+      if (role === "PARENT") {
+        navigate("/parentpage");
+      } else if (role === "USER") {
+        navigate("/");
+      } else {
+        navigate("/admin");
+      }
     }
-  };
-  checkLogin();
-}, [setUser]);
+  }
+}, [user]);
 
 
   //login
-  const login = async (email, password) => {
+  const login = async (email, password, isAdminLogin) => {
+    setIsAdmin(isAdminLogin)
     setLoading(true);
+    let api = 'http://localhost:8080/auth/login'
+    let apiUser = 'http://localhost:8080/auth/user'
     try {
-      const res = await fetch('http://localhost:8080/auth/login', {
+      if (isAdminLogin) {
+        api = 'http://localhost:8080/admin/login'
+        apiUser = 'http://localhost:8080/admin/user'
+      }
+      const res = await fetch(api, {
         method: 'Post',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
@@ -60,19 +78,28 @@ useEffect(() => {
 
       const data = await res.json()
       if (!res.ok) {
-        throw new Error(data.message || 'Login failed');
+        throw new Error(data.message || 'Account or pasword is not right');
       }
 
       localStorage.setItem("accessToken", data.data.accessToken);
 
-      const userRes = await fetch('http://localhost:8080/auth/user', {
+      const userRes = await fetch(apiUser, {
         headers: { Authorization: `Bearer ${data.data.accessToken}` }
       });
       const userData = await userRes.json();
-      if (!userRes.ok) {
+      if (!userRes.status === "OK") {
         throw new Error(userData.message || 'Failed to fetch user data');
       }
       setUser(userData.data);
+      const role = userData.data.roleName;
+      if (role === "PARENT") {
+        navigate("/parentpage");
+      } else if (role === "USER") {
+        navigate("/");
+      } else {
+        navigate("/admin");
+      }
+
     } catch (error) {
       console.error('Login failed:', error);
       throw new Error('Login failed');
@@ -97,17 +124,17 @@ useEffect(() => {
       console.error("OAuth2 login failed", error);
     }
   };
-const register2 = async (email ,fullName, dob, address, gender, phone) => {
+  const register2 = async (email, fullName, dob, address, gender, phone, role) => {
     setLoading(true);
     try {
       console.log("✅ Register2 called with email:", email);
-      if(email === null || email === undefined) {
+      if (email === null || email === undefined) {
         email = localStorage.getItem("email")
       }
       const response = await fetch(`http://localhost:8080/auth/complete-profile?email=${email}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ fullName, gender, dob, address, phone }),
+        body: JSON.stringify({ fullName, gender, dob, address, phone, role }),
         credentials: 'include',
       });
 
@@ -128,20 +155,26 @@ const register2 = async (email ,fullName, dob, address, gender, phone) => {
 
   const register1 = async (email, password) => {
     setLoading(true);
+    const accessToken = localStorage.getItem('accessToken');
     try {
       const response = await fetch('http://localhost:8080/auth', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          ...(accessToken && { Authorization: `Bearer ${accessToken}` })
         },
         body: JSON.stringify({ email, password }),
         credentials: 'include', // nếu dùng allowCredentials(true)
       });
 
       localStorage.setItem("email", email);
-      if (!response.ok) {
-        throw new Error('Email already exists or registration failed');
+      const responseData = await response.json();
+      if (!response.ok || responseData.status === "FAIL") {
+        alert(responseData.message || "Something went wrong");
+        return;
       }
+      navigate(`/await-confirmation?email=${encodeURIComponent(email)}`);
+
 
     } catch (error) {
       console.error('Registration failed:', error);
@@ -168,6 +201,7 @@ const register2 = async (email ,fullName, dob, address, gender, phone) => {
     user,
     setUser,
     loading,
+    isAdmin,
     login,
     loginWithProvider,
     register1,

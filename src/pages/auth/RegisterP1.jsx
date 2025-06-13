@@ -23,7 +23,7 @@ function RegisterP1() {
     try {
       setError('');
       await register1(email, password);
-      navigate(`/await-confirmation?email=${encodeURIComponent(email)}`);
+
     } catch (err) {
       setError('Failed to create an account');
     }
@@ -101,6 +101,8 @@ function RegisterP1() {
                   name="password"
                   type="password"
                   required
+                  minLength={6}
+                  maxLength={30}
                   className="pl-10"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
@@ -120,6 +122,8 @@ function RegisterP1() {
                   id="confirm-password"
                   name="confirm-password"
                   type="password"
+                  minLength={6}
+                  maxLength={30}
                   required
                   className="pl-10"
                   value={confirmPassword}

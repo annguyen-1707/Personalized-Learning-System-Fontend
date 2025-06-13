@@ -18,6 +18,7 @@ function RegisterP2() {
     // avatar: '',
     gender: '',
     phone: '',
+    role: ''
   });
   const [error, setError] = useState('');
 
@@ -28,22 +29,28 @@ function RegisterP2() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+     if (!formData.role || !formData.gender) {
+      setError('Please select all required fields');
+      return;
+    }
     try {
       setError('');
       console.log("✅ SUBMIT CALLED" + formData.fullName + email);
       await register2(
+
         email,
         formData.fullName,
         formData.dob,
         formData.address,
         formData.gender,
-        formData.phone
+        formData.phone,
+        formData.role
       );
-      if (email === null || email === undefined) {
-        navigate('/login', { state: { successMessage: 'Register Successfully' } });
 
-      }
-      navigate('/');
+      navigate('/login', { state: { successMessage: 'Register Successfully' } });
+
+
+
 
     } catch (err) {
       setError('Failed to create an account');
@@ -184,6 +191,32 @@ function RegisterP2() {
                   value={formData.phone}
                   onChange={handleChange}
                 />
+              </div>
+            </div>
+
+            <div className="mt-4 pl-1">
+              <label className="block text-sm font-medium text-gray-700 mb-1">Register for:</label>
+              <div className="flex items-center space-x-4">
+                <label className="flex items-center space-x-2">
+                  <input
+                    type="radio"
+                    name="role"
+                    value="PARENT"
+                    checked={formData.role === 'PARENT'}
+                    onChange={handleChange}
+                  />
+                  <span>Parent</span>
+                </label>
+                <label className="flex items-center space-x-2">
+                  <input
+                    type="radio"
+                    name="role"
+                    value="USER"
+                    checked={formData.role === 'USER'}
+                    onChange={handleChange}
+                  />
+                  <span>Student</span>
+                </label>
               </div>
             </div>
             <div>
