@@ -102,7 +102,9 @@ function App() {
             path="/await-confirmation"
             element={<AwaitEmailConfirmation />}
           />
-            
+
+          {/* Do exercise */}
+          <Route path="/do-exercise/:exerciseId" element={<DoExercise />} />
 
           {/* Listening routes */}
           <Route path="/" element={<Layout />}>
@@ -119,7 +121,6 @@ function App() {
               path="learning/:subjectId/lesson/:lessonId"
               element={<LessonPage />}
             />
-            <Route path="learning/:subjectId/lesson/:lessonId/do-exercise" element={<DoExercise />} />
           </Route>
 
           <Route path="/admin" element={<MainLayout />}>

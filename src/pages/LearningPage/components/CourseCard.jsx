@@ -13,7 +13,6 @@ function CourseCard({ subject, selected, progressStatus }) {
       setShowEnrollDialog(true);
     } else {
       console.log("Selected course:", subject?.subjectId);
-      debugger
       await enrollInCourse(subject?.subjectId);
       window.location.href = `/learning/${subject?.subjectId}`;
     }
