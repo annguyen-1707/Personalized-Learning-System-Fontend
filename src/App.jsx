@@ -28,6 +28,7 @@ import DialogueManagement from "./pages/content/DialogueManagement";
 import OAuthCallBack from "./pages/auth/OAuthCallBack";
 import ContentReadingManagement from "./pages/content/ContentReadingManagement";
 import ListeningContentManagement from "./pages/content/ContentListeningManagement";
+import FavoriteFoldersPage from './pages/FavoriteFoldersPage/FavoriteFoldersPage'
 
 function App() {
   return (
@@ -53,10 +54,8 @@ function App() {
             path="/await-confirmation"
             element={<AwaitEmailConfirmation />}
           />
-
-          {/* Public routes */}
           <Route path="/" element={<Layout />}>
-            <Route index element={<HomePage />} />
+            <Route path="favorites/:type" element={<FavoriteFoldersPage />} />
           </Route>
 
           {/* Admin routes */}
