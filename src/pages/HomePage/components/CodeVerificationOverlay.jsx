@@ -48,7 +48,7 @@ export default function ParentVerificationOverlay({ children }) {
     setUser(null);
   };
 
-  if (status === 'approved' || user === null || user.parent !== null) {
+  if (status === 'approved' || user === null || user.parents !== null) {
     return children;
   }
 
