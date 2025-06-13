@@ -43,8 +43,8 @@ function DoExercise() {
   };
 
   const handleSaveAnswer = () => {
-    if (lesson.exercises && lesson.exercises[currentQuestion]) {
-      const questionId = lesson.exercises[currentQuestion].id;
+    if (lesson?.exercises && lesson?.exercises[currentQuestion]) {
+      const questionId = lesson?.exercises[currentQuestion].id;
       setSavedAnswers((prev) => new Set([...prev, questionId]));
     }
   };
@@ -54,10 +54,10 @@ function DoExercise() {
   };
 
   const getCorrectCount = () => {
-    if (!lesson.exercises) return 0;
+    if (!lesson?.exercises) return 0;
 
-    return lesson.exercises.filter(
-      (exercise) => answers[exercise.id] === exercise.correctAnswer
+    return lesson?.exercises.filter(
+      (exercise) => answers[exercise?.id] === exercise?.correctAnswer
     ).length;
   };
 
@@ -70,8 +70,8 @@ function DoExercise() {
   };
 
   const getQuestionStatus = (index) => {
-    if (!lesson.exercises) return "unanswered";
-    const questionId = lesson.exercises[index].id;
+    if (!lesson?.exercises) return "unanswered";
+    const questionId = lesson?.exercises[index].id;
     if (answers[questionId]) return "answered";
     if (savedAnswers.has(questionId)) return "saved";
     return "unanswered";
@@ -107,16 +107,16 @@ function DoExercise() {
                 <h1 className="text-2xl font-bold text-gray-900">
                   Exam Results
                 </h1>
-                <p className="text-gray-600">{lesson.title}</p>
+                <p className="text-gray-600">{lesson?.title}</p>
               </div>
               <div className="text-right">
                 <div className="text-3xl font-bold text-primary-600">
-                  {getCorrectCount()}/{lesson.exercises.length}
+                  {getCorrectCount()}/{lesson?.exercises?.length}
                 </div>
                 <div className="text-gray-600">
                   Score:{" "}
                   {Math.round(
-                    (getCorrectCount() / lesson.exercises.length) * 100
+                    (getCorrectCount() / lesson?.exercises?.length) * 100
                   )}
                   %
                 </div>
@@ -128,12 +128,12 @@ function DoExercise() {
         {/* Results Content */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="space-y-6">
-            {lesson.exercises.map((exercise, index) => {
-              const isCorrect = answers[exercise.id] === exercise.correctAnswer;
+            {lesson?.exercises.map((exercise, index) => {
+              const isCorrect = answers[exercise?.id] === exercise?.correctAnswer;
 
               return (
                 <div
-                  key={exercise.id}
+                  key={exercise?.id}
                   className={`bg-white border-2 rounded-lg overflow-hidden ${
                     isCorrect ? "border-success-500" : "border-error-500"
                   }`}
@@ -166,31 +166,31 @@ function DoExercise() {
                   </div>
 
                   <div className="p-6">
-                    <p className="text-gray-800 mb-4">{exercise.question}</p>
+                    <p className="text-gray-800 mb-4">{exercise?.question}</p>
 
                     <div className="space-y-2">
-                      {exercise.options.map((option, i) => (
+                      {exercise?.options.map((option, i) => (
                         <div
                           key={i}
                           className={`p-3 rounded-lg flex items-center ${
-                            answers[exercise.id] === option && isCorrect
+                            answers[exercise?.id] === option && isCorrect
                               ? "bg-success-100 border border-success-500"
-                              : answers[exercise.id] === option && !isCorrect
+                              : answers[exercise ?.id] === option && !isCorrect
                               ? "bg-error-100 border border-error-500"
-                              : exercise.correctAnswer === option
+                              : exercise?.correctAnswer === option
                               ? "bg-success-50 border border-success-500"
                               : "bg-gray-50 border border-gray-200"
                           }`}
                         >
                           <span className="flex-1">{option}</span>
-                          {answers[exercise.id] === option && isCorrect && (
+                          {answers[exercise?.id] === option && isCorrect && (
                             <FiCheck className="h-5 w-5 text-success-600" />
                           )}
-                          {answers[exercise.id] === option && !isCorrect && (
+                          {answers[exercise?.id] === option && !isCorrect && (
                             <FiX className="h-5 w-5 text-error-600" />
                           )}
-                          {exercise.correctAnswer === option &&
-                            answers[exercise.id] !== option && (
+                          {exercise?.correctAnswer === option &&
+                            answers[exercise?.id] !== option && (
                               <span className="text-sm text-success-600">
                                 Correct answer
                               </span>
@@ -199,10 +199,10 @@ function DoExercise() {
                       ))}
                     </div>
 
-                    {!isCorrect && exercise.explanation && (
+                    {!isCorrect && exercise?.explanation && (
                       <div className="mt-4 p-3 bg-gray-50 rounded-lg text-gray-700 text-sm">
                         <div className="font-medium mb-1">Explanation:</div>
-                        {exercise.explanation}
+                        {exercise?.explanation}
                       </div>
                     )}
                   </div>
@@ -227,7 +227,7 @@ function DoExercise() {
     );
   }
 
-  const currentExercise = lesson.exercises[currentQuestion];
+  const currentExercise = lesson?.exercises[currentQuestion];
 
   return (
     <div className="min-h-screen bg-gray-50 flex">
@@ -236,13 +236,13 @@ function DoExercise() {
         <div className="p-4 border-b">
           <h3 className="font-medium text-gray-900">Questions</h3>
           <p className="text-sm text-gray-600">
-            {lesson.exercises.length} questions
+            {lesson?.exercises?.length} questions
           </p>
         </div>
 
         <div className="p-4">
           <div className="grid grid-cols-5 gap-2">
-            {lesson.exercises.map((_, index) => {
+            {lesson?.exercises.map((_, index) => {
               const status = getQuestionStatus(index);
               return (
                 <button
@@ -287,20 +287,20 @@ function DoExercise() {
                 <div>
                   <div className="flex items-center text-gray-600">
                     <FiFileText className="h-5 w-5 mr-2" />
-                    <span className="font-medium">{lesson.title}</span>
+                    <span className="font-medium">{lesson?.title}</span>
                   </div>
                   <div className="text-sm text-gray-500 mt-1">
-                    Exam Code: {studentInfo.examCode}
+                    Exam Code: {studentInfo?.examCode}
                   </div>
                 </div>
 
                 <div className="border-l pl-8">
                   <div className="flex items-center text-gray-600">
                     <FiUser className="h-5 w-5 mr-2" />
-                    <span className="font-medium">{studentInfo.name}</span>
+                    <span className="font-medium">{studentInfo?.name}</span>
                   </div>
                   <div className="text-sm text-gray-500 mt-1">
-                    ID: {studentInfo.studentId}
+                    ID: {studentInfo?.studentId}
                   </div>
                 </div>
               </div>
@@ -318,7 +318,7 @@ function DoExercise() {
                 </div>
 
                 <div className="text-sm text-gray-600">
-                  Question {currentQuestion + 1} of {lesson.exercises.length}
+                  Question {currentQuestion + 1} of {lesson?.exercises?.length}
                 </div>
               </div>
             </div>
@@ -340,55 +340,36 @@ function DoExercise() {
                   <h2 className="text-xl font-medium text-gray-900">
                     Question {currentQuestion + 1}
                   </h2>
-                  {currentExercise.hint && (
-                    <button className="flex items-center text-primary-600 hover:text-primary-700">
-                      <FiHelpCircle className="h-5 w-5 mr-1" />
-                      <span className="text-sm">Hint</span>
-                    </button>
-                  )}
+                
                 </div>
 
                 <p className="text-lg text-gray-800 leading-relaxed">
-                  {currentExercise.question}
+                  {currentExercise?.question}
                 </p>
               </div>
 
               <div className="space-y-3">
-                {currentExercise.options.map((option, i) => (
+                {currentExercise?.options.map((option, i) => (
                   <label
                     key={i}
                     className={`flex items-center p-4 rounded-lg border-2 cursor-pointer transition-all ${
-                      answers[currentExercise.id] === option
+                      answers[currentExercise?.id] === option
                         ? "border-primary-500 bg-primary-50"
                         : "border-gray-200 hover:border-gray-300 hover:bg-gray-50"
                     }`}
                   >
                     <input
                       type="radio"
-                      name={`question-${currentExercise.id}`}
+                      name={`question-${currentExercise?.id}`}
                       value={option}
-                      checked={answers[currentExercise.id] === option}
-                      onChange={() => handleAnswer(currentExercise.id, option)}
+                      checked={answers[currentExercise?.id] === option}
+                      onChange={() => handleAnswer(currentExercise?.id, option)}
                       className="h-4 w-4 text-primary-500 focus:ring-primary-500 border-gray-300"
                     />
                     <span className="ml-3 text-gray-900">{option}</span>
                   </label>
                 ))}
               </div>
-
-              {currentExercise.hint && answers[currentExercise.id] && (
-                <div className="mt-6 p-4 bg-accent-50 rounded-lg border border-accent-200">
-                  <div className="flex items-start">
-                    <FiHelpCircle className="h-5 w-5 text-accent-500 mt-0.5 mr-2" />
-                    <div>
-                      <div className="font-medium text-accent-800">Hint:</div>
-                      <div className="text-accent-700">
-                        {currentExercise.hint}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
             </motion.div>
           </div>
         </div>
@@ -410,10 +391,10 @@ function DoExercise() {
               <button
                 onClick={() =>
                   setCurrentQuestion(
-                    Math.min(lesson.exercises.length - 1, currentQuestion + 1)
+                    Math.min(lesson?.exercises.length - 1, currentQuestion + 1)
                   )
                 }
-                disabled={currentQuestion === lesson.exercises.length - 1}
+                disabled={currentQuestion === lesson?.exercises.length - 1}
                 className="btn btn-secondary disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Next
