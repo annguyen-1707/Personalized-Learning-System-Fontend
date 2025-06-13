@@ -7,11 +7,12 @@ import GrammarProgress from './components/GrammarProgress'
 import StudentInformation from './components/StudentInformation'
 import { getLearningProgressFromAPI, getStudentInfoFromAPI } from '../../services/ParentService'
 import ExerciseProgress from './components/ExerciseProgress'
-import { useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
+import { ArrowLeft } from 'lucide-react'
 
 
 function ViewChildren() {
-    const studentId = useParams();
+    const { studentId } = useParams();
     const [activeTab, setActiveTab] = useState('overview')
     const [learningProgress, setLearningProgress] = useState();
     const [studentInfo, setStudentInfo] = useState(null); // State to hold student information
@@ -25,7 +26,6 @@ function ViewChildren() {
 
     const getLearningProgress = async () => {
         var res = await getLearningProgressFromAPI(studentId);
-        console.log("data", res);
         if (res && res.data) {
             setLearningProgress(res.data);
         }
@@ -48,6 +48,10 @@ function ViewChildren() {
 
     return (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <Link to="/parentPage" className="inline-flex items-center text-primary-600 hover:text-primary-800 mb-4">
+                <ArrowLeft size={16} className="mr-1" />
+                Back to parent page
+            </Link>
             {/* Profile Header */}
             <motion.div
                 initial={{ opacity: 0, y: 20 }}

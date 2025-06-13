@@ -1,6 +1,7 @@
 import axios from "./customixe-axios";
 
 const getLearningProgressFromAPI = (studentId) => {
+  console.log("before get:", studentId)
   return axios.get(`/api/parent-student/student/overview?userId=${studentId}`)
 }
 

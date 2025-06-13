@@ -2,6 +2,8 @@ import { motion } from 'framer-motion'
 import { useEffect, useState } from 'react'
 import { FiUser, FiMail, FiPhone, FiMapPin, FiAward, FiShield, FiActivity } from 'react-icons/fi'
 import { getStudentInfoFromAPI } from '../../../services/ParentService'
+import { Link } from 'react-router-dom'
+import { ArrowLeft } from 'lucide-react'
 
 function StudentInformation({ studentId }) {
   const [studentInfo, setStudentInfo] = useState(null)
@@ -19,6 +21,7 @@ function StudentInformation({ studentId }) {
   }
 
   return (
+
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
@@ -60,7 +63,7 @@ function StudentInformation({ studentId }) {
           </div>
           <div className="flex items-center">
             <FiShield className="mr-3 text-primary-600" />
-            <span><strong>Role:</strong> {studentInfo.role.name}</span>
+            <span><strong>Role:</strong> {studentInfo.roleName}</span>
           </div>
         </div>
       )}
