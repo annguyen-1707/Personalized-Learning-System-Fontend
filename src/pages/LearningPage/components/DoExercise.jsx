@@ -123,7 +123,7 @@ function DoExercise() {
               </div>
               <div className="text-right">
                 <div className="text-3xl font-bold text-primary-600">
-                  {getCorrectCount()}/{exercise?.questions?.length}
+                  {getCorrectCount()}/{exercise?.content?.length}
                 </div>
                 <div className="text-gray-600">
                   Score:{" "}
