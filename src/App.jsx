@@ -30,6 +30,7 @@ import DialogueManagement from "./pages/content/DialogueManagement";
 import OAuthCallBack from "./pages/auth/OAuthCallBack";
 import ContentReadingManagement from "./pages/content/ContentReadingManagement";
 import ListeningContentManagement from "./pages/content/ContentListeningManagement";
+import FavoriteFoldersPage from './pages/FavoriteFoldersPage/FavoriteFoldersPage'
 import UpgradePage from "./pages/Upgrade/UpgradePage";
 import VnpayReturn from "./pages/Upgrade/VnpayReturn.jsx";
 import ParentPage from "./pages/Parent/ParentPage.jsx";
@@ -101,10 +102,13 @@ function App() {
             path="/await-confirmation"
             element={<AwaitEmailConfirmation />}
           />
+            
+
           {/* Listening routes */}
           <Route path="/" element={<Layout />}>
             <Route path="/listening" element={<ListeningPage />} />
             <Route path="/listening/:id" element={<ListeningDetailPage />} />
+            <Route path="favorites/:type" element={<FavoriteFoldersPage />} />
           </Route>
           {/* Public routes */}
           <Route path="/" element={<Layout />}>
