@@ -599,191 +599,194 @@ function ContentManagement() {
     switch (activeTab) {
       case "vocabulary":
         return (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
             <div className="col-span-2">
-              <p className="text-red-500 text-sm">{errorMessages}</p>
+              {errorMessages && (
+                <div className="p-4 rounded-lg bg-red-50 border border-red-200 mb-4">
+                  <div className="flex">
+                    <div className="flex-shrink-0">
+                      <X className="h-5 w-5 text-red-400" />
+                    </div>
+                    <div className="ml-3">
+                      <h3 className="text-sm font-medium text-red-800">Error occurred</h3>
+                      <div className="mt-2 text-sm text-red-700">
+                        <p>{errorMessages}</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
+
             {/* Kanji */}
             <div>
-              <label
-                htmlFor="kanji"
-                className="block text-sm font-medium text-gray-700 mb-1"
-              >
-                Kanji
+              <label htmlFor="kanji" className="block text-sm font-medium text-gray-700 mb-1">
+                Kanji <span className="text-red-500">*</span>
               </label>
-              <input
-                id="kanji"
-                type="text"
-                required
-                value={formData.kanji || ""}
-                onChange={(e) =>
-                  setFormData({ ...formData, kanji: e.target.value })
-                }
-                className={`input border rounded px-3 py-2 w-full ${
-                  errors.kanji
-                    ? "border-red-500 focus:border-red-500 bg-red-50"
-                    : "border-gray-300 focus:border-blue-500 bg-white"
-                }`}
-              />
+              <div className="relative rounded-md shadow-sm">
+                <input
+                  id="kanji"
+                  type="text"
+                  required
+                  value={formData.kanji || ""}
+                  onChange={(e) => setFormData({ ...formData, kanji: e.target.value })}
+                  className={`block w-full rounded-md border-gray-300 pr-10 focus:border-primary-500 focus:ring-primary-500 sm:text-sm ${
+                    errors.kanji ? "border-red-500 focus:border-red-500 bg-red-50" : ""
+                  }`}
+                  placeholder="Enter kanji characters"
+                />
+                <div className="absolute inset-y-0 right-0 flex items-center pr-3">
+                  <Book className="h-5 w-5 text-gray-400" />
+                </div>
+              </div>
               {errors.kanji && (
-                <p className="text-red-500 text-xs mt-1">{errors.kanji}</p>
+                <p className="mt-1 text-sm text-red-600">{errors.kanji}</p>
               )}
+              <p className="mt-1 text-sm text-gray-500">Japanese kanji characters</p>
             </div>
 
             {/* Kana */}
             <div>
-              <label
-                htmlFor="kana"
-                className="block text-sm font-medium text-gray-700 mb-1"
-              >
-                Kana
+              <label htmlFor="kana" className="block text-sm font-medium text-gray-700 mb-1">
+                Kana <span className="text-red-500">*</span>
               </label>
-              <input
-                id="kana"
-                type="text"
-                required
-                value={formData.kana || ""}
-                onChange={(e) =>
-                  setFormData({ ...formData, kana: e.target.value })
-                }
-                className={`input border rounded px-3 py-2 w-full ${
-                  errors.kana
-                    ? "border-red-500 focus:border-red-500 bg-red-50"
-                    : "border-gray-300 focus:border-blue-500 bg-white"
-                }`}
-              />
+              <div className="relative rounded-md shadow-sm">
+                <input
+                  id="kana"
+                  type="text"
+                  required
+                  value={formData.kana || ""}
+                  onChange={(e) => setFormData({ ...formData, kana: e.target.value })}
+                  className={`block w-full rounded-md border-gray-300 pr-10 focus:border-primary-500 focus:ring-primary-500 sm:text-sm ${
+                    errors.kana ? "border-red-500 focus:border-red-500 bg-red-50" : ""
+                  }`}
+                  placeholder="Enter kana characters"
+                />
+                <div className="absolute inset-y-0 right-0 flex items-center pr-3">
+                  <Book className="h-5 w-5 text-gray-400" />
+                </div>
+              </div>
               {errors.kana && (
-                <p className="text-red-500 text-xs mt-1">{errors.kana}</p>
+                <p className="mt-1 text-sm text-red-600">{errors.kana}</p>
               )}
+              <p className="mt-1 text-sm text-gray-500">Japanese kana characters</p>
             </div>
 
             {/* Romaji */}
             <div>
-              <label
-                htmlFor="romaji"
-                className="block text-sm font-medium text-gray-700 mb-1"
-              >
+              <label htmlFor="romaji" className="block text-sm font-medium text-gray-700 mb-1">
                 Romaji
               </label>
-              <input
-                id="romaji"
-                type="text"
-                value={formData.romaji || ""}
-                onChange={(e) =>
-                  setFormData({ ...formData, romaji: e.target.value })
-                }
-                className={`input border rounded px-3 py-2 w-full ${
-                  errors.romaji
-                    ? "border-red-500 focus:border-red-500 bg-red-50"
-                    : "border-gray-300 focus:border-blue-500 bg-white"
-                }`}
-              />
+              <div className="relative rounded-md shadow-sm">
+                <input
+                  id="romaji"
+                  type="text"
+                  value={formData.romaji || ""}
+                  onChange={(e) => setFormData({ ...formData, romaji: e.target.value })}
+                  className={`block w-full rounded-md border-gray-300 pr-10 focus:border-primary-500 focus:ring-primary-500 sm:text-sm ${
+                    errors.romaji ? "border-red-500 focus:border-red-500 bg-red-50" : ""
+                  }`}
+                  placeholder="Enter romaji"
+                />
+                <div className="absolute inset-y-0 right-0 flex items-center pr-3">
+                  <Book className="h-5 w-5 text-gray-400" />
+                </div>
+              </div>
               {errors.romaji && (
-                <p className="text-red-500 text-xs mt-1">{errors.romaji}</p>
+                <p className="mt-1 text-sm text-red-600">{errors.romaji}</p>
               )}
+              <p className="mt-1 text-sm text-gray-500">Romanized Japanese text</p>
             </div>
 
             {/* Meaning */}
             <div>
-              <label
-                htmlFor="meaning"
-                className="block text-sm font-medium text-gray-700 mb-1"
-              >
-                Meaning
+              <label htmlFor="meaning" className="block text-sm font-medium text-gray-700 mb-1">
+                Meaning <span className="text-red-500">*</span>
               </label>
-              <input
-                id="meaning"
-                type="text"
-                value={formData.meaning || ""}
-                onChange={(e) =>
-                  setFormData({ ...formData, meaning: e.target.value })
-                }
-                className={`input border rounded px-3 py-2 w-full ${
-                  errors.meaning
-                    ? "border-red-500 focus:border-red-500 bg-red-50"
-                    : "border-gray-300 focus:border-blue-500 bg-white"
-                }`}
-              />
+              <div className="relative rounded-md shadow-sm">
+                <input
+                  id="meaning"
+                  type="text"
+                  required
+                  value={formData.meaning || ""}
+                  onChange={(e) => setFormData({ ...formData, meaning: e.target.value })}
+                  className={`block w-full rounded-md border-gray-300 pr-10 focus:border-primary-500 focus:ring-primary-500 sm:text-sm ${
+                    errors.meaning ? "border-red-500 focus:border-red-500 bg-red-50" : ""
+                  }`}
+                  placeholder="Enter meaning in English"
+                />
+                <div className="absolute inset-y-0 right-0 flex items-center pr-3">
+                  <Book className="h-5 w-5 text-gray-400" />
+                </div>
+              </div>
               {errors.meaning && (
-                <p className="text-red-500 text-xs mt-1">{errors.meaning}</p>
+                <p className="mt-1 text-sm text-red-600">{errors.meaning}</p>
               )}
+              <p className="mt-1 text-sm text-gray-500">English translation</p>
             </div>
 
             {/* Description */}
             <div className="md:col-span-2">
-              <label
-                htmlFor="description"
-                className="block text-sm font-medium text-gray-700 mb-1"
-              >
+              <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
                 Description
               </label>
               <textarea
                 id="description"
-                rows={2}
+                rows={3}
                 value={formData.description || ""}
-                onChange={(e) =>
-                  setFormData({ ...formData, description: e.target.value })
-                }
-                className={`input border rounded px-3 py-2 w-full ${
-                  errors.description
-                    ? "border-red-500 focus:border-red-500 bg-red-50"
-                    : "border-gray-300 focus:border-blue-500 bg-white"
+                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                className={`block w-full rounded-md border-gray-300 focus:border-primary-500 focus:ring-primary-500 sm:text-sm ${
+                  errors.description ? "border-red-500 focus:border-red-500 bg-red-50" : ""
                 }`}
+                placeholder="Provide additional context or explanation"
               />
               {errors.description && (
-                <p className="text-red-500 text-xs mt-1">
-                  {errors.description}
-                </p>
+                <p className="mt-1 text-sm text-red-600">{errors.description}</p>
               )}
+              <p className="mt-1 text-sm text-gray-500">Additional context or explanation</p>
             </div>
 
             {/* Example Sentence */}
             <div className="md:col-span-2">
-              <label
-                htmlFor="example"
-                className="block text-sm font-medium text-gray-700 mb-1"
-              >
+              <label htmlFor="example" className="block text-sm font-medium text-gray-700 mb-1">
                 Example Sentence
               </label>
-              <input
-                id="example"
-                type="text"
-                value={formData.example || ""}
-                onChange={(e) =>
-                  setFormData({ ...formData, example: e.target.value })
-                }
-                className={`input border rounded px-3 py-2 w-full ${
-                  errors.example
-                    ? "border-red-500 focus:border-red-500 bg-red-50"
-                    : "border-gray-300 focus:border-blue-500 bg-white"
-                }`}
-              />
+              <div className="relative rounded-md shadow-sm">
+                <input
+                  id="example"
+                  type="text"
+                  value={formData.example || ""}
+                  onChange={(e) => setFormData({ ...formData, example: e.target.value })}
+                  className={`block w-full rounded-md border-gray-300 pr-10 focus:border-primary-500 focus:ring-primary-500 sm:text-sm ${
+                    errors.example ? "border-red-500 focus:border-red-500 bg-red-50" : ""
+                  }`}
+                  placeholder="Enter example sentence"
+                />
+                <div className="absolute inset-y-0 right-0 flex items-center pr-3">
+                  <Book className="h-5 w-5 text-gray-400" />
+                </div>
+              </div>
               {errors.example && (
-                <p className="text-red-500 text-xs mt-1">{errors.example}</p>
+                <p className="mt-1 text-sm text-red-600">{errors.example}</p>
               )}
+              <p className="mt-1 text-sm text-gray-500">Example usage in a sentence</p>
             </div>
 
             {/* Part of Speech */}
             <div>
-              <label
-                htmlFor="partOfSpeech"
-                className="block text-sm font-medium text-gray-700 mb-1"
-              >
-                Part of Speech
+              <label htmlFor="partOfSpeech" className="block text-sm font-medium text-gray-700 mb-1">
+                Part of Speech <span className="text-red-500">*</span>
               </label>
               <select
                 id="partOfSpeech"
+                required
                 value={formData.partOfSpeech}
-                onChange={(e) =>
-                  setFormData({ ...formData, partOfSpeech: e.target.value })
-                }
-                className={`input border rounded px-3 py-2 w-full ${
-                  errors.partOfSpeech
-                    ? "border-red-500 focus:border-red-500 bg-red-50"
-                    : "border-gray-300 focus:border-blue-500 bg-white"
+                onChange={(e) => setFormData({ ...formData, partOfSpeech: e.target.value })}
+                className={`block w-full rounded-md border-gray-300 focus:border-primary-500 focus:ring-primary-500 sm:text-sm ${
+                  errors.partOfSpeech ? "border-red-500 focus:border-red-500 bg-red-50" : ""
                 }`}
               >
-                <option value="">Select...</option>
+                <option value="">Select part of speech...</option>
                 {partOfSpeech.map((part) => (
                   <option key={part} value={part}>
                     {part}
@@ -791,33 +794,26 @@ function ContentManagement() {
                 ))}
               </select>
               {errors.partOfSpeech && (
-                <p className="text-red-500 text-xs mt-1">
-                  {errors.partOfSpeech}
-                </p>
+                <p className="mt-1 text-sm text-red-600">{errors.partOfSpeech}</p>
               )}
+              <p className="mt-1 text-sm text-gray-500">Grammatical category</p>
             </div>
 
             {/* JLPT Level */}
             <div>
-              <label
-                htmlFor="jlptLevel"
-                className="block text-sm font-medium text-gray-700 mb-1"
-              >
-                JLPT Level
+              <label htmlFor="jlptLevel" className="block text-sm font-medium text-gray-700 mb-1">
+                JLPT Level <span className="text-red-500">*</span>
               </label>
               <select
                 id="jlptLevel"
+                required
                 value={formData.jlptLevel}
-                onChange={(e) =>
-                  setFormData({ ...formData, jlptLevel: e.target.value })
-                }
-                className={`input border rounded px-3 py-2 w-full ${
-                  errors.jlptLevel
-                    ? "border-red-500 focus:border-red-500 bg-red-50"
-                    : "border-gray-300 focus:border-blue-500 bg-white"
+                onChange={(e) => setFormData({ ...formData, jlptLevel: e.target.value })}
+                className={`block w-full rounded-md border-gray-300 focus:border-primary-500 focus:ring-primary-500 sm:text-sm ${
+                  errors.jlptLevel ? "border-red-500 focus:border-red-500 bg-red-50" : ""
                 }`}
               >
-                <option value="">Select...</option>
+                <option value="">Select JLPT level...</option>
                 {levels.map((level) => (
                   <option key={level} value={level}>
                     {level}
@@ -825,8 +821,9 @@ function ContentManagement() {
                 ))}
               </select>
               {errors.jlptLevel && (
-                <p className="text-red-500 text-xs mt-1">{errors.jlptLevel}</p>
+                <p className="mt-1 text-sm text-red-600">{errors.jlptLevel}</p>
               )}
+              <p className="mt-1 text-sm text-gray-500">Japanese Language Proficiency Test level</p>
             </div>
           </div>
         );
