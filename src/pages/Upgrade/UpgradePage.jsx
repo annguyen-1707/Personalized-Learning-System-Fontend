@@ -11,62 +11,64 @@ function UpgradePage() {
 
 
 
- const handleBuy = async (amount) => {
-  const accessToken = localStorage.getItem('accessToken');
+  const handleBuy = async (amount) => {
+    const accessToken = localStorage.getItem('accessToken');
 
-  try {
-    const response = await fetch(`http://localhost:8080/payment/getMembershipOfUser`, {
-      method: 'GET',
-      headers: {
-        'Authorization': `Bearer ${accessToken}`
+    try {
+      const response = await fetch(`http://localhost:8080/payment/getMembershipOfUser`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${accessToken}`
+        }
+      });
+      const inforData = await response.json();
+
+      let confirmed = false;
+
+      if (inforData.data) {
+        const isOk = window.confirm(inforData.data + ". Do you want to buy it!");
+        if (!isOk) {
+          return;
+        }
+        confirmed = true;
+        setText('Action cancelled.');
+      } else {
+        const confirmBuy = window.confirm("Click buy now, we will send request to your parents");
+        if (!confirmBuy) {
+          setText('Action cancelled.');
+          return;
+        }
+        confirmed = true;
+        setText("Redirecting to payment gateway...");
       }
-    });
-    const inforData = await response.json();
 
-   let confirmed = false;
+      if (confirmed) {
+        const paymentResponse = await fetch("http://localhost:8080/payment/sendToParent", {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${accessToken}`
+          },
+          body: JSON.stringify({ amount, userId }),
+        });
 
-if (inforData.data) {
-  const isOk = window.confirm(inforData.data + ". Do you want to buy it!");
-  if (!isOk) {
-    return;
-  }
-  confirmed = true;
-  setText('Action cancelled.');
-} else {
-  const confirmBuy = window.confirm("Deo Co tien");
-  if (!confirmBuy) {
-    setText('Action cancelled.');
-    return;
-  }
-  confirmed = true;
-  setText("Redirecting to payment gateway...");
-}
-
-if (confirmed) {
-   const paymentResponse = await fetch("http://localhost:8080/notification/sendParent", {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${accessToken}`
-      },
-      body: JSON.stringify({ amount, userId }),
-    });
-    const data = await paymentResponse.json();
-
-    // Chuyển hướng tới url thanh toán
-    window.location.href = data.url;
-
-  } 
-}catch (error) {
-    console.error('Lỗi trong quá trình xử lý:', error);
-    setText('Đã xảy ra lỗi, vui lòng thử lại.');
-  }
+        if (paymentResponse.ok) {
+          setText("Send your order to your parents successfully!!");
+        }
+        else{
+          setText("An error occurred while sending the request.")
+      }
+    }
+    } catch (error) {
+      console.error('Lỗi trong quá trình xử lý:', error);
+      setText('Đã xảy ra lỗi, vui lòng thử lại.');
+    }
 
     // Nếu đến đây nghĩa là user đã xác nhận, gọi API thanh toán luôn
-   
-};
-   
-  
+
+  };
+
+
   useEffect(() => {
     if (location.state?.text) {
       setNotification(location.state.text);

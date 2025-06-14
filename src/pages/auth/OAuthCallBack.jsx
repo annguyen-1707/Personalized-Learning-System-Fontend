@@ -16,9 +16,9 @@ function OAuthCallBack() {
 
         const provider = localStorage.getItem("provider")?.toUpperCase();
 
-        // if (exist) {
-        //    navigate("/register2", { state: { email } });
-        // }  
+        if (!exist) {
+           navigate("/register2", { state: { email } });
+        }  
          const loginRes = await fetch("http://localhost:8080/auth/getOAuthToken", {
             method: "POST",
             headers: { 'Content-Type': 'application/json' },

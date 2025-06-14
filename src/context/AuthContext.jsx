@@ -14,54 +14,49 @@ export function AuthProvider({ children }) {
   const navigate = useNavigate(); // ✅ thêm dòng này
 
   useEffect(() => {
-    if (!isAdmin) {
-      const checkLogin = async () => {
-        try {
-          const response = await fetch("http://localhost:8080/auth/check-login", {
-            method: "GET",
-            credentials: "include",
+  if (!isAdmin) {
+    const checkLogin = async () => {
+      try {
+        const response = await fetch("http://localhost:8080/auth/check-login", {
+          method: "GET",
+          credentials: "include",
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          const accessToken = data.data.accessToken;
+          localStorage.setItem("accessToken", accessToken);
+
+          const userRes = await fetch("http://localhost:8080/auth/user", {
+            headers: { Authorization: `Bearer ${accessToken}` },
           });
 
-          if (response.ok) {
-            const data = await response.json(); // ← Lấy dữ liệu từ check-login
-            const accessToken = data.data.accessToken;
-            localStorage.setItem("accessToken", accessToken);
-
-            // Gọi API lấy thông tin người dùng
-            const userRes = await fetch("http://localhost:8080/auth/user", {
-              headers: { Authorization: `Bearer ${accessToken}` },
-            });
-
-            const userData = await userRes.json();
-
-            if (userRes.ok) {
-              setUser(userData.data);
-              const role = userData.data.roleName;
-              if (role === "PARENT") {
-                navigate("/parentpage");
-              } else if (role === "USER") {
-                navigate("/");
-              } else {
-                navigate("/admin");
-              }
-            } else {
-              throw new Error(userData.message || 'Failed to fetch user data');
-            }
-          } else {
-            setUser(null);
-          }
-        } catch (error) {
-          console.error("Error checking login status:", error);
-          setUser(null);
+          const userData = await userRes.json();
+          setUser(userData.data); 
         }
-        finally {
-          setLoading(false); // ✅ Đặt khi xong API
-        }
-      };
-      checkLogin();
+        
+      } catch (err) {
+        console.error(err);
+      }
+    };
+    checkLogin();
+  }
+}, []);
+
+useEffect(() => {
+  if (user) {
+    const role = user.roleName;
+    if (location.pathname === "/" || location.pathname === "/login") {
+      if (role === "PARENT") {
+        navigate("/parentpage");
+      } else if (role === "USER") {
+        navigate("/");
+      } else {
+        navigate("/admin");
+      }
     }
-  }, [setUser]);
-
+  }
+}, [user]);
 
   //login
   const login = async (email, password, isAdminLogin) => {
@@ -83,7 +78,7 @@ export function AuthProvider({ children }) {
 
       const data = await res.json()
       if (!res.ok) {
-        throw new Error(data.message || 'Account or pasword is not right');
+        throw new Error(data.message);
       }
 
       localStorage.setItem("accessToken", data.data.accessToken);
@@ -97,6 +92,7 @@ export function AuthProvider({ children }) {
       }
       setUser(userData.data);
       const role = userData.data.roleName;
+      console.log("ádasddasd", userData.data.parents)
       if (role === "PARENT") {
         navigate("/parentpage");
       } else if (role === "USER") {
@@ -107,7 +103,8 @@ export function AuthProvider({ children }) {
 
     } catch (error) {
       console.error('Login failed:', error);
-      throw new Error('Login failed');
+        throw error;
+
     } finally {
       setLoading(false);
     }
