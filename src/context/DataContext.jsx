@@ -101,7 +101,7 @@ export function DataProvider({ children }) {
 
   const addSubject = async (subject) => {
     try {
-      const imageUrl = await uploadFile(subject.thumbnailFile, "images/content_learning");
+      const imageUrl = await uploadFile.uploadFile(subject.thumbnailFile, "images/content_learning");
       subject.thumbnailUrl = imageUrl;
 
       const response = await fetch("/api/subjects", {
@@ -130,7 +130,7 @@ export function DataProvider({ children }) {
     try {
       let thumbnailUrl = subject.thumbnailUrl;
       if (subject.thumbnailFile) {
-        thumbnailUrl = await uploadFile(subject.thumbnailFile, "images/content_learning");
+        thumbnailUrl = await uploadFile.uploadFile(subject.thumbnailFile, "images/content_learning");
       }
       subject.thumbnailUrl = thumbnailUrl;
       const response = await fetch(`/api/subjects/${id}`, {
@@ -208,6 +208,8 @@ export function DataProvider({ children }) {
 
   const addLesson = async (lesson) => {
     try {
+      const res = await uploadFile.uploadVideoToYouTube(lesson.videoFile, lesson.lessonName);
+      lesson.videoUrl = res.data;
       const response = await fetch("/api/lessons", {
         method: "POST",
         headers: {
@@ -233,6 +235,8 @@ export function DataProvider({ children }) {
   };
 
   const updateLesson = async (id, updatedLesson) => {
+    const res = await uploadFile.uploadVideoToYouTube(updatedLesson.videoFile, updatedLesson.lessonName);
+    updatedLesson.videoUrl = res.data;
     const response = await fetch(`/api/lessons/${id}`, {
       method: "PATCH",
       headers: {

@@ -23,11 +23,17 @@ function CourseCard({ subject, selected, progressStatus }) {
     setShowEnrollDialog(false);
     window.location.href = `/learning/${subject?.subjectId}`;
   };
+  const showThumbnail = (thumbnailUrl) => {
+    // Show the thumbnail in a modal or a new page
+    console.log("Show thumbnail:", thumbnailUrl);
+    window.open("http://localhost:8080/images/content_learning/" + thumbnailUrl, "_blank");
+  };
 
   const renderCardContent = () => (
     <>
       <div className="relative">
         <img
+          onClick={() => showThumbnail(subject?.thumbnailUrl)}
           src={"http://localhost:8080/images/content_learning/" + subject?.thumbnailUrl || "https://via.placeholder.com/300x200"}
           alt={subject?.subjectName}
           className="w-full h-48 object-cover rounded-t-lg cursor-pointer hover:opacity-90 transition-opacity duration-300"

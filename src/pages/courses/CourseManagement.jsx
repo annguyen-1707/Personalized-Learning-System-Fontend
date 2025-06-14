@@ -175,7 +175,7 @@ function CourseManagement() {
       description: subject.description,
       status: subject.status,
       thumbnailFile: null,
-      thumbnailPreview: subject.thumbnailUrl || null
+      thumbnailPreview: "http://localhost:8080/images/content_learning/" + subject.thumbnailUrl || null
     });
     setIsEditing(subject.subjectId);
     setIsAdding(false);
@@ -391,7 +391,7 @@ function CourseManagement() {
                     {formData.thumbnailPreview ? (
                       <div className="relative">
                         <img
-                          src={isAdding ? formData.thumbnailPreview : `http://localhost:8080/images/content_learning/${formData.thumbnailPreview}`}
+                          src={formData.thumbnailPreview}
                           alt="Thumbnail preview"
                           className="mx-auto h-32 w-auto object-cover rounded-lg"
                         />
