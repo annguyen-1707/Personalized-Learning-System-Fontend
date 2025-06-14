@@ -28,7 +28,7 @@ function CourseCard({ subject, selected, progressStatus }) {
     <>
       <div className="relative">
         <img
-          src={"https://via.placeholder.com/300x200"}
+          src={subject?.thumbnailUrl || "https://via.placeholder.com/300x200"}
           alt={subject?.subjectName}
           className="w-full h-48 object-cover"
         />
