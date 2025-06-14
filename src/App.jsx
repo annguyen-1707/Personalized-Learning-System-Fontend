@@ -30,6 +30,7 @@ import DialogueManagement from "./pages/content/DialogueManagement";
 import OAuthCallBack from "./pages/auth/OAuthCallBack";
 import ContentReadingManagement from "./pages/content/ContentReadingManagement";
 import ListeningContentManagement from "./pages/content/ContentListeningManagement";
+import FavoriteFoldersPage from './pages/FavoriteFoldersPage/FavoriteFoldersPage'
 import UpgradePage from "./pages/Upgrade/UpgradePage";
 import VnpayReturn from "./pages/Upgrade/VnpayReturn.jsx";
 import ParentPage from "./pages/Parent/ParentPage.jsx";
@@ -42,6 +43,7 @@ import LearningPage from "./pages/LearningPage/LearningPage";
 import NotificationSlider from "./pages/HomePage/Notification.jsx";
 import CourseContentPage from "./pages/LearningPage/components/CourseContent.jsx";
 import LessonPage from "./pages/LearningPage/LessonPage.jsx";
+import DoExercise from "./pages/LearningPage/components/DoExercise.jsx";
 
 function App() {
   const [notificationOpen, setNotificationOpen] = useState(false);
@@ -105,10 +107,15 @@ function App() {
             path="/await-confirmation"
             element={<AwaitEmailConfirmation />}
           />
+
+          {/* Do exercise */}
+          <Route path="/do-exercise/:exerciseId" element={<DoExercise />} />
+
           {/* Listening routes */}
           <Route path="/" element={<Layout />}>
             <Route path="/listening" element={<ListeningPage />} />
             <Route path="/listening/:id" element={<ListeningDetailPage />} />
+            <Route path="favorites/:type" element={<FavoriteFoldersPage />} />
           </Route>
           {/* Public routes */}
           <Route path="/" element={<Layout />}>
@@ -120,6 +127,7 @@ function App() {
               element={<LessonPage />}
             />
           </Route>
+
           <Route path="/admin" element={<MainLayout />}>
             <Route
               path="content_speaking"

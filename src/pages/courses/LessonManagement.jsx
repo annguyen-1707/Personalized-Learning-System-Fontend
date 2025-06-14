@@ -13,6 +13,8 @@ import {
   X,
   ExternalLink,
   Search,
+  Video,
+  Upload,
 } from "lucide-react";
 import { g, s, sub, u } from "framer-motion/client";
 import { GiOpenBook } from "react-icons/gi";
@@ -48,6 +50,9 @@ function LessonManagement() {
     description: "",
     status: "PUBLIC",
     subjectId: subjectId,
+    videoFile: null,
+    videoPreview: null,
+    videoDuration: null
   });
   const [statusOptions, setStatusOptions] = useState([]);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(null);
@@ -111,13 +116,48 @@ function LessonManagement() {
     getStatus();
   }, [subjectId, currentPage, totalElements, totalPages]);
 
+  const handleVideoChange = (e) => {
+    const file = e.target.files[0];
+    if (file && file.type.startsWith('video/')) {
+      setFormData(prev => ({
+        ...prev,
+        videoFile: file,
+        videoPreview: URL.createObjectURL(file)
+      }));
+
+      // Get video duration
+      const video = document.createElement('video');
+      video.preload = 'metadata';
+      video.onloadedmetadata = () => {
+        window.URL.revokeObjectURL(video.src);
+        setFormData(prev => ({
+          ...prev,
+          videoDuration: Math.round(video.duration)
+        }));
+      };
+      video.src = URL.createObjectURL(file);
+    }
+  };
+
+  const formatDuration = (seconds) => {
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = seconds % 60;
+    return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+  };
+
   const handleAddSubmit = async (e) => {
     e.preventDefault();
+    const formDataToSend = new FormData();
+    formDataToSend.append('name', formData.name);
+    formDataToSend.append('description', formData.description);
+    formDataToSend.append('status', formData.status);
+    formDataToSend.append('subjectId', formData.subjectId);
+    if (formData.videoFile) {
+      formDataToSend.append('videoFile', formData.videoFile);
+    }
+
     try {
-      const newLesson = await addLesson({
-        ...formData,
-      });
-      console.log("New lesson added:", newLesson);
+      const newLesson = await addLesson(formDataToSend);
       if (newLesson) {
         setErrorMessage("");
         const message = `New lesson "${formData.name}" was created successfully!`;
@@ -132,11 +172,11 @@ function LessonManagement() {
           description: "",
           status: "PUBLIC",
           subjectId: subjectId,
+          videoFile: null,
+          videoPreview: null,
+          videoDuration: null
         });
         setIsAdding(false);
-      } else {
-        console.error("Failed to add lesson:", newLesson);
-        setErrorMessage(newLesson.message || "Failed to add lesson.");
       }
     } catch (error) {
       console.error("Failed to add lesson:", error);
@@ -146,11 +186,17 @@ function LessonManagement() {
 
   const handleEditSubmit = async (e) => {
     e.preventDefault();
+    const formDataToSend = new FormData();
+    formDataToSend.append('name', formData.name);
+    formDataToSend.append('description', formData.description);
+    formDataToSend.append('status', formData.status);
+    formDataToSend.append('subjectId', formData.subjectId);
+    if (formData.videoFile) {
+      formDataToSend.append('videoFile', formData.videoFile);
+    }
 
     try {
-      const updatedLesson = await updateLesson(isEditing, {
-        ...formData,
-      });
+      const updatedLesson = await updateLesson(isEditing, formDataToSend);
       if (updatedLesson.status === "error") {
         setErrorMessage(updatedLesson.message);
         return;
@@ -164,9 +210,11 @@ function LessonManagement() {
       setFormData({
         name: "",
         description: "",
-        duration: "",
         status: "PUBLIC",
         subjectId: subjectId,
+        videoFile: null,
+        videoPreview: null,
+        videoDuration: null
       });
       setErrorMessage("");
       setIsEditing(null);
@@ -196,6 +244,9 @@ function LessonManagement() {
       description: lesson.description,
       status: lesson.status,
       subjectId: lesson.subjectId,
+      videoFile: null,
+      videoPreview: lesson.videoUrl || null,
+      videoDuration: lesson.duration || null
     });
     setIsEditing(lesson.lessonId);
     setIsAdding(false);
@@ -208,9 +259,11 @@ function LessonManagement() {
     setFormData({
       name: "",
       description: "",
-      duration: "",
       status: "PUBLIC",
       subjectId: subjectId,
+      videoFile: null,
+      videoPreview: null,
+      videoDuration: null
     });
   };
 
@@ -316,65 +369,155 @@ function LessonManagement() {
       {/* Add/Edit Form */}
       {(isAdding || isEditing) && (
         <div className="card p-6 mb-6">
-          <h2 className="text-xl font-medium mb-4">
-            {isAdding ? "Add New Lesson" : "Edit Lesson"}
-          </h2>
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-xl font-semibold text-gray-900">
+              {isAdding ? "Add New Lesson" : "Edit Lesson"}
+            </h2>
+            <button
+              onClick={cancelAction}
+              className="text-gray-500 hover:text-gray-700"
+            >
+              <X size={20} />
+            </button>
+          </div>
+
           {errorMessage && (
-            <div className="mb-4 p-3 rounded bg-red-100 text-red-700 text-sm flex items-center justify-between">
-              <p className="mb-2">{errorMessage}</p>
-              <button
-                className="text-red-700 hover:text-red-900"
-                onClick={() => setErrorMessage("")}
-              >
-                X
-              </button>
+            <div className="mb-6 p-4 rounded-lg bg-red-50 border border-red-200">
+              <div className="flex">
+                <div className="flex-shrink-0">
+                  <X className="h-5 w-5 text-red-400" />
+                </div>
+                <div className="ml-3">
+                  <h3 className="text-sm font-medium text-red-800">
+                    Error occurred
+                  </h3>
+                  <div className="mt-2 text-sm text-red-700">
+                    <p>{errorMessage}</p>
+                  </div>
+                </div>
+              </div>
             </div>
           )}
-          <form onSubmit={isAdding ? handleAddSubmit : handleEditSubmit}>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+
+          <form onSubmit={isAdding ? handleAddSubmit : handleEditSubmit} className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Lesson Name */}
               <div className="md:col-span-2">
                 <label
-                  htmlFor="title"
+                  htmlFor="name"
                   className="block text-sm font-medium text-gray-700 mb-1"
                 >
-                  Lesson Name
+                  Lesson Name <span className="text-red-500">*</span>
                 </label>
-                <input
-                  id="name"
-                  type="text"
-                  required
-                  value={formData.name}
-                  onChange={(e) =>
-                    setFormData({ ...formData, name: e.target.value })
-                  }
-                />
+                <div className="relative rounded-md shadow-sm">
+                  <input
+                    id="name"
+                    type="text"
+                    required
+                    value={formData.name}
+                    onChange={(e) =>
+                      setFormData({ ...formData, name: e.target.value })
+                    }
+                    className="block w-full rounded-md border-gray-300 pr-10 focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+                    placeholder="Enter lesson name"
+                  />
+                  <div className="absolute inset-y-0 right-0 flex items-center pr-3">
+                    <FileText className="h-5 w-5 text-gray-400" />
+                  </div>
+                </div>
+                <p className="mt-1 text-sm text-gray-500">
+                  A descriptive name for the lesson
+                </p>
               </div>
 
+              {/* Description */}
               <div className="md:col-span-2">
                 <label
                   htmlFor="description"
                   className="block text-sm font-medium text-gray-700 mb-1"
                 >
-                  Description
+                  Description <span className="text-red-500">*</span>
                 </label>
                 <textarea
                   id="description"
-                  rows={3}
+                  rows={4}
                   required
                   value={formData.description}
                   onChange={(e) =>
                     setFormData({ ...formData, description: e.target.value })
                   }
-                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
+                  className="block w-full rounded-md border-gray-300 focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+                  placeholder="Enter lesson description"
                 />
+                <p className="mt-1 text-sm text-gray-500">
+                  Provide a detailed description of the lesson content
+                </p>
               </div>
 
+              {/* Video Upload */}
+              <div className="md:col-span-2">
+                <label
+                  htmlFor="video"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
+                  Lesson Video
+                </label>
+                <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-lg">
+                  <div className="space-y-1 text-center">
+                    {formData.videoPreview ? (
+                      <div className="relative">
+                        <video
+                          src={formData.videoPreview}
+                          className="mx-auto h-48 w-auto rounded-lg"
+                          controls
+                        />
+                        {formData.videoDuration && (
+                          <span className="absolute bottom-2 right-2 bg-black bg-opacity-50 text-white px-2 py-1 rounded text-sm">
+                            {formatDuration(formData.videoDuration)}
+                          </span>
+                        )}
+                        <button
+                          type="button"
+                          onClick={() => setFormData(prev => ({ ...prev, videoFile: null, videoPreview: null, videoDuration: null }))}
+                          className="absolute -top-2 -right-2 p-1 bg-red-100 rounded-full hover:bg-red-200"
+                        >
+                          <X className="h-4 w-4 text-red-600" />
+                        </button>
+                      </div>
+                    ) : (
+                      <>
+                        <div className="flex text-sm text-gray-600">
+                          <label
+                            htmlFor="video"
+                            className="relative cursor-pointer bg-white rounded-md font-medium text-primary-600 hover:text-primary-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-primary-500"
+                          >
+                            <span>Upload a video</span>
+                            <input
+                              id="video"
+                              type="file"
+                              accept="video/*"
+                              onChange={handleVideoChange}
+                              className="sr-only"
+                            />
+                          </label>
+                          <p className="pl-1">or drag and drop</p>
+                        </div>
+                        <p className="text-xs text-gray-500">
+                          MP4, WebM up to 100MB
+                        </p>
+                      </>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Status */}
               <div>
                 <label
                   htmlFor="status"
                   className="block text-sm font-medium text-gray-700 mb-1"
                 >
-                  Status
+                  Status <span className="text-red-500">*</span>
                 </label>
                 <select
                   id="status"
@@ -382,7 +525,7 @@ function LessonManagement() {
                   onChange={(e) =>
                     setFormData({ ...formData, status: e.target.value })
                   }
-                  className="rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 w-full"
+                  className="block w-full rounded-md border-gray-300 focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
                 >
                   {statusOptions.map((option) => (
                     <option key={option} value={option}>
@@ -390,19 +533,25 @@ function LessonManagement() {
                     </option>
                   ))}
                 </select>
+                <p className="mt-1 text-sm text-gray-500">
+                  Set the visibility of the lesson
+                </p>
               </div>
             </div>
 
-            <div className="flex justify-end space-x-3">
+            <div className="flex justify-end space-x-3 pt-4 border-t">
               <button
                 type="button"
                 onClick={cancelAction}
-                className="btn-outline"
+                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
               >
                 Cancel
               </button>
-              <button type="submit" className="btn-primary">
-                {isAdding ? "Add Lesson" : "Save Changes"}
+              <button
+                type="submit"
+                className="px-4 py-2 text-sm font-medium text-white bg-primary-600 border border-transparent rounded-md shadow-sm hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+              >
+                {isAdding ? "Create Lesson" : "Save Changes"}
               </button>
             </div>
           </form>

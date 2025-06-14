@@ -6,53 +6,53 @@ import LearningPaggService from "../../../services/LearningPaggService";
 function CourseCard({ subject, selected, progressStatus }) {
   const [showEnrollDialog, setShowEnrollDialog] = useState(false);
   const { enrollInCourse } = LearningPaggService;
-  console.log("progressStatus", progressStatus);
 
   const handleStartLearning = async (e) => {
     e.preventDefault();
     if (selected === "all") {
       setShowEnrollDialog(true);
     } else {
-      await enrollInCourse(subject.subjectId);
-      window.location.href = `/learning/${subject.subjectId}`;
+      console.log("Selected course:", subject?.subjectId);
+      await enrollInCourse(subject?.subjectId);
+      window.location.href = `/learning/${subject?.subjectId}`;
     }
   };
 
   const handleConfirmEnroll = async () => {
-    await enrollInCourse(subject.subjectId);
+    await enrollInCourse(subject?.subjectId);
     setShowEnrollDialog(false);
-    window.location.href = `/learning/${subject.subjectId}`;
+    window.location.href = `/learning/${subject?.subjectId}`;
   };
 
   const renderCardContent = () => (
     <>
       <div className="relative">
         <img
-          src={"https://via.placeholder.com/300x200"}
-          alt={subject.subjectName}
+          src={subject?.thumbnailUrl || "https://via.placeholder.com/300x200"}
+          alt={subject?.subjectName}
           className="w-full h-48 object-cover"
         />
         <div className="absolute top-0 right-0 m-2">
           <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-300">
-            {subject.subjectCode}
+            {subject?.subjectCode}
           </span>
         </div>
       </div>
 
       <div className="p-6">
         <h3 className="text-xl font-semibold text-gray-900">
-          {subject.subjectName}
+          {subject?.subjectName}
         </h3>
-        <p className="mt-2 text-gray-600 line-clamp-2">{subject.description}</p>
+        <p className="mt-2 text-gray-600 line-clamp-2">{subject?.description}</p>
 
         <div className="mt-4 flex items-center text-sm text-gray-500">
           <FiBook className="flex-shrink-0 mr-1.5 h-5 w-5 text-gray-400" />
-          <span>{subject.countLessons} Lessons</span>
+          <span>{subject?.countLessons} Lessons</span>
 
           <span className="mx-2">•</span>
 
           <MdPeopleAlt className="flex-shrink-0 mr-1.5 h-5 w-5 text-gray-400" />
-          <span>{subject.countUsers}</span>
+          <span>{subject?.countUsers}</span>
           {progressStatus && (
             <>
               <span className="mx-2">•</span>
@@ -97,7 +97,7 @@ function CourseCard({ subject, selected, progressStatus }) {
           <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
             <h3 className="text-lg font-semibold mb-4">Enroll in Course</h3>
             <p className="text-gray-600 mb-6">
-              Are you sure you want to enroll in {subject.subjectName}? This
+              Are you sure you want to enroll in {subject?.subjectName}? This
               will give you access to all course materials and lessons.
             </p>
             <div className="flex justify-end space-x-4">

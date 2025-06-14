@@ -1,6 +1,6 @@
 
 import { Link } from 'react-router-dom';
-import { useAuth  } from '../../context/AuthContext';
+import { useAuth } from '../../context/AuthContext';
 import { useState } from 'react';
 import axios from '../../services/customixe-axios';
 
@@ -9,9 +9,9 @@ function ParentPage() {
   const [inviteCode, setInviteCode] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
 
-if ( !user || !user.children) {
-  return <div>Đang tải thông tin người dùng...</div>;
-}
+  if (!user || !user.children) {
+    return <div>Đang tải thông tin người dùng...</div>;
+  }
 
   const generateInviteCode = async () => {
     try {
@@ -92,32 +92,32 @@ if ( !user || !user.children) {
 
         {/* Student list */}
 
-       <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-  {user.children.map((student) => (
-    <div
-      key={student.user.userId}
-      className="border rounded-2xl p-5 shadow-md bg-white hover:shadow-lg transition duration-300"
-    >
-      <div className="flex flex-col space-y-1 mb-3">
-        <h3 className="text-lg font-semibold text-gray-800">
-          👤 {student.user.fullName}
-        </h3>
-        <p className="text-sm text-gray-600">
-          Gender: {student.user.gender === 'MALE' ? 'Male' : 'Female'}
-        </p>
-      </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          {user.children.map((student) => (
+            <div
+              key={student.user.userId}
+              className="border rounded-2xl p-5 shadow-md bg-white hover:shadow-lg transition duration-300"
+            >
+              <div className="flex flex-col space-y-1 mb-3">
+                <h3 className="text-lg font-semibold text-gray-800">
+                  👤 {student.user.fullName}
+                </h3>
+                <p className="text-sm text-gray-600">
+                  Gender: {student.user.gender === 'MALE' ? 'Male' : 'Female'}
+                </p>
+              </div>
 
-      <div className="flex items-center space-x-2 mb-3">
-        {renderMembershipBadge(student.user.membershipLevel)}
-        {renderStatus(student.user.status)}
-      </div>
+              <div className="flex items-center space-x-2 mb-3">
+                {renderMembershipBadge(student.user.membershipLevel)}
+                {renderStatus(student.user.status)}
+              </div>
 
-      <Link
-        to={`/parentPage/${student.user.userId}/view_children`}
-        className="inline-block text-blue-600 hover:underline text-sm font-medium"
-      >
-        🔍 View Details
-      </Link>
+              <Link
+                to={`/parentPage/${student.user.userId}/view_children`}
+                className="inline-block text-blue-600 hover:underline text-sm font-medium"
+              >
+                🔍 View Details
+              </Link>
 
             </div>
           ))}

@@ -1,4 +1,4 @@
-import axios from "axios";
+import axios from "../services/customixe-axios";
 const DoExerciseService = {
   doExercise: async (exerciseId, userId) => {
     try {
@@ -33,6 +33,17 @@ const DoExerciseService = {
       throw error;
     }
   },
+
+    getSource: async (exerciseId) => {
+    try {
+      const res = await axios.get(`/api/do-exercises/get-sources?exerciseId=${exerciseId}`);
+      return res.data;
+    } catch (error) {
+      console.error("Error fetching exercise sources:", error);
+      throw error;
+    }
+  },
 };
+
 
 export default DoExerciseService;
