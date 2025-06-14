@@ -391,7 +391,7 @@ function CourseManagement() {
                     {formData.thumbnailPreview ? (
                       <div className="relative">
                         <img
-                          src={formData.thumbnailPreview}
+                          src={"http://localhost:8080/images/content_learning/" + formData.thumbnailPreview}
                           alt="Thumbnail preview"
                           className="mx-auto h-32 w-auto object-cover rounded-lg"
                         />
