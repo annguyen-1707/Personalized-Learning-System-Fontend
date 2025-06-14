@@ -92,17 +92,8 @@ function CourseManagement() {
   // Handle form submission for adding subjects
   const handleAddSubmit = async (e) => {
     e.preventDefault();
-    const formDataToSend = new FormData();
-    formDataToSend.append('subjectCode', formData.subjectCode);
-    formDataToSend.append('subjectName', formData.subjectName);
-    formDataToSend.append('description', formData.description);
-    formDataToSend.append('status', formData.status);
-    if (formData.thumbnailFile) {
-      formDataToSend.append('thumbnailUrl', formData.thumbnailFile);
-    }
-
     try {
-      const newSubject = await addSubject(formDataToSend);
+      const newSubject = await addSubject(formData);
       toast.success("Subject added successfully.");
       addLog(
         "Subject Created",
@@ -128,17 +119,8 @@ function CourseManagement() {
   // Handle form submission for editing subjects
   const handleEditSubmit = async (e) => {
     e.preventDefault();
-    const formDataToSend = new FormData();
-    formDataToSend.append('subjectCode', formData.subjectCode);
-    formDataToSend.append('subjectName', formData.subjectName);
-    formDataToSend.append('description', formData.description);
-    formDataToSend.append('status', formData.status);
-    if (formData.thumbnailFile) {
-      formDataToSend.append('thumbnailUrl', formData.thumbnailFile);
-    }
-
     try {
-      const updatedSubject = await updateSubject(isEditing, formDataToSend);
+      const updatedSubject = await updateSubject(isEditing, formData);
       toast.success("Subject updated successfully.");
       addLog(
         "Subject Updated",
@@ -297,7 +279,7 @@ function CourseManagement() {
           {errorMessage && (
             <div className="mb-6 p-4 rounded-lg bg-red-50 border border-red-200">
               <div className="flex">
-                <div className="flex-shrink-0">
+                <div className="flex-shrink-0" onClick={() => setErrorMessage("")}>
                   <X className="h-5 w-5 text-red-400" />
                 </div>
                 <div className="ml-3">

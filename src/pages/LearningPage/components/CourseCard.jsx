@@ -28,9 +28,9 @@ function CourseCard({ subject, selected, progressStatus }) {
     <>
       <div className="relative">
         <img
-          src={subject?.thumbnailUrl || "https://via.placeholder.com/300x200"}
+          src={"http://localhost:8080/images/content_learning/" + subject?.thumbnailUrl || "https://via.placeholder.com/300x200"}
           alt={subject?.subjectName}
-          className="w-full h-48 object-cover"
+          className="w-full h-48 object-cover rounded-t-lg cursor-pointer hover:opacity-90 transition-opacity duration-300"
         />
         <div className="absolute top-0 right-0 m-2">
           <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-300">
