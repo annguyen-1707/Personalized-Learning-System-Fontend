@@ -31,7 +31,7 @@ function Login() {
       setError('');
       await login(email, password, isAdminLogin);
     } catch (err) {
-      setError('Failed to sign in');
+      setError(err.message);
     }
   };
 

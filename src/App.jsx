@@ -75,7 +75,12 @@ function App() {
           </Route>
 
 
-          <Route path="/" element={<LayoutParent />}>
+          <Route
+            path="/"
+            element={
+              <LayoutParent onNotificationClick={() => setNotificationOpen(true)} />
+            }
+          >
             <Route path="/parentPage" element={<ParentPage />} />
             <Route path="/parentPage/:studentId/view_children" element={<ViewChildren />} />
           </Route>

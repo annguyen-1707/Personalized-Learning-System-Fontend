@@ -16,16 +16,13 @@ function ParentPage() {
   const generateInviteCode = async () => {
     try {
       setIsLoading(true);
-      const response = await axios.get('/api/parent-student/generateCode'); // gọi đến backend
-      if (response.data === "") {
-        alert("You can only create 3 students");
-        return;
-      }
-      setInviteCode(response.data);
+      const response = await axios.get('/api/parent-student/generateCode');
+      const code = response?.data; // gọi đến backend
+
+      setInviteCode(code);
     } catch (error) {
-      setInviteCode('AB2XY1');
       console.error("Error generating invite code:", error);
-      alert("Failed to generate invite code. Please try again.");
+    alert(error.response?.data?.message || "Failed to generate invite code. Please try again.");
     } finally {
       setIsLoading(false);
     }
