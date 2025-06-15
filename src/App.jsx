@@ -1,6 +1,7 @@
 import { Routes, Route } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import AdminList from './pages/admin/AdminList';
 import React, { useState } from "react";
 
 import Layout from "./components/layout/Layout";
@@ -148,6 +149,10 @@ function App() {
               path="content_listening"
               element={<ListeningContentManagement />}
             />
+            <Route path="/admin" element={<Dashboard />} />
+            <Route path="/admin/admins" element={<AdminList />} />
+            <Route path="/admin/system-logs" element={<SystemLogs />} />
+            <Route path="/admin/users" element={<UserManagement />} />
             <Route
               path="content_listening/:contentListeningId/question"
               element={<QuestionManagement />}
