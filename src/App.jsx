@@ -44,6 +44,7 @@ import LearningPage from "./pages/LearningPage/LearningPage";
 import NotificationSlider from "./pages/HomePage/Notification.jsx";
 import CourseContentPage from "./pages/LearningPage/components/CourseContent.jsx";
 import LessonPage from "./pages/LearningPage/LessonPage.jsx";
+import DoExercise from "./pages/LearningPage/components/DoExercise.jsx";
 
 function App() {
   const [notificationOpen, setNotificationOpen] = useState(false);
@@ -103,6 +104,8 @@ function App() {
             element={<AwaitEmailConfirmation />}
           />
 
+          {/* Do exercise */}
+          <Route path="/do-exercise/:exerciseId" element={<DoExercise />} />
 
           {/* Listening routes */}
           <Route path="/" element={<Layout />}>
@@ -120,6 +123,7 @@ function App() {
               element={<LessonPage />}
             />
           </Route>
+
           <Route path="/admin" element={<MainLayout />}>
             <Route
               path="content_speaking"

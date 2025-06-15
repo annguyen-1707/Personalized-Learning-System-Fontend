@@ -13,7 +13,6 @@ function CourseCard({ subject, selected, progressStatus }) {
       setShowEnrollDialog(true);
     } else {
       console.log("Selected course:", subject?.subjectId);
-      debugger
       await enrollInCourse(subject?.subjectId);
       window.location.href = `/learning/${subject?.subjectId}`;
     }
@@ -29,7 +28,7 @@ function CourseCard({ subject, selected, progressStatus }) {
     <>
       <div className="relative">
         <img
-          src={"https://via.placeholder.com/300x200"}
+          src={subject?.thumbnailUrl || "https://via.placeholder.com/300x200"}
           alt={subject?.subjectName}
           className="w-full h-48 object-cover"
         />
