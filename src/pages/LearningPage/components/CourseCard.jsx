@@ -6,8 +6,14 @@ import LearningPaggService from "../../../services/LearningPaggService";
 function CourseCard({ subject, selected, progressStatus }) {
   const [showEnrollDialog, setShowEnrollDialog] = useState(false);
   const { enrollInCourse } = LearningPaggService;
+  const { user } = JSON.parse(localStorage.getItem("user")) || {};
+  const isUser = user && user.roleName === "USER";
 
   const handleStartLearning = async (e) => {
+    if (!isUser) {
+      window.location.href = "/login";
+      return;
+    }
     e.preventDefault();
     if (selected === "all") {
       setShowEnrollDialog(true);

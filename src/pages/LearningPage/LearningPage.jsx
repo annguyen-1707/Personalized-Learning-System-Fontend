@@ -4,6 +4,8 @@ import { motion } from "framer-motion";
 import CourseCard from "./components/CourseCard";
 import LearningPaggService from "../../services/LearningPaggService";
 import ReactPaginate from "react-paginate";
+import { useAuth } from "../../context/AuthContext";
+
 function LearningPage() {
   const { getAllSubjectsById, getAllSubjects } =
     LearningPaggService;
@@ -12,6 +14,7 @@ function LearningPage() {
   const [currentPage, setCurrentPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
   const [selected, setSelected] = useState("all");
+  const { user} = useAuth();
 
   const filteredCourses =
     selected === "my-courses" ? myCoursesData : coursesData;
@@ -44,9 +47,13 @@ function LearningPage() {
 
   // Fetch courses when the component mounts
   useEffect(() => {
-    fetchCourses();
-    fetchAllCourses();
-  }, []);
+    if(!user) {
+      fetchAllCourses();
+    } else {
+      fetchCourses();
+      fetchAllCourses();
+    }
+  }, [currentPage]);
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -128,7 +135,8 @@ function LearningPage() {
         </div>
       )}  
 
-      <ReactPaginate
+      {filteredCourses?.length > 0 && (
+        <ReactPaginate
         className="pagination mt-6 justify-center"
         nextLabel="next >"
         onPageChange={handlePageClick}
@@ -150,7 +158,8 @@ function LearningPage() {
         renderOnZeroPageCount={null}
       />
 
-  
+      )}
+
     </div>
   );
 }
