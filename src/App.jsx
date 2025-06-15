@@ -1,7 +1,7 @@
 import { Routes, Route } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-
+import AdminList from './pages/admin/AdminList';
 import Layout from "./components/layout/Layout";
 import Login from "./pages/auth/Login";
 import RegisterP1 from "./pages/auth/RegisterP1";
@@ -84,6 +84,7 @@ function App() {
               element={<ListeningContentManagement />}
             />
             <Route path="/admin" element={<Dashboard />} />
+            <Route path="/admin/admins" element={<AdminList />} />
             <Route path="/admin/system-logs" element={<SystemLogs />} />
             <Route path="/admin/users" element={<UserManagement />} />
             <Route path="courses" element={<CourseManagement />} />
