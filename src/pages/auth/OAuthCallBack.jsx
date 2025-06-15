@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import {  useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 
@@ -6,20 +6,19 @@ function OAuthCallBack() {
   const navigate = useNavigate();
   const { setUser } = useAuth();
   const calledRef = useRef(false); 
-  useEffect(() => {
+
     const handleOAuthCallback = async () => {
       if (calledRef.current) return;
       calledRef.current = true;
-
       const params = new URLSearchParams(window.location.search);
       const email = params.get("email");
       const exist = params.get("exist") === "true";
 
         const provider = localStorage.getItem("provider")?.toUpperCase();
 
-        if (exist) {
-           navigate("/register2", { state: { email } });
-        }  
+        // if (exist) {
+        //    navigate("/register2", { state: { email } });
+        // }  
          const loginRes = await fetch("http://localhost:8080/auth/getOAuthToken", {
             method: "POST",
             headers: { 'Content-Type': 'application/json' },
@@ -31,6 +30,7 @@ function OAuthCallBack() {
           const token = loginData.data.accessToken;
           localStorage.setItem("accessToken", token);
           localStorage.setItem("email", email);
+          console.log("Access Token:", token);
 
           const userRes = await fetch("http://localhost:8080/auth/user", {
             headers: { Authorization: `Bearer ${token}` },
@@ -43,7 +43,7 @@ function OAuthCallBack() {
     };
 
     handleOAuthCallback();
-  }, []);
+
 }
 
 export default OAuthCallBack;

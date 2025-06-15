@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
+import axios from "../../services/customixe-axios"; // Adjust the import path as necessary
 import { User } from "lucide-react";
 
 function ChangePasswordPage() {
