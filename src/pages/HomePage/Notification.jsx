@@ -27,16 +27,35 @@ function NotificationSlider({ open, setOpen }) {
     }
     setNotifications(res)
   }
-  const handleAction = async (notificationId, action) => {
+  const handleAction = async (notificationId, action, n) => {
     const confirmed = window.confirm(`Bạn có chắc chắn muốn ${action === 'confirm' ? 'xác nhận' : 'từ chối'} thông báo này không?`);
-
     if (!confirmed) return;
-  const status = action === 'confirm';
-
+    const status = action === 'confirm';
     try {
-      const res = await axios.get(`/api/api/notifications/${notificationId}/${status}/sendNotification`);
-      alert(`${action === 'confirm' ? 'Đã xác nhận' : 'Đã từ chối'} thành công!`);
-      // Sau khi xử lý xong, reload lại danh sách thông báo
+      if (n.type === "PAYMENT" && action === 'confirm') {
+        const content = n.content;
+        const match = content.match(/package:\s*(\d+)\s*VND/);
+        const price = match ? parseInt(match[1], 10) : null;
+        console.log(price);
+        const res = await axios.post(`/api/payment`, {
+          amount: price,
+          userId: n.userSendId,
+          notificationId: n.notificationId
+        }
+        );
+        const paymentUrl = res.url;
+        console.log("aaaaaa", paymentUrl)
+
+        if (paymentUrl) {
+          console.log("aaaaaa", price, n.uerSendId)
+          window.location.href = paymentUrl;
+        }
+        return;
+      }
+      else {
+        const res = await axios.get(`/api/api/notifications/${notificationId}/${status}/sendNotification`);
+      }
+      alert(`${action === 'confirm' ? 'Accepted' : 'Reject'} succesfully!`);
       getNotification();
     } catch (error) {
       console.error("Error handling action:", error);
@@ -46,7 +65,6 @@ function NotificationSlider({ open, setOpen }) {
 
   return (
     <div
-
       className={`fixed top-0 right-0 h-full w-80 bg-white shadow-lg z-[9999] transform transition-transform duration-300 ${open ? "translate-x-0" : "translate-x-full"
         }`}
     >
@@ -54,7 +72,7 @@ function NotificationSlider({ open, setOpen }) {
         Notifications
         <button onClick={() => setOpen(false)} className="text-gray-500">✕</button>
       </div>
-      <div className="p-4">
+      <div className="p-4 overflow-y-auto" style={{ maxHeight: "calc(100vh - 64px)" }}>
         {loading && <div>Loading...</div>}
         {!loading && notifications.length === 0 && (
           <div className="mb-3 p-3 bg-blue-50 rounded">No notifications.</div>
@@ -73,26 +91,26 @@ function NotificationSlider({ open, setOpen }) {
                   {new Date(n.createdAt).toLocaleString()}
                 </p>
 
-               {n.statusSend === true ? (
-  <div className="mt-3 text-sm text-gray-500 italic">Đã xem</div>
-) : (
-  (n.type === "PAYMENT" || n.type === "ACCEPT_STUDENT") && (
-    <div className="mt-3 flex gap-2">
-      <button
-        className="px-3 py-1 text-sm bg-green-500 text-white rounded hover:bg-green-600"
-        onClick={() => handleAction(n.notificationId, 'confirm')}
-      >
-        Confirm
-      </button>
-      <button
-        className="px-3 py-1 text-sm bg-red-500 text-white rounded hover:bg-red-600"
-        onClick={() => handleAction(n.notificationId, 'reject')}
-      >
-        Reject
-      </button>
-    </div>
-  )
-)}
+                {n.statusSend === true ? (
+                  <div className="mt-3 text-sm text-gray-500 italic">Đã xem</div>
+                ) : (
+                  (n.type === "PAYMENT" || n.type === "ACCEPT_STUDENT") && (
+                    <div className="mt-3 flex gap-2">
+                      <button
+                        className="px-3 py-1 text-sm bg-green-500 text-white rounded hover:bg-green-600"
+                        onClick={() => handleAction(n.notificationId, 'confirm', n)}
+                      >
+                        Confirm
+                      </button>
+                      <button
+                        className="px-3 py-1 text-sm bg-red-500 text-white rounded hover:bg-red-600"
+                        onClick={() => handleAction(n.notificationId, 'reject', n)}
+                      >
+                        Reject
+                      </button>
+                    </div>
+                  )
+                )}
               </div>
               {!n.status && (
                 <span className="ml-2 mt-1 inline-block w-2 h-2 bg-blue-600 rounded-full" title="Chưa đọc" />

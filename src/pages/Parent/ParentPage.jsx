@@ -1,14 +1,23 @@
 
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import axios from '../../services/customixe-axios';
 
 function ParentPage() {
   const { user } = useAuth();
   const [inviteCode, setInviteCode] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [text, setText] = useState('');
+  const location = useLocation(); // để lấy location.state
 
+
+  useEffect(() => {
+    if (location.state?.text) {
+      showTempMessage(location.state.text);
+      window.history.replaceState({}, document.title); 
+    }
+  }, []);
   if (!user || !user.children) {
     return <div>Đang tải thông tin người dùng...</div>;
   }
@@ -22,11 +31,20 @@ function ParentPage() {
       setInviteCode(code);
     } catch (error) {
       console.error("Error generating invite code:", error);
-    alert(error.response?.data?.message || "Failed to generate invite code. Please try again.");
+      alert(error.response?.data?.message || "Failed to generate invite code. Please try again.");
     } finally {
       setIsLoading(false);
     }
   };
+
+
+  const showTempMessage = (message, duration = 3000) => {
+    setText(message);
+    setTimeout(() => {
+      setText('');
+    }, duration);
+  };
+
 
   const renderMembershipBadge = (type) => {
     if (type === 'NORMAL') {
