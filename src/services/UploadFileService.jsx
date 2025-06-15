@@ -15,4 +15,21 @@ const uploadFile = async (file, targetFolder) => {
     }
 };
 
-export default uploadFile;
+const uploadVideoToYouTube = async (videoFile, lessonName) => {
+    try {
+        const formData = new FormData();
+        formData.append("videoFile", videoFile);
+        formData.append("lessonName", lessonName);
+        formData.append("accessToken", localStorage.getItem("accessToken"));
+        const response = await axios.post("/api/uploadfile/youtube", formData, {
+            headers: {
+                "Content-Type": "multipart/form-data",
+            },
+        });
+        return response.data.data;
+    } catch (error) {
+        throw new Error(error || "can not upload video to YouTube");
+    }
+};
+
+export default { uploadFile, uploadVideoToYouTube };
