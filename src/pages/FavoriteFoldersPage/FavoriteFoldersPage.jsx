@@ -11,8 +11,6 @@ function FavoriteFoldersPage() {
     const [loading, setLoading] = useState(true)
 
     const [viewType, setViewType] = useState('private')
-    const [page, setPage] = useState(0)
-    const pageSize = 21
 
     const [showAddForm, setShowAddForm] = useState(false)
     const [newFolderName, setNewFolderName] = useState('')
@@ -33,7 +31,7 @@ function FavoriteFoldersPage() {
     useEffect(() => {
         if (!type) return
         fetchFolders()
-    }, [type, viewType, page])
+    }, [type, viewType])
 
     const fetchFolders = async () => {
         setLoading(true)
@@ -48,11 +46,12 @@ function FavoriteFoldersPage() {
                         : 'http://localhost:8080/favorites/vocabularyfolders'
             } else {
                 endpoint = 'http://localhost:8080/favorites/publicfolders'
-                params = { type, page, size: pageSize }
+                params = { type }
             }
 
             const response = await axios.get(endpoint, { params })
-            const data = viewType === 'public' ? response.data.data.content : response.data.data
+            const data = response.data.data
+
             setFolders(data || [])
         } catch (error) {
             console.error('Error fetching folders:', error)
@@ -90,9 +89,19 @@ function FavoriteFoldersPage() {
             fetchFolders()
         } else {
             try {
-                const response = await axios.get('http://localhost:8080/favorites/folders', {
-                    params: { type, keyword: searchKeyword.trim() },
-                })
+                let endpoint = ''
+                let params = {
+                    keyword: searchKeyword.trim(),
+                    type,
+                }
+
+                if (viewType === 'public') {
+                    endpoint = 'http://localhost:8080/favorites/publicfolders/search'
+                } else {
+                    endpoint = 'http://localhost:8080/favorites/folders/search'
+                }
+
+                const response = await axios.get(endpoint, { params })
                 setFolders(response.data.data || [])
             } catch (error) {
                 console.error('Search failed:', error)
@@ -100,6 +109,7 @@ function FavoriteFoldersPage() {
             }
         }
     }
+
 
     const handleUpdateFolder = async () => {
         if (!editingFolder || !editName.trim()) return alert('Folder name is required')
@@ -134,6 +144,20 @@ function FavoriteFoldersPage() {
         } catch (error) {
             console.error('Failed to delete folder:', error)
             alert('Delete failed')
+        }
+    }
+
+    const handleCopyFolder = async (folderId) => {
+        if (!window.confirm('Do you want to copy this folder to your list?')) return
+        try {
+            const response = await axios.post('http://localhost:8080/favorites/folders/copy', {
+                folderId,
+                type,
+            })
+            alert('Folder copied successfully!')
+        } catch (error) {
+            console.error('Failed to copy folder:', error)
+            alert('Copy failed')
         }
     }
 
@@ -183,33 +207,33 @@ function FavoriteFoldersPage() {
                 {viewType === 'public' ? 'Public' : 'Your'} {type === 'grammar' ? 'Grammar' : 'Vocabulary'} Folders
             </motion.h1>
 
-            {/* Add/Search (Own Only) */}
-            {isOwnFolder && (
-                <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+
+            <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                {viewType === 'private' && (
                     <button
                         onClick={() => setShowAddForm(true)}
                         className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
                     >
                         <FiPlus className="mr-2" /> Add Folder
                     </button>
-                    <div className="flex items-center gap-2 w-full sm:w-auto">
-                        <input
-                            type="text"
-                            value={searchKeyword}
-                            onChange={(e) => setSearchKeyword(e.target.value)}
-                            onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-                            className="w-full sm:w-64 px-3 py-2 border rounded shadow-sm"
-                            placeholder="Search folders..."
-                        />
-                        <button
-                            onClick={handleSearch}
-                            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-                        >
-                            Search
-                        </button>
-                    </div>
+                )}
+                <div className="flex items-center gap-2 w-full sm:w-auto">
+                    <input
+                        type="text"
+                        value={searchKeyword}
+                        onChange={(e) => setSearchKeyword(e.target.value)}
+                        onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+                        className="w-full sm:w-64 px-3 py-2 border rounded shadow-sm"
+                        placeholder={`Search ${viewType === 'public' ? 'public' : ''} folders...`}
+                    />
+                    <button
+                        onClick={handleSearch}
+                        className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+                    >
+                        Search
+                    </button>
                 </div>
-            )}
+            </div>
 
             {/* Add Form */}
             {showAddForm && (
@@ -302,10 +326,12 @@ function FavoriteFoldersPage() {
                             ) : (
                                 <div
                                     onClick={() => {
-                                        const path = type === 'grammar'
-                                            ? `/grammars/favorite/${folder.id}`
-                                            : `/vocabularies/favorite/${folder.id}`
-                                        navigate(path)
+                                        if (viewType === 'private') {
+                                            const path = type === 'grammar'
+                                                ? `/grammars/favorite/${folder.id}`
+                                                : `/vocabularies/favorite/${folder.id}`
+                                            navigate(path)
+                                        }
                                     }}
                                     className="cursor-pointer"
                                 >
@@ -317,6 +343,17 @@ function FavoriteFoldersPage() {
                                             <span className="text-xs px-2 py-0.5 bg-green-100 text-green-700 rounded-full">
                                                 Public
                                             </span>
+                                        )}
+                                        {viewType === 'public' && (
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation()
+                                                    handleCopyFolder(folder.id)
+                                                }}
+                                                className="text-xs text-blue-600 underline ml-2"
+                                            >
+                                                Add
+                                            </button>
                                         )}
                                     </div>
                                     <div className="text-sm text-gray-600 mb-1">

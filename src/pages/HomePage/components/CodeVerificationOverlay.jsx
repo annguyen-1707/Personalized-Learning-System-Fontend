@@ -48,9 +48,9 @@ export default function ParentVerificationOverlay({ children }) {
     setUser(null);
   };
 
-  if (status === 'approved' || user === null || user.parents !== null) {
-    return children;
-  }
+ if (!user || !Array.isArray(user.parents) || user.parents.length !== 0) {
+  return children;
+}
 
   return (
     <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">

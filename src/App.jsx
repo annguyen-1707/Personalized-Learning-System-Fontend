@@ -1,6 +1,7 @@
 import { Routes, Route } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import AdminList from './pages/admin/AdminList';
 import React, { useState } from "react";
 
 import Layout from "./components/layout/Layout";
@@ -43,6 +44,7 @@ import LearningPage from "./pages/LearningPage/LearningPage";
 import NotificationSlider from "./pages/HomePage/Notification.jsx";
 import CourseContentPage from "./pages/LearningPage/components/CourseContent.jsx";
 import LessonPage from "./pages/LearningPage/LessonPage.jsx";
+import DoExercise from "./pages/LearningPage/components/DoExercise.jsx";
 
 function App() {
   const [notificationOpen, setNotificationOpen] = useState(false);
@@ -73,7 +75,12 @@ function App() {
           </Route>
 
 
-          <Route path="/" element={<LayoutParent />}>
+          <Route
+            path="/"
+            element={
+              <LayoutParent onNotificationClick={() => setNotificationOpen(true)} />
+            }
+          >
             <Route path="/parentPage" element={<ParentPage />} />
             <Route path="/parentPage/:studentId/view_children" element={<ViewChildren />} />
           </Route>
@@ -101,7 +108,9 @@ function App() {
             path="/await-confirmation"
             element={<AwaitEmailConfirmation />}
           />
-            
+
+          {/* Do exercise */}
+          <Route path="/do-exercise/:exerciseId" element={<DoExercise />} />
 
           {/* Listening routes */}
           <Route path="/" element={<Layout />}>
@@ -119,6 +128,7 @@ function App() {
               element={<LessonPage />}
             />
           </Route>
+
           <Route path="/admin" element={<MainLayout />}>
             <Route
               path="content_speaking"
@@ -144,6 +154,10 @@ function App() {
               path="content_listening"
               element={<ListeningContentManagement />}
             />
+            <Route path="/admin" element={<Dashboard />} />
+            <Route path="/admin/admins" element={<AdminList />} />
+            <Route path="/admin/system-logs" element={<SystemLogs />} />
+            <Route path="/admin/users" element={<UserManagement />} />
             <Route
               path="content_listening/:contentListeningId/question"
               element={<QuestionManagement />}

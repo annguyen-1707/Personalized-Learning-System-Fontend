@@ -11,62 +11,69 @@ function UpgradePage() {
 
 
 
- const handleBuy = async (amount) => {
-  const accessToken = localStorage.getItem('accessToken');
+  const handleBuy = async (amount, userId) => {
+    const accessToken = localStorage.getItem('accessToken');
 
-  try {
-    const response = await fetch(`http://localhost:8080/payment/getMembershipOfUser`, {
-      method: 'GET',
-      headers: {
-        'Authorization': `Bearer ${accessToken}`
+    try {
+      const response = await fetch(`http://localhost:8080/payment/getMembershipOfUser`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${accessToken}`
+        }
+      });
+      const inforData = await response.json();
+
+      let confirmed = false;
+
+      if (inforData.data) {
+        const isOk = window.confirm(inforData.data + ". Do you want to buy it!");
+        if (!isOk) {
+          return;
+        }
+        confirmed = true;
+        showTempMessage('Action cancelled.');
+      } else {
+        const confirmBuy = window.confirm("Click buy now, we will send request to your parents");
+        if (!confirmBuy) {
+          showTempMessage('Action cancelled.');
+          return;
+        }
+        confirmed = true;
+        showTempMessage("Redirecting to payment gateway...");
       }
-    });
-    const inforData = await response.json();
 
-   let confirmed = false;
+      if (confirmed) {
+        const paymentResponse = await fetch("http://localhost:8080/payment/sendToParent", {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${accessToken}`
+          },
+          body: JSON.stringify({ amount, userId }),
+        });
 
-if (inforData.data) {
-  const isOk = window.confirm(inforData.data + ". Do you want to buy it!");
-  if (!isOk) {
-    return;
-  }
-  confirmed = true;
-  setText('Action cancelled.');
-} else {
-  const confirmBuy = window.confirm("Deo Co tien");
-  if (!confirmBuy) {
-    setText('Action cancelled.');
-    return;
-  }
-  confirmed = true;
-  setText("Redirecting to payment gateway...");
-}
+        if (paymentResponse.ok) {
+          showTempMessage("Your request has been sent to your parents successfully!");
+      }else {
+          const data = await paymentResponse.json()
+        alert(data.message);
+      }
+    }
+    } catch (error) {
+      console.error('Lỗi trong quá trình xử lý:', error);
+      alert(error);
+    }
 
-if (confirmed) {
-   const paymentResponse = await fetch("http://localhost:8080/notification/sendParent", {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${accessToken}`
-      },
-      body: JSON.stringify({ amount, userId }),
-    });
-    const data = await paymentResponse.json();
+    
 
-    // Chuyển hướng tới url thanh toán
-    window.location.href = data.url;
+  };
 
-  } 
-}catch (error) {
-    console.error('Lỗi trong quá trình xử lý:', error);
-    setText('Đã xảy ra lỗi, vui lòng thử lại.');
-  }
-
-    // Nếu đến đây nghĩa là user đã xác nhận, gọi API thanh toán luôn
-   
-};
-   
-  
+const showTempMessage = (message, duration = 3000) => {
+      setText(message);
+      setTimeout(() => {
+        setText('');
+      }, duration);
+    };
   useEffect(() => {
     if (location.state?.text) {
       setNotification(location.state.text);
@@ -111,7 +118,11 @@ if (confirmed) {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-
+      {text && (
+        <div className="mb-4 p-4 bg-green-100 text-green-800 rounded">
+          {text}
+        </div>
+      )}
       {/* Hiển thị thông báo nếu có */}
       {notification && (
         <div className="mb-4 p-4 bg-green-200 text-green-800 rounded">
@@ -165,7 +176,7 @@ if (confirmed) {
 
               <div className="bg-white p-6">
                 <button
-                  onClick={() => handleBuy(plan.price)}
+                  onClick={() => handleBuy(plan.price, plan.userId)}
                   className="mt-6 block w-full text-center py-2 px-4 rounded-md transition-colors duration-200 bg-blue-400 text-white hover:bg-blue-500"
                 >
                   Buy now

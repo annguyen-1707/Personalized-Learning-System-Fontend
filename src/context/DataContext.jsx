@@ -6,6 +6,7 @@ import {
   mockExercises,
   mockResources,
 } from "../data/mockData";
+import  uploadFile from "../services/UploadFileService";
 const DataContext = createContext();
 
 export function useData() {
@@ -100,6 +101,9 @@ export function DataProvider({ children }) {
 
   const addSubject = async (subject) => {
     try {
+      const imageUrl = await uploadFile.uploadFile(subject.thumbnailFile, "images/content_learning");
+      subject.thumbnailUrl = imageUrl;
+
       const response = await fetch("/api/subjects", {
         method: "POST",
         headers: {
@@ -124,6 +128,11 @@ export function DataProvider({ children }) {
 
   const updateSubject = async (id, subject) => {
     try {
+      let thumbnailUrl = subject.thumbnailUrl;
+      if (subject.thumbnailFile) {
+        thumbnailUrl = await uploadFile.uploadFile(subject.thumbnailFile, "images/content_learning");
+      }
+      subject.thumbnailUrl = thumbnailUrl;
       const response = await fetch(`/api/subjects/${id}`, {
         method: "PUT",
         headers: {
@@ -199,6 +208,8 @@ export function DataProvider({ children }) {
 
   const addLesson = async (lesson) => {
     try {
+      const res = await uploadFile.uploadVideoToYouTube(lesson.videoFile, lesson.lessonName);
+      lesson.videoUrl = res.data;
       const response = await fetch("/api/lessons", {
         method: "POST",
         headers: {
@@ -224,6 +235,8 @@ export function DataProvider({ children }) {
   };
 
   const updateLesson = async (id, updatedLesson) => {
+    const res = await uploadFile.uploadVideoToYouTube(updatedLesson.videoFile, updatedLesson.lessonName);
+    updatedLesson.videoUrl = res.data;
     const response = await fetch(`/api/lessons/${id}`, {
       method: "PATCH",
       headers: {

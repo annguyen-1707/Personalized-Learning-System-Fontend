@@ -1,16 +1,18 @@
 import { Fragment } from 'react'
 import { Dialog, Transition } from '@headlessui/react'
 import { NavLink } from 'react-router-dom'
-import { FiX, FiHome, FiBook, FiFileText, FiLayers, FiHelpCircle, 
-         FiActivity, FiMessageCircle, FiGlobe, FiHeadphones, FiMic, 
-         FiType, FiCreditCard, FiStar } from 'react-icons/fi'
+import {
+  FiX, FiHome, FiBook, FiFileText, FiLayers, FiHelpCircle,
+  FiActivity, FiMessageCircle, FiGlobe, FiHeadphones, FiMic,
+  FiType, FiCreditCard, FiStar
+} from 'react-icons/fi'
 import { FiBookOpen } from 'react-icons/fi'
 
 function Sidebar({ sidebarOpen, setSidebarOpen }) {
   const navigation = [
     { name: 'Home', href: '/', icon: FiHome },
     { name: 'Learn', href: '/learning', icon: FiBook },
-    { name: 'Vocabulary', href: '/vocabulary', icon: FiFileText },
+    { name: 'Favorite', href: '/favorites/vocabulary', icon: FiFileText },
     { name: 'Flashcards', href: '/flashcards', icon: FiLayers },
     { name: 'Quiz', href: '/quiz', icon: FiHelpCircle },
     { name: 'Profile', href: '/profile', icon: FiActivity },
@@ -79,10 +81,9 @@ function Sidebar({ sidebarOpen, setSidebarOpen }) {
                       key={item.name}
                       to={item.href}
                       className={({ isActive }) =>
-                        `group flex items-center px-2 py-2 text-base font-medium rounded-md ${
-                          isActive
-                            ? 'bg-primary-50 text-primary-600'
-                            : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                        `group flex items-center px-2 py-2 text-base font-medium rounded-md ${isActive
+                          ? 'bg-primary-50 text-primary-600'
+                          : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
                         }`
                       }
                       onClick={() => setSidebarOpen(false)}
@@ -136,10 +137,9 @@ function Sidebar({ sidebarOpen, setSidebarOpen }) {
                     key={item.name}
                     to={item.href}
                     className={({ isActive }) =>
-                      `group flex items-center px-2 py-2 text-sm font-medium rounded-md ${
-                        isActive
-                          ? 'bg-primary-50 text-primary-600'
-                          : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                      `group flex items-center px-2 py-2 text-sm font-medium rounded-md ${isActive
+                        ? 'bg-primary-50 text-primary-600'
+                        : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
                       }`
                     }
                   >

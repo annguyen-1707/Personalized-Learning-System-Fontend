@@ -6,14 +6,19 @@ import LearningPaggService from "../../../services/LearningPaggService";
 function CourseCard({ subject, selected, progressStatus }) {
   const [showEnrollDialog, setShowEnrollDialog] = useState(false);
   const { enrollInCourse } = LearningPaggService;
+  const { user } = JSON.parse(localStorage.getItem("user")) || {};
+  const isUser = user && user.roleName === "USER";
 
   const handleStartLearning = async (e) => {
+    if (!isUser) {
+      window.location.href = "/login";
+      return;
+    }
     e.preventDefault();
     if (selected === "all") {
       setShowEnrollDialog(true);
     } else {
       console.log("Selected course:", subject?.subjectId);
-      debugger
       await enrollInCourse(subject?.subjectId);
       window.location.href = `/learning/${subject?.subjectId}`;
     }
@@ -24,14 +29,20 @@ function CourseCard({ subject, selected, progressStatus }) {
     setShowEnrollDialog(false);
     window.location.href = `/learning/${subject?.subjectId}`;
   };
+  const showThumbnail = (thumbnailUrl) => {
+    // Show the thumbnail in a modal or a new page
+    console.log("Show thumbnail:", thumbnailUrl);
+    window.open("http://localhost:8080/images/content_learning/" + thumbnailUrl, "_blank");
+  };
 
   const renderCardContent = () => (
     <>
       <div className="relative">
         <img
-          src={"https://via.placeholder.com/300x200"}
+          onClick={() => showThumbnail(subject?.thumbnailUrl)}
+          src={"http://localhost:8080/images/content_learning/" + subject?.thumbnailUrl || "https://via.placeholder.com/300x200"}
           alt={subject?.subjectName}
-          className="w-full h-48 object-cover"
+          className="w-full h-48 object-cover rounded-t-lg cursor-pointer hover:opacity-90 transition-opacity duration-300"
         />
         <div className="absolute top-0 right-0 m-2">
           <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-300">

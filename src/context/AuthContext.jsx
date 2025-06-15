@@ -13,7 +13,7 @@ export function AuthProvider({ children }) {
   const [isAdmin, setIsAdmin] = useState(false);
   const navigate = useNavigate(); // ✅ thêm dòng này
 
- useEffect(() => {
+  useEffect(() => {
   if (!isAdmin) {
     const checkLogin = async () => {
       try {
@@ -32,8 +32,9 @@ export function AuthProvider({ children }) {
           });
 
           const userData = await userRes.json();
-          setUser(userData.data); // chỉ set user
+          setUser(userData.data); 
         }
+        
       } catch (err) {
         console.error(err);
       }
@@ -57,7 +58,6 @@ useEffect(() => {
   }
 }, [user]);
 
-
   //login
   const login = async (email, password, isAdminLogin) => {
     setIsAdmin(isAdminLogin)
@@ -78,7 +78,7 @@ useEffect(() => {
 
       const data = await res.json()
       if (!res.ok) {
-        throw new Error(data.message || 'Account or pasword is not right');
+        throw new Error(data.message);
       }
 
       localStorage.setItem("accessToken", data.data.accessToken);
@@ -92,6 +92,7 @@ useEffect(() => {
       }
       setUser(userData.data);
       const role = userData.data.roleName;
+      console.log("ádasddasd", userData.data.parents)
       if (role === "PARENT") {
         navigate("/parentpage");
       } else if (role === "USER") {
@@ -102,7 +103,8 @@ useEffect(() => {
 
     } catch (error) {
       console.error('Login failed:', error);
-      throw new Error('Login failed');
+        throw error;
+
     } finally {
       setLoading(false);
     }

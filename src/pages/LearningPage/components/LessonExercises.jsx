@@ -3,7 +3,7 @@ import ReactPaginate from "react-paginate";
 import { CourseContentService } from "../../../services/CourseContentService";
 import { ArrowRight } from "lucide-react";
 import Swal from "sweetalert2";
-import { useNavigate } from "react-router-dom";
+import { useNavigate,useParams } from "react-router-dom";
 
 const PAGE_SIZE = 5;
 
@@ -11,6 +11,7 @@ function LessonExercises({ lessonId }) {
   const [exercises, setExercises] = useState([]);
   const { getExercisesByLessonId } = CourseContentService;
   const [currentPage, setCurrentPage] = useState(0);
+  const {subjectId} = useParams();
 
   const navigate = useNavigate();
 
@@ -26,7 +27,7 @@ function LessonExercises({ lessonId }) {
       cancelButtonColor: "#9ca3af",
     }).then((result) => {
       if (result.isConfirmed) {
-        navigate(`/exercises/${exerciseId}`);
+        navigate(`/do-exercise/${exerciseId}`);
       }
     });
   };
