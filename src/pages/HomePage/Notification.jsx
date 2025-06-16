@@ -54,7 +54,7 @@ function NotificationSlider({ open, setOpen }) {
         Notifications
         <button onClick={() => setOpen(false)} className="text-gray-500">✕</button>
       </div>
-      <div className="p-4">
+      <div className="p-4 overflow-y-auto" style={{ maxHeight: "calc(100vh - 64px)" }}>
         {loading && <div>Loading...</div>}
         {!loading && notifications.length === 0 && (
           <div className="mb-3 p-3 bg-blue-50 rounded">No notifications.</div>
