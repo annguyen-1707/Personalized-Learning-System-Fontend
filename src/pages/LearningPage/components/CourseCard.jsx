@@ -2,11 +2,12 @@ import { FiBook } from "react-icons/fi";
 import { MdPeopleAlt } from "react-icons/md";
 import { useState } from "react";
 import LearningPaggService from "../../../services/LearningPaggService";
+import { useAuth } from "../../../context/AuthContext";
 
 function CourseCard({ subject, selected, progressStatus }) {
   const [showEnrollDialog, setShowEnrollDialog] = useState(false);
   const { enrollInCourse } = LearningPaggService;
-  const { user } = JSON.parse(localStorage.getItem("user")) || {};
+  const { user } = useAuth();
   const isUser = user && user.roleName === "USER";
 
   const handleStartLearning = async (e) => {
