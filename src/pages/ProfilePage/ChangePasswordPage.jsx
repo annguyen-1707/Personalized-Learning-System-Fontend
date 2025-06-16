@@ -25,21 +25,6 @@ function ChangePasswordPage() {
       setSuccess("");
       return;
     }
-    if (passwords.new !== passwords.confirm) {
-      setError("New passwords do not match.");
-      setSuccess("");
-      return;
-    }
-    if (passwords.new.length < 8) {
-      setError("New password must be at least 8 characters long.");
-      setSuccess("");
-      return;
-    }
-    if (passwords.current === passwords.new) {
-      setError("New password must be different from current password.");
-      setSuccess("");
-      return;
-    }
     setError("");
     setSuccess("");
     try {
