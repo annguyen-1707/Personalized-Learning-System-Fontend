@@ -11,7 +11,7 @@ function VnpayReturn() {
   fetch(`http://localhost:8080/payment/vnpay-return?${query}`)
     .then(async (res) => {
       const text = await res.text(); // Vì backend trả về String
-      navigate("/upgrade", { text: {text} }); // Chuyển hướng về trang nâng cấp
+      navigate("/ParentPage", { text: {text} }); // Chuyển hướng về trang nâng cấp
       console.log("Kết quả trả về:", text);
       // Hiển thị kết quả hoặc thông báo thành công/thất bại
     })

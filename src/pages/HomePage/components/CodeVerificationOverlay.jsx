@@ -48,7 +48,7 @@ export default function ParentVerificationOverlay({ children }) {
     setUser(null);
   };
 
- if (user === null || !Array.isArray(user.parents) || user.parents.length !== 0) {
+ if (!user || !Array.isArray(user.parents) || user.parents.length !== 0) {
   return children;
 }
 

@@ -11,7 +11,7 @@ function UpgradePage() {
 
 
 
-  const handleBuy = async (amount) => {
+  const handleBuy = async (amount, userId) => {
     const accessToken = localStorage.getItem('accessToken');
 
     try {
@@ -31,15 +31,15 @@ function UpgradePage() {
           return;
         }
         confirmed = true;
-        setText('Action cancelled.');
+        showTempMessage('Action cancelled.');
       } else {
         const confirmBuy = window.confirm("Click buy now, we will send request to your parents");
         if (!confirmBuy) {
-          setText('Action cancelled.');
+          showTempMessage('Action cancelled.');
           return;
         }
         confirmed = true;
-        setText("Redirecting to payment gateway...");
+        showTempMessage("Redirecting to payment gateway...");
       }
 
       if (confirmed) {
@@ -53,22 +53,27 @@ function UpgradePage() {
         });
 
         if (paymentResponse.ok) {
-          setText("Send your order to your parents successfully!!");
-        }
-        else{
-          setText("An error occurred while sending the request.")
+          showTempMessage("Your request has been sent to your parents successfully!");
+      }else {
+          const data = await paymentResponse.json()
+        alert(data.message);
       }
     }
     } catch (error) {
       console.error('Lỗi trong quá trình xử lý:', error);
-      setText('Đã xảy ra lỗi, vui lòng thử lại.');
+      alert(error);
     }
 
-    // Nếu đến đây nghĩa là user đã xác nhận, gọi API thanh toán luôn
+    
 
   };
 
-
+const showTempMessage = (message, duration = 3000) => {
+      setText(message);
+      setTimeout(() => {
+        setText('');
+      }, duration);
+    };
   useEffect(() => {
     if (location.state?.text) {
       setNotification(location.state.text);
@@ -113,7 +118,11 @@ function UpgradePage() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-
+      {text && (
+        <div className="mb-4 p-4 bg-green-100 text-green-800 rounded">
+          {text}
+        </div>
+      )}
       {/* Hiển thị thông báo nếu có */}
       {notification && (
         <div className="mb-4 p-4 bg-green-200 text-green-800 rounded">
@@ -167,7 +176,7 @@ function UpgradePage() {
 
               <div className="bg-white p-6">
                 <button
-                  onClick={() => handleBuy(plan.price)}
+                  onClick={() => handleBuy(plan.price, plan.userId)}
                   className="mt-6 block w-full text-center py-2 px-4 rounded-md transition-colors duration-200 bg-blue-400 text-white hover:bg-blue-500"
                 >
                   Buy now

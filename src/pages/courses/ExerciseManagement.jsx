@@ -15,7 +15,7 @@ function ExerciseManagement() {
   const [currentPage, setCurrentPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
   const [totalElements, setTotalElements] = useState(0);
-
+  const [exerciseTitle, setExerciseTitle] = useState("");
   const handlePageClick = (event) => {
     const selectedPage = event.selected;
     setCurrentPage(selectedPage);
@@ -49,6 +49,7 @@ function ExerciseManagement() {
         lessonId,
         currentPage
       );
+
       if (lessonExercises) {
         setLessonExercises(lessonExercises.content);
         setTotalPages(lessonExercises.page.totalPages);
@@ -184,7 +185,7 @@ function ExerciseManagement() {
           </div>
           <div>
             <p className="text-sm text-gray-500">Exercise</p>
-            <p className="font-medium"></p>
+            <p className="font-medium">{exerciseTitle}</p>
           </div>
         </div>
       </div>

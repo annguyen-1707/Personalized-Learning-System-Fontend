@@ -50,7 +50,7 @@ function LessonManagement() {
     description: "",
     status: "PUBLIC",
     subjectId: subjectId,
-    videoFile: null,
+    videoUrl: null,
     videoPreview: null,
     videoDuration: null
   });
@@ -121,7 +121,7 @@ function LessonManagement() {
     if (file && file.type.startsWith('video/')) {
       setFormData(prev => ({
         ...prev,
-        videoFile: file,
+        videoUrl: file,
         videoPreview: URL.createObjectURL(file)
       }));
 
@@ -147,17 +147,8 @@ function LessonManagement() {
 
   const handleAddSubmit = async (e) => {
     e.preventDefault();
-    const formDataToSend = new FormData();
-    formDataToSend.append('name', formData.name);
-    formDataToSend.append('description', formData.description);
-    formDataToSend.append('status', formData.status);
-    formDataToSend.append('subjectId', formData.subjectId);
-    if (formData.videoFile) {
-      formDataToSend.append('videoFile', formData.videoFile);
-    }
-
     try {
-      const newLesson = await addLesson(formDataToSend);
+      const newLesson = await addLesson(formData);
       if (newLesson) {
         setErrorMessage("");
         const message = `New lesson "${formData.name}" was created successfully!`;
@@ -172,7 +163,7 @@ function LessonManagement() {
           description: "",
           status: "PUBLIC",
           subjectId: subjectId,
-          videoFile: null,
+          videoUrl: null,
           videoPreview: null,
           videoDuration: null
         });
@@ -186,17 +177,8 @@ function LessonManagement() {
 
   const handleEditSubmit = async (e) => {
     e.preventDefault();
-    const formDataToSend = new FormData();
-    formDataToSend.append('name', formData.name);
-    formDataToSend.append('description', formData.description);
-    formDataToSend.append('status', formData.status);
-    formDataToSend.append('subjectId', formData.subjectId);
-    if (formData.videoFile) {
-      formDataToSend.append('videoFile', formData.videoFile);
-    }
-
     try {
-      const updatedLesson = await updateLesson(isEditing, formDataToSend);
+      const updatedLesson = await updateLesson(isEditing, formData);
       if (updatedLesson.status === "error") {
         setErrorMessage(updatedLesson.message);
         return;
@@ -212,7 +194,7 @@ function LessonManagement() {
         description: "",
         status: "PUBLIC",
         subjectId: subjectId,
-        videoFile: null,
+        videoUrl: null,
         videoPreview: null,
         videoDuration: null
       });
@@ -244,7 +226,7 @@ function LessonManagement() {
       description: lesson.description,
       status: lesson.status,
       subjectId: lesson.subjectId,
-      videoFile: null,
+      videoUrl: null,
       videoPreview: lesson.videoUrl || null,
       videoDuration: lesson.duration || null
     });
@@ -261,7 +243,7 @@ function LessonManagement() {
       description: "",
       status: "PUBLIC",
       subjectId: subjectId,
-      videoFile: null,
+      videoUrl: null,
       videoPreview: null,
       videoDuration: null
     });
@@ -478,7 +460,7 @@ function LessonManagement() {
                         )}
                         <button
                           type="button"
-                          onClick={() => setFormData(prev => ({ ...prev, videoFile: null, videoPreview: null, videoDuration: null }))}
+                          onClick={() => setFormData(prev => ({ ...prev, videoUrl: null, videoPreview: null, videoDuration: null }))}
                           className="absolute -top-2 -right-2 p-1 bg-red-100 rounded-full hover:bg-red-200"
                         >
                           <X className="h-4 w-4 text-red-600" />
