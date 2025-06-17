@@ -6,7 +6,7 @@ import { useAuth } from '../../context/AuthContext';
 
 
 function RegisterP2() {
-  const { register2 } = useAuth();
+  const { register2, setUser } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const email = location.state?.email || localStorage.getItem("email");
@@ -29,13 +29,12 @@ function RegisterP2() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-     if (!formData.role || !formData.gender) {
+    if (!formData.role || !formData.gender) {
       setError('Please select all required fields');
       return;
     }
     try {
       setError('');
-      console.log("✅ SUBMIT CALLED" + formData.fullName + email);
       await register2(
 
         email,
@@ -46,8 +45,54 @@ function RegisterP2() {
         formData.phone,
         formData.role
       );
+      if (!email || !email === "undefined") {
+        try {
+          const provider = 'FACEBOOK'
+          const res = await fetch('http://localhost:8080/auth/getOAuthToken', {
+            method: 'Post',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email,  provider}),
+            credentials: 'include'
+          });
 
-      navigate('/login', { state: { successMessage: 'Register Successfully' } });
+          const data = await res.json()
+
+          if (!res.ok) {
+            throw new Error(data.message);
+          }
+
+          localStorage.setItem("accessToken", data.data.accessToken);
+
+          const userRes = await fetch('http://localhost:8080/auth/user', {
+            headers: { Authorization: `Bearer ${data.data.accessToken}` }
+          });
+          const userData = await userRes.json();
+          if (!userRes.status === "OK") {
+            throw new Error(userData.message || 'Failed to fetch user data');
+          }
+          setUser(userData.data);
+          const role = userData.data.roleName;
+          console.log("ádasddasd", userData.data.parents)
+          if (role === "PARENT") {
+            navigate("/parentpage");
+          } else if (role === "USER") {
+            navigate("/");
+          }
+          else {
+            navigate("/admin");
+          }
+
+        } catch (error) {
+          console.error('Login failed:', error);
+          throw error;
+
+        }
+
+        return;
+      }
+      else{
+        navigate('/login', { state: { successMessage: 'Register Successfully' } });
+      }
 
 
 

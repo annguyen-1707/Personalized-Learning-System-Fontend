@@ -12,9 +12,16 @@ function ParentPage() {
   const location = useLocation(); // để lấy location.state
 
 
+  const showTempMessage = (message, duration = 3000) => {
+    setText(message);
+    setTimeout(() => {
+      setText('');
+    }, duration);
+  };
   useEffect(() => {
     if (location.state?.text) {
       showTempMessage(location.state.text);
+      console.log(location.state.text)
       window.history.replaceState({}, document.title); 
     }
   }, []);
@@ -38,12 +45,6 @@ function ParentPage() {
   };
 
 
-  const showTempMessage = (message, duration = 3000) => {
-    setText(message);
-    setTimeout(() => {
-      setText('');
-    }, duration);
-  };
 
 
   const renderMembershipBadge = (type) => {
