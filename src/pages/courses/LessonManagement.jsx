@@ -70,6 +70,10 @@ function LessonManagement() {
     return match && match[2].length === 11 ? match[2] : null;
   }
 
+  function isYouTubeUrl(url) {
+    return /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.be)\//.test(url);
+  }
+
   const filteredLessons = subjectLessons.filter((lesson) => {
     // Search filter (case insensitive)
     const searchMatch =
@@ -472,16 +476,30 @@ function LessonManagement() {
                   <div className="space-y-1 text-center">
                     {formData.videoPreview ? (
                       <div className="relative">
-                        <video
-                          src={formData.videoPreview}
-                          className="mx-auto h-48 w-auto rounded-lg"
-                          controls
-                        />
+                        {isEditing && isYouTubeUrl(formData.videoPreview) ? (
+                          <iframe
+                            title="Video Preview"
+                            src={`https://www.youtube.com/embed/${extractYouTubeVideoId(
+                              formData.videoPreview
+                            )}`}
+                            className="mx-auto h-48 w-auto rounded-lg"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                            allowFullScreen
+                          />
+                        ) : (
+                          <video
+                            className="mx-auto h-48 w-auto rounded-lg"
+                            src={formData.videoPreview}
+                            controls
+                          />
+                        )}
+
                         {formData.videoDuration && (
                           <span className="absolute bottom-2 right-2 bg-black bg-opacity-50 text-white px-2 py-1 rounded text-sm">
                             {formatDuration(formData.videoDuration)}
                           </span>
                         )}
+
                         <button
                           type="button"
                           onClick={() =>
@@ -493,6 +511,7 @@ function LessonManagement() {
                             }))
                           }
                           className="absolute -top-2 -right-2 p-1 bg-red-100 rounded-full hover:bg-red-200"
+                          aria-label="Remove video preview"
                         >
                           <X className="h-4 w-4 text-red-600" />
                         </button>
