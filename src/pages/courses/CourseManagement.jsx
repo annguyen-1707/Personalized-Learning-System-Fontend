@@ -35,7 +35,7 @@ function CourseManagement() {
     description: "",
     status: "ACTIVE",
     thumbnailFile: null,
-    thumbnailPreview: null
+    thumbnailPreview: null,
   });
 
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(null);
@@ -76,13 +76,13 @@ function CourseManagement() {
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
-    if (file && file.type.startsWith('image/')) {
+    if (file && file.type.startsWith("image/")) {
       const reader = new FileReader();
       reader.onloadend = () => {
-        setFormData(prev => ({
+        setFormData((prev) => ({
           ...prev,
           thumbnailFile: file,
-          thumbnailPreview: reader.result
+          thumbnailPreview: reader.result,
         }));
       };
       reader.readAsDataURL(file);
@@ -105,7 +105,7 @@ function CourseManagement() {
         description: "",
         status: "ACTIVE",
         thumbnailFile: null,
-        thumbnailPreview: null
+        thumbnailPreview: null,
       });
       setIsAdding(false);
       setErrorMessage("");
@@ -132,7 +132,7 @@ function CourseManagement() {
         description: "",
         status: "ACTIVE",
         thumbnailFile: null,
-        thumbnailPreview: null
+        thumbnailPreview: null,
       });
       setIsEditing(null);
       setErrorMessage("");
@@ -175,7 +175,9 @@ function CourseManagement() {
       description: subject.description,
       status: subject.status,
       thumbnailFile: null,
-      thumbnailPreview: "http://localhost:8080/images/content_learning/" + subject.thumbnailUrl || null
+      thumbnailPreview:
+        "http://localhost:8080/images/content_learning/" +
+          subject.thumbnailUrl || null,
     });
     setIsEditing(subject.subjectId);
     setIsAdding(false);
@@ -191,7 +193,7 @@ function CourseManagement() {
       description: "",
       status: "ACTIVE",
       thumbnailFile: null,
-      thumbnailPreview: null
+      thumbnailPreview: null,
     });
   };
 
@@ -279,7 +281,10 @@ function CourseManagement() {
           {errorMessage && (
             <div className="mb-6 p-4 rounded-lg bg-red-50 border border-red-200">
               <div className="flex">
-                <div className="flex-shrink-0" onClick={() => setErrorMessage("")}>
+                <div
+                  className="flex-shrink-0"
+                  onClick={() => setErrorMessage("")}
+                >
                   <X className="h-5 w-5 text-red-400" />
                 </div>
                 <div className="ml-3">
@@ -294,7 +299,10 @@ function CourseManagement() {
             </div>
           )}
 
-          <form onSubmit={isAdding ? handleAddSubmit : handleEditSubmit} className="space-y-6">
+          <form
+            onSubmit={isAdding ? handleAddSubmit : handleEditSubmit}
+            className="space-y-6"
+          >
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Subject Code */}
               <div className="md:col-span-2">
@@ -397,7 +405,13 @@ function CourseManagement() {
                         />
                         <button
                           type="button"
-                          onClick={() => setFormData(prev => ({ ...prev, thumbnailFile: null, thumbnailPreview: null }))}
+                          onClick={() =>
+                            setFormData((prev) => ({
+                              ...prev,
+                              thumbnailFile: null,
+                              thumbnailPreview: null,
+                            }))
+                          }
                           className="absolute -top-2 -right-2 p-1 bg-red-100 rounded-full hover:bg-red-200"
                         >
                           <X className="h-4 w-4 text-red-600" />
@@ -497,8 +511,16 @@ function CourseManagement() {
                   <tr key={subject.subjectId} className="animate-fade-in">
                     <td className="px-6 py-4">
                       <div className="flex items-start">
-                        <div className="h-10 w-10 flex-shrink-0 rounded-md bg-primary-100 flex items-center justify-center">
-                          <Book className="h-5 w-5 text-primary-600" />
+                        <div className="h-10 w-10 flex-shrink-0 rounded-md overflow-hidden">
+                          <img
+                            src={
+                              subject.thumbnailUrl
+                                ? `http://localhost:8080/images/content_learning/${subject.thumbnailUrl}`
+                                : "https://via.placeholder.com/40"
+                            }
+                            alt={subject.subjectName}
+                            className="h-full w-full object-cover"
+                          />
                         </div>
                         <div className="ml-4">
                           <div className="font-medium text-gray-900">
