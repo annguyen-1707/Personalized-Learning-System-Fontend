@@ -50,10 +50,47 @@ export function AuthProvider({ children }) {
       };
       checkLogin();
     }
+    else {
+      const checkLogin = async () => {
+        try {
+          const response = await fetch("http://localhost:8080/admin/check-login", {
+            method: "GET",
+            credentials: "include",
+          });
+
+          if (response.ok) {
+            const data = await response.json();
+            const accessToken = data?.data?.accessToken;
+            if (!accessToken) {
+              console.warn("Không tìm thấy accessToken trong phản hồi", data);
+              return;
+            }
+
+            localStorage.setItem("accessToken", accessToken);
+
+            const userRes = await fetch("http://localhost:8080/admin/user", {
+              headers: { Authorization: `Bearer ${accessToken}` },
+            });
+
+            const userData = await userRes.json();
+            setUser(userData.data);
+
+
+          }
+          else {
+            console.warn("Phản hồi check-login không ok:", response.status);
+          }
+
+        } catch (err) {
+          console.error(err);
+        }
+      };
+      checkLogin();
+    }
   }, []);
 
   useEffect(() => {
-    if (user) {
+    if (user && !isAdmin) {
       const role = user.roleName;
       if (location.pathname === "/") {
         if (role === "PARENT") {
@@ -61,12 +98,13 @@ export function AuthProvider({ children }) {
         } else if (role === "USER") {
           navigate("/");
         }
-        else if (role === null) {
+        else {
           navigate("/login");
-        } else {
-          navigate("/admin");
         }
       }
+    }
+    if (isAdmin) {
+      navigate("/admin");
     }
   }, [user]);
 
