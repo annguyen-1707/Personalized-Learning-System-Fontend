@@ -30,7 +30,7 @@ function StudyReminders() {
     // Gọi API ở đây nếu có (giả sử: await createStudyReminderAPI(newReminder))
     console.log('Creating reminder:', newReminder);
     setShowForm(false);
-    handleCreateStudyReminderFromAPI(newReminder)
+    await handleCreateStudyReminderFromAPI(newReminder)
     setNewReminder({ time: '', note: '', daysOfWeek: [], isActive: 'true' });
     getStudyReminder(); // refresh danh sách
   };
@@ -43,8 +43,9 @@ function StudyReminders() {
         ? prev.daysOfWeek.filter(d => d !== day)
         : [...prev.daysOfWeek, day],
     }));
+    getStudyReminder(); // refresh danh sách
   };
-  const toggleDay = (reminderId, day) => {
+  const toggleDay = async (reminderId, day) => {
     const updatedReminders = reminders.map(reminder => {
       if (reminder.studyReminderId === reminderId) {
         const daysOfWeek = reminder.daysOfWeek.includes(day)
@@ -56,36 +57,37 @@ function StudyReminders() {
     });
 
     setReminders(updatedReminders);
-    getStudyReminder();
     const updated = updatedReminders.find(r => r.studyReminderId === reminderId);
-    handleUpdateStudyReminderFromAPI(reminderId, {
+    await handleUpdateStudyReminderFromAPI(reminderId, {
       time: updated.time,
       note: updated.note,
       daysOfWeek: updated.daysOfWeek,
       isActive: updated.isActive,
     });
+    await getStudyReminder();
+
   };
 
-  const toggleReminder = (reminderId) => {
+  const toggleReminder = async (reminderId) => {
     const updatedReminders = reminders.map(reminder =>
       reminder.studyReminderId === reminderId
         ? { ...reminder, isActive: !reminder.isActive }
         : reminder
     );
     setReminders(updatedReminders);
-
     const updated = updatedReminders.find(r => r.studyReminderId === reminderId);
-    handleUpdateStudyReminderFromAPI(reminderId, {
+    await handleUpdateStudyReminderFromAPI(reminderId, {
       time: updated.time,
       note: updated.note,
       daysOfWeek: updated.daysOfWeek,
       isActive: updated.isActive,
     });
+    getStudyReminder();
   };
 
 
-  const deleteReminder = (reminderId) => {
-    handleDeleteStudyReminderFromAPI(reminderId)
+  const deleteReminder = async (reminderId) => {
+    await handleDeleteStudyReminderFromAPI(reminderId)
     getStudyReminder();
   }
 

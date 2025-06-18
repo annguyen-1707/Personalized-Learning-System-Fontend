@@ -4,22 +4,25 @@ import Header from './Header'
 import Sidebar from './Sidebar'
 import Footer from './Footer'
 import { motion } from 'framer-motion'
+import { useAuth } from '../../context/AuthContext'
+// import useReminderSocket from '../../pages/ProfilePage/components/ReminderSocket'
 
 function Layout({ onNotificationClick }) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
-
+  const { user } = useAuth();
+  // useReminderSocket(user?.userId); // không sao nếu ban đầu là null, vì hook tự kiểm tra
   return (
     <div className="flex h-screen bg-gray-50">
       {/* Sidebar */}
-      <Sidebar 
-        sidebarOpen={sidebarOpen} 
-        setSidebarOpen={setSidebarOpen} 
+      <Sidebar
+        sidebarOpen={sidebarOpen}
+        setSidebarOpen={setSidebarOpen}
       />
 
       {/* Main content */}
       <div className="flex flex-col flex-1 overflow-hidden">
         <Header setSidebarOpen={setSidebarOpen} onNotificationClick={onNotificationClick} />
-        
+
         <main className="flex-1 overflow-y-auto">
           <motion.div
             initial={{ opacity: 0 }}
@@ -31,7 +34,7 @@ function Layout({ onNotificationClick }) {
             <Outlet />
           </motion.div>
         </main>
-        
+
         <Footer />
       </div>
     </div>
