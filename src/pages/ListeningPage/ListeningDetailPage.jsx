@@ -3,13 +3,14 @@ import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { FiHeadphones, FiInfo } from 'react-icons/fi';
 import axios from "axios";
+import ListeningQuiz from "./components/ListeningQuiz";
 
 function ListeningDetailPage() {
   const { contentListeningId } = useParams();
   const [exercise, setExercise] = useState(null);
+  const [questions, setQuestions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [currentTime] = useState(0);
 
   useEffect(() => {
     if (!contentListeningId) {
@@ -17,17 +18,29 @@ function ListeningDetailPage() {
       setLoading(false);
       return;
     }
-    const fetchDetail = async () => {
+    const fetchDetailAndQuestions = async () => {
       try {
+        // Fetch listening detail
         const res = await axios.get(`http://localhost:8080/content_listening/details/${contentListeningId}`);
         setExercise(res.data.data);
+        // Fetch questions for this listening (page=0 for first page)
+        const qRes = await axios.get(`http://localhost:8080/question/content_listening/${contentListeningId}?page=1&size=5`);
+        let questionsArr = [];
+        if (qRes.data?.data?.content && Array.isArray(qRes.data.data.content)) {
+          questionsArr = qRes.data.data.content;
+        } else if (Array.isArray(qRes.data?.data)) {
+          questionsArr = qRes.data.data;
+        } else if (Array.isArray(qRes.data)) {
+          questionsArr = qRes.data;
+        }
+        setQuestions(questionsArr);
       } catch (err) {
-        setError("Cannot load listening detail. Please try again later.");
+        setError("Cannot load listening detail or questions. Please try again later.");
       } finally {
         setLoading(false);
       }
     };
-    fetchDetail();
+    fetchDetailAndQuestions();
   }, [contentListeningId]);
 
   if (loading) return <div className="p-8">Loading...</div>;
@@ -44,17 +57,18 @@ function ListeningDetailPage() {
         <div className="bg-primary-500 text-white p-6">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-2xl font-bold">{exercise.title}</h1>
-              {/* No description field in entity */}
+              <h1 className="text-2xl font-bold">{exercise?.title || "No title"}</h1>
             </div>
             <div className="text-lg font-medium">
-              {exercise.category}
+              {exercise?.category || ""}
             </div>
           </div>
         </div>
         <div className="p-6">
-          {exercise.audioFile && (
+          {exercise?.audioFile ? (
             <audio controls src={exercise.audioFile} style={{ width: '100%' }} />
+          ) : (
+            <div className="text-gray-400">No audio available</div>
           )}
         </div>
       </motion.div>
@@ -65,8 +79,8 @@ function ListeningDetailPage() {
             <h2 className="text-lg font-medium text-gray-900 mb-4">Transcript</h2>
             <div className="space-y-4">
               <div className="p-3 rounded-lg bg-gray-50">
-                <div className="text-primary-600">{exercise.scriptJp}</div>
-                <div className="text-sm text-gray-600 mt-1">{exercise.scriptVn}</div>
+                <div className="text-primary-600">{exercise?.scriptJp || "No Japanese script"}</div>
+                <div className="text-sm text-gray-600 mt-1">{exercise?.scriptVn || "No Vietnamese script"}</div>
               </div>
             </div>
           </div>
@@ -86,7 +100,11 @@ function ListeningDetailPage() {
         </div>
         {/* Questions */}
         <div className="lg:col-span-2">
-          {/* You need to fetch and map questions if available in your backend */}
+          {questions.length > 0 ? (
+            <ListeningQuiz questions={questions} />
+          ) : (
+            <div className="bg-white rounded-lg shadow-md p-6 text-gray-400">No questions available</div>
+          )}
         </div>
       </div>
     </div>
