@@ -1,5 +1,5 @@
 import axios from "./customixe-axios";
-import uploadFile from './UploadFileService';
+import {uploadFile} from './UploadFileService';
 import { toast } from "react-toastify";
 // const [errorMessage, setErrorMessage] = useState('');
 

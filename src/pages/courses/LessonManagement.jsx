@@ -52,7 +52,7 @@ function LessonManagement() {
     subjectId: subjectId,
     videoUrl: null,
     videoPreview: null,
-    videoDuration: null
+    videoDuration: null,
   });
   const [statusOptions, setStatusOptions] = useState([]);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(null);
@@ -63,6 +63,12 @@ function LessonManagement() {
       setStatusOptions(res);
     }
   };
+
+  function extractYouTubeVideoId(url) {
+    const regExp = /^.*(youtu.be\/|v\/|embed\/|watch\?v=)([^#&?]*).*/;
+    const match = url.match(regExp);
+    return match && match[2].length === 11 ? match[2] : null;
+  }
 
   const filteredLessons = subjectLessons.filter((lesson) => {
     // Search filter (case insensitive)
@@ -118,21 +124,21 @@ function LessonManagement() {
 
   const handleVideoChange = (e) => {
     const file = e.target.files[0];
-    if (file && file.type.startsWith('video/')) {
-      setFormData(prev => ({
+    if (file && file.type.startsWith("video/")) {
+      setFormData((prev) => ({
         ...prev,
         videoUrl: file,
-        videoPreview: URL.createObjectURL(file)
+        videoPreview: URL.createObjectURL(file),
       }));
 
       // Get video duration
-      const video = document.createElement('video');
-      video.preload = 'metadata';
+      const video = document.createElement("video");
+      video.preload = "metadata";
       video.onloadedmetadata = () => {
         window.URL.revokeObjectURL(video.src);
-        setFormData(prev => ({
+        setFormData((prev) => ({
           ...prev,
-          videoDuration: Math.round(video.duration)
+          videoDuration: Math.round(video.duration),
         }));
       };
       video.src = URL.createObjectURL(file);
@@ -142,17 +148,23 @@ function LessonManagement() {
   const formatDuration = (seconds) => {
     const minutes = Math.floor(seconds / 60);
     const remainingSeconds = seconds % 60;
-    return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+    return `${minutes}:${remainingSeconds.toString().padStart(2, "0")}`;
   };
 
   const handleAddSubmit = async (e) => {
     e.preventDefault();
+    const toastId = toast.loading(
+      "Waiting for uploading video into YouTube..."
+    );
     try {
       const newLesson = await addLesson(formData);
       if (newLesson) {
         setErrorMessage("");
-        const message = `New lesson "${formData.name}" was created successfully!`;
-        toast.success(message);
+        toast.dismiss(toastId);
+
+        setTimeout(() => {
+          toast.success(`Lesson "${formData.name}" created successfully!`);
+        }, 200);
         addLog(
           "Lesson Created",
           `New lesson "${formData.name}" was created for subject "${subject.name}"`
@@ -165,25 +177,34 @@ function LessonManagement() {
           subjectId: subjectId,
           videoUrl: null,
           videoPreview: null,
-          videoDuration: null
+          videoDuration: null,
         });
         setIsAdding(false);
       }
     } catch (error) {
       console.error("Failed to add lesson:", error);
       setErrorMessage(error.message || "Failed to add lesson.");
+    } finally {
+      setLoading(false); // Kết thúc loading
     }
   };
 
   const handleEditSubmit = async (e) => {
     e.preventDefault();
+    const toastId = toast.loading(
+      "Waiting for uploading video into YouTube..."
+    );
+
     try {
       const updatedLesson = await updateLesson(isEditing, formData);
       if (updatedLesson.status === "error") {
         setErrorMessage(updatedLesson.message);
         return;
       }
-      toast.success(`Lesson "${formData.name}" updated successfully!`);
+      toast.dismiss(toastId);
+      setTimeout(() => {
+        toast.success(`Lesson "${formData.name}" updated successfully!`);
+      }, 200);
       setSubjectLessons((prevLessons) =>
         prevLessons.map((lesson) =>
           lesson.lessonId === isEditing ? { ...lesson, ...formData } : lesson
@@ -196,7 +217,7 @@ function LessonManagement() {
         subjectId: subjectId,
         videoUrl: null,
         videoPreview: null,
-        videoDuration: null
+        videoDuration: null,
       });
       setErrorMessage("");
       setIsEditing(null);
@@ -228,7 +249,7 @@ function LessonManagement() {
       subjectId: lesson.subjectId,
       videoUrl: null,
       videoPreview: lesson.videoUrl || null,
-      videoDuration: lesson.duration || null
+      videoDuration: lesson.duration || null,
     });
     setIsEditing(lesson.lessonId);
     setIsAdding(false);
@@ -245,7 +266,7 @@ function LessonManagement() {
       subjectId: subjectId,
       videoUrl: null,
       videoPreview: null,
-      videoDuration: null
+      videoDuration: null,
     });
   };
 
@@ -381,7 +402,10 @@ function LessonManagement() {
             </div>
           )}
 
-          <form onSubmit={isAdding ? handleAddSubmit : handleEditSubmit} className="space-y-6">
+          <form
+            onSubmit={isAdding ? handleAddSubmit : handleEditSubmit}
+            className="space-y-6"
+          >
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Lesson Name */}
               <div className="md:col-span-2">
@@ -460,7 +484,14 @@ function LessonManagement() {
                         )}
                         <button
                           type="button"
-                          onClick={() => setFormData(prev => ({ ...prev, videoUrl: null, videoPreview: null, videoDuration: null }))}
+                          onClick={() =>
+                            setFormData((prev) => ({
+                              ...prev,
+                              videoUrl: null,
+                              videoPreview: null,
+                              videoDuration: null,
+                            }))
+                          }
                           className="absolute -top-2 -right-2 p-1 bg-red-100 rounded-full hover:bg-red-200"
                         >
                           <X className="h-4 w-4 text-red-600" />
@@ -550,92 +581,123 @@ function LessonManagement() {
         </div>
         <div className="divide-y divide-gray-200">
           {filteredLessons.length > 0 ? (
-            filteredLessons.map((lesson, index) => (
-              <div
-                key={lesson.lessonId}
-                className="p-4 hover:bg-gray-50 animate-fade-in"
-              >
-                <div className="flex justify-between items-start">
-                  <div className="flex items-start">
-                    <div className="flex-shrink-0 mr-3">
-                      <div className="h-10 w-10 rounded-md bg-primary-100 flex items-center justify-center">
-                        <FileText className="h-5 w-5 text-primary-600" />
-                      </div>
-                    </div>
-                    <div>
-                      <div className="flex items-center">
-                        <span className="text-sm text-gray-500 mr-2">
-                          Lesson {index + 1}:
-                        </span>
-                        <h3 className="text-lg font-medium text-gray-900">
-                          {lesson.name}
-                        </h3>
-                      </div>
-                      <p className="text-sm text-gray-500 mt-1">
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200 text-sm">
+                <thead className="bg-gray-100">
+                  <tr>
+                    <th className="px-4 py-2 text-left font-medium text-gray-700">
+                      #
+                    </th>
+                    <th className="px-4 py-2 text-left font-medium text-gray-700">
+                      Lesson Name
+                    </th>
+                    <th className="px-4 py-2 text-left font-medium text-gray-700">
+                      Description
+                    </th>
+                    <th className="px-4 py-2 text-left font-medium text-gray-700">
+                      Video
+                    </th>
+                    <th className="px-4 py-2 text-left font-medium text-gray-700">
+                      Status
+                    </th>
+                    <th className="px-4 py-2 text-left font-medium text-gray-700">
+                      Actions
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-200">
+                  {filteredLessons.map((lesson, index) => (
+                    <tr key={lesson.lessonId} className="hover:bg-gray-50">
+                      <td className="px-4 py-2 text-gray-600">{index + 1}</td>
+                      <td className="px-4 py-2 font-medium text-gray-900">
+                        {lesson.name}
+                      </td>
+                      <td className="px-4 py-2 text-gray-600">
                         {lesson.description}
-                      </p>
-                      <div className="mt-2 flex items-center space-x-4">
-                        <GiOpenBook className="h-4 w-4 text-gray-400" />
+                      </td>
+                      <td className="px-4 py-2 text-blue-600">
+                        {lesson.videoUrl ? (
+                          <a
+                            href={lesson.videoUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="hover:underline text-sm"
+                          >
+                            {lesson.videoUrl}
+                          </a>
+                        ) : (
+                          <span className="text-gray-400">No video</span>
+                        )}
+                      </td>
+                      <td className="px-4 py-2">
                         <span
                           className={`badge ${
                             lesson.status === "PUBLIC"
-                              ? "bg-success-50 text-success-700"
-                              : "bg-warning-50 text-warning-700"
+                              ? "bg-green-100 text-green-800"
+                              : "bg-yellow-100 text-yellow-800"
                           }`}
                         >
                           {lesson.status === "PUBLIC" ? "Published" : "Draft"}
                         </span>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="flex items-center">
-                    <Link
-                      to={`/admin/courses/${subjectId}/lessons/${lesson.lessonId}/content`}
-                      className="text-secondary-600 hover:text-secondary-800 mr-3"
-                      title="Manage Content"
-                    >
-                      <ExternalLink size={16} />
-                    </Link>
-                    {showDeleteConfirm === lesson.lessonId ? (
-                      <div className="flex items-center space-x-2">
-                        <span className="text-xs text-gray-500">Confirm?</span>
-                        <button
-                          onClick={() => handleDelete(lesson.lessonId)}
-                          className="text-error-500 hover:text-error-700"
-                        >
-                          <Check size={16} />
-                        </button>
-                        <button
-                          onClick={() => setShowDeleteConfirm(null)}
-                          className="text-gray-500 hover:text-gray-700"
-                        >
-                          <X size={16} />
-                        </button>
-                      </div>
-                    ) : (
-                      <>
-                        <button
-                          onClick={() => startEdit(lesson)}
-                          className="text-primary-600 hover:text-primary-800 mr-2"
-                          disabled={isAdding || isEditing}
-                          title="Edit Lesson"
-                        >
-                          <Edit size={16} />
-                        </button>
-                        <button
-                          onClick={() => setShowDeleteConfirm(lesson.lessonId)}
-                          className="text-error-500 hover:text-error-700"
-                          disabled={isAdding || isEditing}
-                          title="Delete Lesson"
-                        >
-                          <Trash2 size={16} />
-                        </button>
-                      </>
-                    )}
-                  </div>
-                </div>
-              </div>
-            ))
+                      </td>
+                      <td className="px-4 py-2 whitespace-nowrap">
+                        <div className="flex items-center space-x-2">
+                          {/* Nút quản lý nội dung */}
+                          <Link
+                            to={`/admin/courses/${subjectId}/lessons/${lesson.lessonId}/content`}
+                            title="Manage Content"
+                            className="text-blue-600 hover:text-blue-800"
+                          >
+                            <ExternalLink size={16} />
+                          </Link>
+
+                          {/* Nếu đang confirm xóa */}
+                          {showDeleteConfirm === lesson.lessonId ? (
+                            <>
+                              <button
+                                onClick={() => handleDelete(lesson.lessonId)}
+                                className="text-red-600 hover:text-red-800"
+                                title="Confirm Delete"
+                              >
+                                <Check size={16} />
+                              </button>
+                              <button
+                                onClick={() => setShowDeleteConfirm(null)}
+                                className="text-gray-500 hover:text-gray-700"
+                                title="Cancel"
+                              >
+                                <X size={16} />
+                              </button>
+                            </>
+                          ) : (
+                            <>
+                              <button
+                                onClick={() => startEdit(lesson)}
+                                className="text-indigo-600 hover:text-indigo-800"
+                                disabled={isAdding || isEditing}
+                                title="Edit Lesson"
+                              >
+                                <Edit size={16} />
+                              </button>
+                              <button
+                                onClick={() =>
+                                  setShowDeleteConfirm(lesson.lessonId)
+                                }
+                                className="text-red-500 hover:text-red-700"
+                                disabled={isAdding || isEditing}
+                                title="Delete Lesson"
+                              >
+                                <Trash2 size={16} />
+                              </button>
+                            </>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           ) : (
             <div className="p-6 text-center text-gray-500">
               <FileText className="h-10 w-10 mx-auto mb-2 text-gray-400" />
