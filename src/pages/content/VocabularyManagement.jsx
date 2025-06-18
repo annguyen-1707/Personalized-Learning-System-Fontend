@@ -9,7 +9,7 @@ function VocabularyManagement() {
   const { contentReadingId } = useParams();
   const [selectedVocabulary, setSelectedVocabulary] = useState([]);
   const [search, setSearch] = useState('');
-  const [size, setSize] = useState(5); // 1trang bn phan tu
+  const [size, setSize] = useState(6); // 1trang bn phan tu
   const [pageCount, setPageCount] = useState(0); // so luong trang page
   const [totalElements, setTotalElements] = useState(); // tong phan tu
   const [currentPage, setCurrentPage] = useState(1); // trang page hien tai
@@ -129,56 +129,38 @@ function VocabularyManagement() {
       <div className="card p-6 mb-6">
         <h2 className="text-lg font-medium text-gray-900 mb-4">Selected Vocabulary</h2>
         {selectedVocabulary.length > 0 ? (
-          <div className="divide-y divide-gray-200">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-4">
             {selectedVocabulary.map((vocab) => (
-              <div key={vocab.vocabularyId} className="py-3 flex items-center justify-between">
-                <div>
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-lg font-semibold text-gray-900">
-                      {vocab.kanji}
-                    </h3>
-                    <span
-                      className={`ml-2 badge ${jlptLevelClassMap[vocab.jlptLevel] ||
-                        "bg-gray-100 text-gray-500"
-                        }`}
-                    >
-                      {vocab.jlptLevel}
-                    </span>
-                  </div>
-
-                  <p className="text-sm text-gray-500 mt-1">
-                    <strong>Kana:</strong> {vocab.kana} |{" "}
-                    <strong>Romaji:</strong> {vocab.romaji}
-                  </p>
-
-                  <p className="text-sm text-gray-700 mt-1">
-                    <strong>Meaning:</strong> {vocab.meaning}
-                  </p>
-
-                  {vocab.description && (
-                    <p className="text-sm text-gray-600 mt-1">
-                      <strong>Description:</strong> {vocab.description}
-                    </p>
-                  )}
-
-                  {vocab.example && (
-                    <p className="text-sm text-gray-700 italic mt-2">
-                      <strong>Example:</strong> “{vocab.example}”
-                    </p>
-                  )}
-
-                  <div className="text-xs text-gray-400 mt-2 flex justify-between vocabs-center">
-                    <span>
-                      <strong>Part of speech:</strong> {vocab.partOfSpeech}
-                    </span>
-                  </div>
-                </div>
+              <div
+                key={vocab.vocabularyId}
+                className="bg-white border rounded p-3 shadow-sm relative"
+              >
                 <button
                   onClick={() => handleRemoveVocabularyFromContentReading(vocab.vocabularyId)}
-                  className="text-error-500 hover:text-error-700"
+                  className="absolute top-1 right-1 text-error-500 hover:text-error-700"
                 >
-                  <Trash2 size={16} />
+                  <Trash2 size={14} />
                 </button>
+
+                <h3 className="text-base font-semibold text-gray-900">{vocab.kanji}</h3>
+                <p className="text-xs text-gray-500">
+                  <strong>Kana:</strong> {vocab.kana}
+                </p>
+                <p className="text-xs text-gray-500">
+                  <strong>Romaji:</strong> {vocab.romaji}
+                </p>
+                <p className="text-xs text-gray-700">
+                  <strong>Meaning:</strong> {vocab.meaning}
+                </p>
+
+                {vocab.jlptLevel && (
+                  <span
+                    className={`badge mt-1 text-xs ${jlptLevelClassMap[vocab.jlptLevel] || "bg-gray-100 text-gray-500"
+                      }`}
+                  >
+                    {vocab.jlptLevel}
+                  </span>
+                )}
               </div>
             ))}
           </div>
@@ -186,6 +168,7 @@ function VocabularyManagement() {
           <p className="text-gray-500 text-center py-4">No vocabulary items selected</p>
         )}
       </div>
+
 
       {/* Search and Filters */}
       <div className="card p-4 mb-6">
@@ -197,10 +180,10 @@ function VocabularyManagement() {
               onChange={(e) => handleChangeSize(e.target.value)
               }
             >
-              <option value="5">5</option>
-              <option value="10">10</option>
-              <option value="20">20</option>
-              <option value="50">50</option>
+              <option value="6">6</option>
+              <option value="12">12</option>
+              <option value="24">24</option>
+              <option value="60">60</option>
               <option value={totalElements} >All </option>
             </select>
           </div>
@@ -255,67 +238,58 @@ function VocabularyManagement() {
         <div className="p-4 border-b border-gray-200">
           <h2 className="text-lg font-medium text-gray-900">Available Vocabulary</h2>
         </div>
-        <div className="divide-y divide-gray-200">
-          {filteredVocabulary.map((vocab) => (
-            <div key={vocab.vocabularyId} className="p-4 hover:bg-gray-50">
-              <div className="flex items-center justify-between">
-                <div>
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-lg font-semibold text-gray-900">
-                      {vocab.kanji}
-                    </h3>
-                    <span
-                      className={`ml-2 badge ${jlptLevelClassMap[vocab.jlptLevel] ||
-                        "bg-gray-100 text-gray-500"
-                        }`}
-                    >
-                      {vocab.jlptLevel}
-                    </span>
-                  </div>
 
-                  <p className="text-sm text-gray-500 mt-1">
-                    <strong>Kana:</strong> {vocab.kana} |{" "}
+        {filteredVocabulary.length > 0 ? (
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-4 p-4">
+            {filteredVocabulary.map((vocab) => {
+              const isSelected = selectedVocabulary.some(
+                (v) => v.vocabularyId === vocab.vocabularyId
+              );
+
+              return (
+                <div
+                  key={vocab.vocabularyId}
+                  className="bg-white border rounded p-3 shadow-sm relative"
+                >
+                  <button
+                    onClick={() => handleAddVocabularyInContentReading(vocab.vocabularyId)}
+                    disabled={isSelected}
+                    className={`absolute top-1 right-1 text-xs px-2 py-0.5 rounded ${isSelected
+                      ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                      : "bg-blue-100 text-blue-600 hover:bg-blue-200"
+                      }`}
+                  >
+                    <Plus size={12} className="inline-block mr-1" />
+                    {isSelected ? "Added" : "Add"}
+                  </button>
+
+                  <h3 className="text-base font-semibold text-gray-900">{vocab.kanji}</h3>
+                  <p className="text-xs text-gray-500">
+                    <strong>Kana:</strong> {vocab.kana}
+                  </p>
+                  <p className="text-xs text-gray-500">
                     <strong>Romaji:</strong> {vocab.romaji}
                   </p>
-
-                  <p className="text-sm text-gray-700 mt-1">
+                  <p className="text-xs text-gray-700">
                     <strong>Meaning:</strong> {vocab.meaning}
                   </p>
 
-                  {vocab.description && (
-                    <p className="text-sm text-gray-600 mt-1">
-                      <strong>Description:</strong> {vocab.description}
-                    </p>
-                  )}
-
-                  {vocab.example && (
-                    <p className="text-sm text-gray-700 italic mt-2">
-                      <strong>Example:</strong> “{vocab.example}”
-                    </p>
-                  )}
-
-                  <div className="text-xs text-gray-400 mt-2 flex justify-between vocabs-center">
-                    <span>
-                      <strong>Part of speech:</strong> {vocab.partOfSpeech}
+                  {vocab.jlptLevel && (
+                    <span
+                      className={`badge mt-1 text-xs ${jlptLevelClassMap[vocab.jlptLevel] || "bg-gray-100 text-gray-500"}`}
+                    >
+                      {vocab.jlptLevel}
                     </span>
-                  </div>
+                  )}
                 </div>
-                <button
-                  onClick={() => handleAddVocabularyInContentReading(vocab.vocabularyId)}
-                  disabled={selectedVocabulary.some(v => v.vocabularyId === vocab.vocabularyId)}
-                  className={`btn-outline py-1 px-2 ${selectedVocabulary.some(v => v.vocabularyId === vocab.vocabularyId)
-                    ? 'opacity-50 cursor-not-allowed'
-                    : ''
-                    }`}
-                >
-                  <Plus size={16} className="mr-1" />
-                  Add
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
+              );
+            })}
+          </div>
+        ) : (
+          <p className="text-gray-500 text-center py-4">No available vocabulary</p>
+        )}
       </div>
+
 
       {/* Phan trang */}
       <div className='mt-4'>

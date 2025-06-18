@@ -47,13 +47,13 @@ function LearningPage() {
 
   // Fetch courses when the component mounts
   useEffect(() => {
-    if(!user) {
+    if(!user || user === undefined)  {
       fetchAllCourses();
     } else {
       fetchCourses();
       fetchAllCourses();
     }
-  }, [currentPage]);
+  }, [user, currentPage]);
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

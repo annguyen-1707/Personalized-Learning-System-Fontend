@@ -46,6 +46,7 @@ import CourseContentPage from "./pages/LearningPage/components/CourseContent.jsx
 import LessonPage from "./pages/LearningPage/LessonPage.jsx";
 import DoExercise from "./pages/LearningPage/components/DoExercise.jsx";
 import NewsPage from './pages/NewsPage/NewsPage';
+import AdminRoute from "./context/AdminRoute.jsx";
 
 function App() {
   const [notificationOpen, setNotificationOpen] = useState(false);
@@ -133,11 +134,14 @@ function App() {
               element={<LessonPage />}
             />
           </Route>
-
           <Route path="/admin" element={<MainLayout />}>
             <Route
               path="content_speaking"
-              element={<ContentSpeakingManagement />}
+              element={
+                <AdminRoute allowedRoles={["STAFF", "CONTENT_MANAGER"]}>
+                  <ContentSpeakingManagement />
+                </AdminRoute>
+              }
             />
             <Route
               path="content_speaking/:contentSpeakingId/dialogue"
@@ -210,7 +214,7 @@ function App() {
           theme="light"
         />
       </DataProvider>
-    </AuthProvider>
+    </AuthProvider >
   );
 }
 

@@ -14,7 +14,7 @@ function QuestionManagement() {
   const [search, setSearch] = useState('');
   const [pageCount, setPageCount] = useState(0); // so luong trang page
   const [currentPage, setCurrentPage] = useState(1); // trang page hien tai
-  const [size, setSize] = useState(5); // 1trang bn phan tu
+  const [size, setSize] = useState(6); // 1trang bn phan tu
   const [totalElements, setTotalElements] = useState(); // tong phan tu
   const [errorMessage, setErrorMessage] = useState("");
   const [formData, setFormData] = useState({
@@ -148,10 +148,10 @@ function QuestionManagement() {
               onChange={(e) => handleChangeSize(e.target.value)
               }
             >
-              <option value="5">5</option>
-              <option value="10">10</option>
-              <option value="20">20</option>
-              <option value="50">50</option>
+              <option value="6">6</option>
+              <option value="12">12</option>
+              <option value="24">24</option>
+              <option value="60">60</option>
               <option value={totalElements} >All </option>
             </select>
           </div>
@@ -292,72 +292,72 @@ function QuestionManagement() {
 
       {/* Questions List */}
       <div className="card">
-        <div className="divide-y divide-gray-200">
-          {filteredQuestions?.length > 0 ? (
-            filteredQuestions.map((question) => (
-              <div key={question.exerciseQuestionId} className="p-6 hover:bg-gray-50">
-                <div className="flex justify-between items-start">
-                  <div className="flex-1">
-                    <p className="font-medium text-gray-900">{question.questionText}</p>
-                    <ul className="mt-2 space-y-1">
-                      {question.answerQuestions.map((answer, index) => (
-                        <li
-                          key={index}
-                          className={`text-sm ${answer.correct
-                            ? 'text-success-600 font-medium'
-                            : 'text-gray-600'
-                            }`}
-                        >
-                          {answer.answerText}
-                          {answer.correct && ' ✓'}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
+        {filteredQuestions?.length > 0 ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {filteredQuestions.map((question) => (
+              <div key={question.exerciseQuestionId} className="p-6 border rounded-lg shadow hover:bg-gray-50 flex flex-col justify-between">
+                <div className="flex-1">
+                  <p className="font-medium text-gray-900 mb-2">{question.questionText}</p>
+                  <ul className="space-y-1">
+                    {question.answerQuestions.map((answer, index) => (
+                      <li
+                        key={index}
+                        className={`text-sm ${answer.correct
+                          ? 'text-success-600 font-medium'
+                          : 'text-gray-600'
+                          }`}
+                      >
+                        {answer.answerText}
+                        {answer.correct && ' ✓'}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
 
-                  <div className="ml-4 flex items-center">
-                    {showDeleteConfirm === question.exerciseQuestionId ? (
-                      <div className="flex items-center space-x-2">
-                        <span className="text-xs text-gray-500">Delete?</span>
-                        <button
-                          onClick={() => handleDelete(question.exerciseQuestionId)}
-                          className="text-error-500 hover:text-error-700"
-                        >
-                          <Check size={16} />
-                        </button>
-                        <button
-                          onClick={() => setShowDeleteConfirm(null)}
-                          className="text-gray-500 hover:text-gray-700"
-                        >
-                          <X size={16} />
-                        </button>
-                      </div>
-                    ) : (
-                      <>
-                        <button
-                          onClick={() => startUpdate(question)}
-                          className="text-primary-600 hover:text-primary-800 mr-2"
-                        >
-                          <Edit size={16} />
-                        </button>
-                        <button
-                          onClick={() => setShowDeleteConfirm(question.exerciseQuestionId)}
-                          className="text-error-500 hover:text-error-700"
-                        >
-                          <Trash2 size={16} />
-                        </button>
-                      </>
-                    )}
-                  </div>
+                <div className="mt-4 flex justify-end items-center">
+                  {showDeleteConfirm === question.exerciseQuestionId ? (
+                    <div className="flex items-center space-x-2">
+                      <span className="text-xs text-gray-500">Delete?</span>
+                      <button
+                        onClick={() => handleDelete(question.exerciseQuestionId)}
+                        className="text-error-500 hover:text-error-700"
+                      >
+                        <Check size={16} />
+                      </button>
+                      <button
+                        onClick={() => setShowDeleteConfirm(null)}
+                        className="text-gray-500 hover:text-gray-700"
+                      >
+                        <X size={16} />
+                      </button>
+                    </div>
+                  ) : (
+                    <>
+                      <button
+                        onClick={() => startUpdate(question)}
+                        className="text-primary-600 hover:text-primary-800 mr-2"
+                      >
+                        <Edit size={16} />
+                      </button>
+                      <button
+                        onClick={() => setShowDeleteConfirm(question.exerciseQuestionId)}
+                        className="text-error-500 hover:text-error-700"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </>
+                  )}
                 </div>
               </div>
-            ))) : (
-            <div className="p-6 text-center text-gray-500">
-              <p>No question found. Please add a new question.</p>
-            </div>
-          )}
-        </div>
+            ))}
+          </div>
+        ) : (
+          <div className="p-6 text-center text-gray-500">
+            <p>No question found. Please add a new question.</p>
+          </div>
+        )}
       </div>
+
       {/* Phan trang */}
       <div className="mt-4">
         <ReactPaginate

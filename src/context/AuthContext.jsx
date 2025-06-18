@@ -10,7 +10,9 @@ export function useAuth() {
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [isAdmin, setIsAdmin] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(() => {
+    return localStorage.getItem("isAdmin") === "true"; // hoặc false nếu không có
+  });
   const navigate = useNavigate(); // ✅ thêm dòng này
 
   useEffect(() => {
@@ -21,7 +23,6 @@ export function AuthProvider({ children }) {
             method: "GET",
             credentials: "include",
           });
-
           if (response.ok) {
             const data = await response.json();
             const accessToken = data?.data?.accessToken;
@@ -50,10 +51,48 @@ export function AuthProvider({ children }) {
       };
       checkLogin();
     }
+    else {
+      const checkLogin = async () => {
+        try {
+          const response = await fetch("http://localhost:8080/admin/check-login", {
+            method: "GET",
+            credentials: "include",
+          });
+          if (response.ok) {
+            const data = await response.json();
+            const accessToken = data?.data?.accessToken;
+            if (!accessToken) {
+              console.warn("Không tìm thấy accessToken trong phản hồi", data);
+              return;
+            }
+
+            localStorage.setItem("accessToken", accessToken);
+
+            const userRes = await fetch("http://localhost:8080/admin/user", {
+              headers: { Authorization: `Bearer ${accessToken}` },
+            });
+
+            const userData = await userRes.json();
+            setUser(userData.data);
+
+            console.log("CIADIMEMAY", userData.data.username)
+
+
+          }
+          else {
+            console.warn("Phản hồi check-login không ok:", response.status);
+          }
+
+        } catch (err) {
+          console.error(err);
+        }
+      };
+      checkLogin();
+    }
   }, []);
 
   useEffect(() => {
-    if (user) {
+    if (user && !isAdmin) {
       const role = user.roleName;
       if (location.pathname === "/") {
         if (role === "PARENT") {
@@ -61,25 +100,27 @@ export function AuthProvider({ children }) {
         } else if (role === "USER") {
           navigate("/");
         }
-        else if (role === null) {
+        else {
           navigate("/login");
-        } else {
-          navigate("/admin");
         }
       }
+    }
+    if (isAdmin) {
+      navigate("/admin");
     }
   }, [user]);
 
   //login
   const login = async (email, password, isAdminLogin) => {
-    setIsAdmin(isAdminLogin)
     setLoading(true);
     let api = 'http://localhost:8080/auth/login'
     let apiUser = 'http://localhost:8080/auth/user'
+    localStorage.setItem("isAdmin", "false");
     try {
       if (isAdminLogin) {
         api = 'http://localhost:8080/admin/login'
         apiUser = 'http://localhost:8080/admin/user'
+        localStorage.setItem("isAdmin", "true");
       }
       const res = await fetch(api, {
         method: 'Post',
