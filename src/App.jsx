@@ -70,7 +70,7 @@ function App() {
               element={<ChangePasswordPage />}
             />
             <Route path="listening" element={<ListeningPage />} />
-            <Route path="listening/:id" element={<ListeningDetailPage />} />
+            <Route path="/listening/detail/:contentListeningId" element={<ListeningDetailPage />} />
             <Route path="learning" element={<LearningPage />} />
             {/* Thêm các route con khác nếu cần */}
           </Route>

@@ -24,7 +24,12 @@ export function AuthProvider({ children }) {
 
           if (response.ok) {
             const data = await response.json();
-            const accessToken = data.data.accessToken;
+            const accessToken = data?.data?.accessToken;
+            if (!accessToken) {
+              console.warn("Không tìm thấy accessToken trong phản hồi", data);
+              return;
+            }
+
             localStorage.setItem("accessToken", accessToken);
 
             const userRes = await fetch("http://localhost:8080/auth/user", {
@@ -33,6 +38,10 @@ export function AuthProvider({ children }) {
 
             const userData = await userRes.json();
             setUser(userData.data);
+          }
+
+          else {
+            console.warn("Phản hồi check-login không ok:", response.status);
           }
 
         } catch (err) {
@@ -51,6 +60,9 @@ export function AuthProvider({ children }) {
           navigate("/parentpage");
         } else if (role === "USER") {
           navigate("/");
+        }
+        else if (role === null) {
+          navigate("/login");
         } else {
           navigate("/admin");
         }
@@ -97,7 +109,8 @@ export function AuthProvider({ children }) {
         navigate("/parentpage");
       } else if (role === "USER") {
         navigate("/");
-      } else {
+      }
+      else {
         navigate("/admin");
       }
 
@@ -145,6 +158,7 @@ export function AuthProvider({ children }) {
       // Optional: update user state if backend returns updated info
       const result = await response.json();
       const updatedUser = result.data;
+      navigate("/login");
       setUser(updatedUser);
     } catch (error) {
       console.error('Profile update failed:', error);
