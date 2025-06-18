@@ -32,4 +32,4 @@ const uploadVideoToYouTube = async (videoFile, lessonName) => {
     }
 };
 
-export default { uploadFile, uploadVideoToYouTube };
+export { uploadFile, uploadVideoToYouTube };

@@ -77,7 +77,7 @@ function ViewChildren() {
                             <h2 className="text-2xl font-bold text-gray-600 mb-1">{studentInfo?.fullName}</h2>
                             <span
                                 className="inline-block px-3 py-1 rounded-full text-white text-xs font-medium shadow-sm mb-3"
-                                style={{ backgroundColor: statusColors[studentInfo?.status] || "gray" }}
+                                style={{ backgroundColor: statusColors[studentInfo?.status] || "green" }}
                             >
                                 {studentInfo?.status}
                             </span>
@@ -86,7 +86,7 @@ function ViewChildren() {
                                 onClick={() => handleUpdateAccount(studentInfo?.userId)}
                                 className="mt-2 inline-block bg-warning-500 hover:bg-blue-600 text-white font-medium py-1.5 px-4 rounded-lg shadow transition duration-200"
                             >
-                                Update Account
+                                Upgrade Account
                             </button>
                         </div>
                     </div>

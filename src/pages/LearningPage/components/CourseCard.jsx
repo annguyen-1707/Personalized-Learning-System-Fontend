@@ -2,11 +2,12 @@ import { FiBook } from "react-icons/fi";
 import { MdPeopleAlt } from "react-icons/md";
 import { useState } from "react";
 import LearningPaggService from "../../../services/LearningPaggService";
+import { useAuth } from "../../../context/AuthContext";
 
 function CourseCard({ subject, selected, progressStatus }) {
   const [showEnrollDialog, setShowEnrollDialog] = useState(false);
   const { enrollInCourse } = LearningPaggService;
-  const { user } = JSON.parse(localStorage.getItem("user")) || {};
+  const { user } = useAuth();
   const isUser = user && user.roleName === "USER";
 
   const handleStartLearning = async (e) => {
@@ -69,11 +70,10 @@ function CourseCard({ subject, selected, progressStatus }) {
             <>
               <span className="mx-2">•</span>
               <span
-                className={`text-sm font-medium ${
-                  progressStatus === "IN_PROGRESS"
-                    ? "text-yellow-500"
-                    : "text-green-500"
-                }`}
+                className={`text-sm font-medium ${progressStatus === "IN_PROGRESS"
+                  ? "text-yellow-500"
+                  : "text-green-500"
+                  }`}
               >
                 {progressStatus === "IN_PROGRESS"
                   ? "In Progress..."
@@ -91,8 +91,8 @@ function CourseCard({ subject, selected, progressStatus }) {
             {selected === "all"
               ? "Start Learning"
               : progressStatus === "IN_PROGRESS"
-              ? "Resume Learning"
-              : "Review"}
+                ? "Resume Learning"
+                : "Review"}
           </button>
         </div>
       </div>

@@ -1,12 +1,12 @@
 import axios from "./customixe-axios";
-import uploadFile from './UploadFileService';
+import { uploadFile } from './UploadFileService';
 import { toast } from "react-toastify";
 const fetchAllContentReading = () => {
     return axios.get(`/api/content_reading`)
 }
 
 const fetchAllContentCategoryReading = () => {
-    return axios.get(`/api/content_category/reading`)
+    return axios.get(`/api/content/category/reading`)
 }
 
 const handleCreateContent = async (data) => {
@@ -32,7 +32,9 @@ const handleCreateContent = async (data) => {
             scriptJp: data.scriptJp,
             scriptVn: data.scriptVn,
             audioFile: audio,
-            timeNew: data.timeNew
+            timeNew: data.timeNew,
+            status: data.status,
+            jlptLevel: data.jlptLevel
         };
         console.log("data before post", formData)
         const response = await axios.post(`/api/content_reading`, formData);

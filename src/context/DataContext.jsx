@@ -1,4 +1,4 @@
-import { createContext, useContext, useState} from "react";
+import { createContext, useContext, useState } from "react";
 import {
   mockAdmins,
   mockUsers,
@@ -6,7 +6,7 @@ import {
   mockExercises,
   mockResources,
 } from "../data/mockData";
-import  uploadFile from "../services/UploadFileService";
+import { uploadFile } from "../services/UploadFileService";
 const DataContext = createContext();
 
 export function useData() {
@@ -46,9 +46,9 @@ export function DataProvider({ children }) {
     try {
       const response = await fetch(
         `/api/lessons?subjectId=${subjectId}&page=${page}`, {
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${localStorage.getItem('accessToken')}`
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${localStorage.getItem('accessToken')}`
         }
       });
       if (!response.ok)
@@ -62,7 +62,7 @@ export function DataProvider({ children }) {
 
   const fetchLessonStatus = async () => {
     try {
-      const response = await fetch("/api/lessons/status" , {
+      const response = await fetch("/api/lessons/status", {
         headers: {
           "Content-Type": "application/json",
           "Authorization": `Bearer ${localStorage.getItem('accessToken')}`
@@ -427,16 +427,16 @@ export function DataProvider({ children }) {
   // Grammar CRUD operations
 
   const fetchGrammar = async (lessonId, page) => {
-      const response = await fetch(`/api/grammars?lessonId=${lessonId}&page=${page}`);
-      if (!response.ok) {
-        const data = await response.json();
-        return data;
-      }
+    const response = await fetch(`/api/grammars?lessonId=${lessonId}&page=${page}`);
+    if (!response.ok) {
       const data = await response.json();
-      return data.data;
+      return data;
+    }
+    const data = await response.json();
+    return data.data;
   };
 
- const addGrammar = async (item) => {
+  const addGrammar = async (item) => {
     const res = await fetch("/api/grammars", {
       method: "POST",
       headers: {
@@ -486,25 +486,25 @@ export function DataProvider({ children }) {
 
   // Exercise and Resource CRUD operations
 
- const  getLessonExercisesById = async (lessonId, page) => {
-  const res = await fetch(`/api/exercise-questions?lessonId=${lessonId}&page=${page}`);
-  if (!res.ok) {
+  const getLessonExercisesById = async (lessonId, page) => {
+    const res = await fetch(`/api/exercise-questions?lessonId=${lessonId}&page=${page}`);
+    if (!res.ok) {
+      const data = await res.json();
+      return data;
+    }
     const data = await res.json();
-    return data;
+    return data.data;
   }
-  const data = await res.json();
-  return data.data;
- }
 
- const getExerciseDetailsById = async (exerciseId) => {
-   const res = await fetch(`/api/exercise-questions/exercise-details?exerciseId=${exerciseId}`);
-   if (!res.ok) {
-     const data = await res.json();
-     return data;
-   }
-   const data = await res.json();
-   return data.data;
- };
+  const getExerciseDetailsById = async (exerciseId) => {
+    const res = await fetch(`/api/exercise-questions/exercise-details?exerciseId=${exerciseId}`);
+    if (!res.ok) {
+      const data = await res.json();
+      return data;
+    }
+    const data = await res.json();
+    return data.data;
+  };
 
   const addExercise = (item) => {
     const newItem = { ...item, id: Date.now().toString() };

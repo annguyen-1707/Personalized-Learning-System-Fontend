@@ -14,49 +14,49 @@ export function AuthProvider({ children }) {
   const navigate = useNavigate(); // ✅ thêm dòng này
 
   useEffect(() => {
-  if (!isAdmin) {
-    const checkLogin = async () => {
-      try {
-        const response = await fetch("http://localhost:8080/auth/check-login", {
-          method: "GET",
-          credentials: "include",
-        });
-
-        if (response.ok) {
-          const data = await response.json();
-          const accessToken = data.data.accessToken;
-          localStorage.setItem("accessToken", accessToken);
-
-          const userRes = await fetch("http://localhost:8080/auth/user", {
-            headers: { Authorization: `Bearer ${accessToken}` },
+    if (!isAdmin) {
+      const checkLogin = async () => {
+        try {
+          const response = await fetch("http://localhost:8080/auth/check-login", {
+            method: "GET",
+            credentials: "include",
           });
 
-          const userData = await userRes.json();
-          setUser(userData.data); 
-        }
-        
-      } catch (err) {
-        console.error(err);
-      }
-    };
-    checkLogin();
-  }
-}, []);
+          if (response.ok) {
+            const data = await response.json();
+            const accessToken = data.data.accessToken;
+            localStorage.setItem("accessToken", accessToken);
 
-useEffect(() => {
-  if (user) {
-    const role = user.roleName;
-    if (location.pathname === "/" || location.pathname === "/login") {
-      if (role === "PARENT") {
-        navigate("/parentpage");
-      } else if (role === "USER") {
-        navigate("/");
-      } else {
-        navigate("/admin");
+            const userRes = await fetch("http://localhost:8080/auth/user", {
+              headers: { Authorization: `Bearer ${accessToken}` },
+            });
+
+            const userData = await userRes.json();
+            setUser(userData.data);
+          }
+
+        } catch (err) {
+          console.error(err);
+        }
+      };
+      checkLogin();
+    }
+  }, []);
+
+  useEffect(() => {
+    if (user) {
+      const role = user.roleName;
+      if (location.pathname === "/") {
+        if (role === "PARENT") {
+          navigate("/parentpage");
+        } else if (role === "USER") {
+          navigate("/");
+        } else {
+          navigate("/admin");
+        }
       }
     }
-  }
-}, [user]);
+  }, [user]);
 
   //login
   const login = async (email, password, isAdminLogin) => {
@@ -103,7 +103,7 @@ useEffect(() => {
 
     } catch (error) {
       console.error('Login failed:', error);
-        throw error;
+      throw error;
 
     } finally {
       setLoading(false);

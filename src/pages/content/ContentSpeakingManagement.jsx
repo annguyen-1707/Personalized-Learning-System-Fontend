@@ -5,31 +5,42 @@ import { getPageContentSpeaking, handleUpdateContent, fetchAllContentCategorySpe
 import ReactPaginate from 'react-paginate';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { toast } from "react-toastify";
+import { getJlptLevel, getStatus } from '../../services/ContentListeningService';
 
 function SpeakingContentManagement() {
   const [isAdding, setIsAdding] = useState(false);
   const [isEditing, setIsEditing] = useState(null);
   const [search, setSearch] = useState('');
-  const [filter, setFilter] = useState('all');
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(null);
   const [listContentSpeakings, setListContentSpeakings] = useState([]);
   const [listContentCategory, setlistContentCategory] = useState([]);
   const [pageCount, setPageCount] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
-  const [size, setSize] = useState(5); // 1trang bn phan tu
+  const [size, setSize] = useState(6); // 1trang bn phan tu
   const [totalElements, setTotalElements] = useState(); // tong phan tu
   const [errorMessage, setErrorMessage] = useState("");
   const [previewImage, setPreviewImage] = useState(null);
+  const [listStatus, setListStatus] = useState([]);
+  const [listLever, setListLever] = useState([]);
+  const [filters, setFilters] = useState({
+    status: '',
+    jlptLevel: '',
+    category: ''
+  });
   const [formData, setFormData] = useState({
     title: '',
     image: '',
     category: '',
-    contentType: 'speaking'
+    contentType: 'speaking',
+    status: '',
+    jlptLevel: ''
   });
   useEffect(() => {
     getContentPage(1);
     setCurrentPage(1);
     getContentCategorys();
+    getListLever();
+    getListStatus();
   }, [size])
 
   const getContentPage = async (page) => {
@@ -48,6 +59,33 @@ function SpeakingContentManagement() {
     }
   }
 
+  const getListLever = async () => {
+    let res = await getJlptLevel();
+    if (res && res.data) {
+      setListLever(res.data)
+    }
+  }
+
+  const getListStatus = async () => {
+    let res = await getStatus();
+    if (res && res.data) {
+      setListStatus(res.data)
+    }
+  }
+
+  const setNullAllAttribute = () => {
+    setFormData({
+      title: '',
+      image: '',
+      category: '',
+      contentType: 'speaking',
+      status: '',
+      jlptLevel: ''
+    });
+    setPreviewImage(null)
+    setErrorMessage("");
+  }
+
   const handeDelete = async (id) => {
     await handleDeleteContent(id);
     await getContentPage(1);
@@ -60,15 +98,8 @@ function SpeakingContentManagement() {
         await handleCreateContent(formData);
         await getContentPage(currentPage);
         // Reset form
-        setFormData({
-          title: '',
-          image: '',
-          category: '',
-          contentType: 'speaking'
-        });
-        setPreviewImage(null);
+        setNullAllAttribute();
         setIsAdding(false);
-        setErrorMessage("");
         toast.success("Tạo content thành công!");
       } catch (error) {
         toast.error("Tạo content thất bại!");
@@ -79,15 +110,8 @@ function SpeakingContentManagement() {
         await handleUpdateContent(isEditing, formData);
         await getContentPage(currentPage);
         // Reset form
-        setFormData({
-          title: '',
-          image: '',
-          category: '',
-          contentType: 'speaking'
-        });
-        setPreviewImage(null)
+        setNullAllAttribute();
         setIsEditing(null);
-        setErrorMessage("");
         toast.success("Cập nhật content thành công!");
       } catch (error) {
         console.error("Error updating content:", error);
@@ -108,8 +132,10 @@ function SpeakingContentManagement() {
       search === "" ||
       content.title?.toLowerCase().includes(search.toLowerCase()) ||
       content.category?.toLowerCase().includes(search.toLowerCase());
-    const categoryMatch = filter === "all" || content.category === filter;
-    return searchMatch && categoryMatch;
+    const leverMatch = !filters.jlptLevel || content.jlptLevel === filters.jlptLevel;
+    const categoryMatch = !filters.category || content.category === filters.category;
+    const statusMatch = !filters.status || content.status === filters.status;
+    return searchMatch && categoryMatch && statusMatch && leverMatch;
   });
 
   const startUpdate = (contentSpeaking) => {
@@ -145,13 +171,7 @@ function SpeakingContentManagement() {
   const handleCancel = () => {
     setIsAdding(false);
     setIsEditing(null);
-    setFormData({
-      title: '',
-      image: '',
-      category: '',
-      contentType: 'speaking'
-    });
-    setPreviewImage(null);
+    setNullAllAttribute();
   }
   return (
     <div className="animate-fade-in">
@@ -179,10 +199,10 @@ function SpeakingContentManagement() {
               onChange={(e) => handleChangeSize(e.target.value)
               }
             >
-              <option value="5">5</option>
-              <option value="10">10</option>
-              <option value="20">20</option>
-              <option value="50">50</option>
+              <option value="6">6</option>
+              <option value="12">12</option>
+              <option value="24">24</option>
+              <option value="60">60</option>
               <option value={totalElements} >All </option>
             </select>
           </div>
@@ -192,7 +212,7 @@ function SpeakingContentManagement() {
             </div>
             <input
               type="text"
-              placeholder="Search speaking content..."
+              placeholder="Search listening content..."
               className="pl-10"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
@@ -201,10 +221,10 @@ function SpeakingContentManagement() {
           <div className='w-1/5' >
             <select
               className="rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 w-full"
-              value={filter}
-              onChange={(e) => setFilter(e.target.value)}
+              value={filters.category}
+              onChange={(e) => setFilters({ ...filters, category: e.target.value })}
             >
-              <option value="all">All Category</option>
+              <option value="">All Category</option>
               {listContentCategory.map((category) => (
                 <option key={category} value={category}>
                   {category}
@@ -212,6 +232,31 @@ function SpeakingContentManagement() {
               ))}
             </select>
           </div>
+          <div className='w-1/5' >
+            <select
+              className="rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 w-full"
+              value={filters.status}
+              onChange={(e) => setFilters({ ...filters, status: e.target.value })}
+            >
+              <option value="">All Status</option>
+              {listStatus.map((status) => (
+                <option key={status} value={status}>{status}</option>
+              ))}
+            </select>
+          </div>
+          <div className='w-1/5' >
+            <select
+              className="rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 w-full"
+              value={filters.jlptLevel}
+              onChange={(e) => setFilters({ ...filters, jlptLevel: e.target.value })}
+            >
+              <option value="">All Lever</option>
+              {listLever.map((level) => (
+                <option key={level} value={level}>{level}</option>
+              ))}
+            </select>
+          </div>
+
         </div>
       </div>
 
@@ -303,107 +348,121 @@ function SpeakingContentManagement() {
       )}
 
       {/* Content List */}
-      <div className="card mb-4">
-        <div className="divide-y divide-gray-200">
-          {filteredContents?.length > 0 ? (
-            filteredContents.map((contentSpeaking) => (
-              <div key={contentSpeaking.contentSpeakingId} className="p-6 hover:bg-gray-50">
-                <div className="flex justify-between items-start">
-                  <div className="flex-1">
-                    <div className="flex items-center mb-2">
-                      <h3 className="text-lg font-medium text-gray-900">{contentSpeaking.title}</h3>
+      <div className="card mb-4 overflow-x-auto">
+        {filteredContents?.length > 0 ? (
+          <table className="min-w-full divide-y divide-gray-200 text-sm table-fixed">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-4 py-2 text-left font-medium text-gray-700 w-[300px]">Title</th>
+                <th className="px-4 py-2 text-left font-medium text-gray-700">Image</th>
+                <th className="px-4 py-2 text-left font-medium text-gray-700">Category</th>
+                <th className="px-4 py-2 text-left font-medium text-gray-700">JLPT Level</th>
+                <th className="px-4 py-2 text-left font-medium text-gray-700">Status</th>
+                <th className="px-4 py-2 text-left font-medium text-gray-700">Created At</th>
+                <th className="px-4 py-2 text-left font-medium text-gray-700">Updated At</th>
+                <th className="px-4 py-2 text-left font-medium text-gray-700">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-100">
+              {filteredContents.map((contentSpeaking) => (
+                <tr key={contentSpeaking.contentSpeakingId} className="hover:bg-gray-50">
+                  <td className="px-4 py-2 font-medium text-gray-900 w-[300px]">
+                    <div className="flex items-center">
+                      {contentSpeaking.title}
                       <span className="ml-2 badge bg-primary-50 text-primary-700">
                         {contentSpeaking?.content?.contentType}
                       </span>
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-                      <div className="space-y-2">
-                        <div className="flex items-center text-sm text-gray-500">
-                          {/* <Image size={16} className="mr-2" /> */}
-                          <span className="truncate">
-                            <img
-                              src={`http://localhost:8080/images/content_speaking/${contentSpeaking.image}`}
-                              alt="Thumbnail"
-                              className="w-20 h-20 mr-2"
-                            />
-                          </span>
-                        </div>
-                      </div>
-                      <div className="space-y-2">
-                        <Link to={`/admin/content_speaking/${contentSpeaking.contentSpeakingId}/dialogue`}>
-                          <div className="flex items-center text-sm text-gray-500">
-                            <MessageSquare size={16} className="mr-2" />
-                            <span className="mr-3">Conversation Practice</span>
-                            <Edit size={16} color='blue' />
-                          </div>
-                        </Link>
-                      </div>
-                    </div>
-                    <div className="mt-4">
-                      <div className="text-sm">
-                        <p className="text-gray-900 font-medium mb-1">Category: {contentSpeaking.category}</p>
-                      </div>
-                      <div className="text-sm">
-                        <p className="text-gray-900 font-medium mb-1">Create at: {new Date(contentSpeaking.createdAt).toLocaleDateString()}</p>
-                      </div>
-                      <div className="text-sm mt-2">
-                        <p className="text-gray-900 font-medium mb-1">
-                          Update at: {
-                            contentSpeaking.updatedAt
-                              ? new Date(contentSpeaking.updatedAt).toLocaleDateString()
-                              : "Never update"
-                          }
-                        </p>
-                      </div>
-                    </div>
-                  </div>
+                  </td>
 
-                  <div className="ml-4 flex items-center">
-                    {showDeleteConfirm === contentSpeaking.contentSpeakingId ? (
-                      <div className="flex items-center space-x-2">
-                        <span className="text-xs text-gray-500">Delete?</span>
-                        <button
-                          onClick={() => {
-                            handeDelete(contentSpeaking.contentSpeakingId);
-                            setShowDeleteConfirm(null);
-                          }}
-                          className="text-error-500 hover:text-error-700">
-                          <Check size={16} />
-                        </button>
-                        <button
-                          onClick={() => {
-                            setShowDeleteConfirm(null);
-                          }}
-                          className="text-gray-500 hover:text-gray-700"
-                        >
-                          <X size={16} />
-                        </button>
-                      </div>
-                    ) : (
-                      <>
-                        <button
-                          onClick={() => startUpdate(contentSpeaking)}
-                          className="text-primary-600 hover:text-primary-800 mr-2"
-                        >
-                          <Edit size={16} />
-                        </button>
+                  <td className="px-4 py-2">
+                    <img
+                      src={`http://localhost:8080/images/content_speaking/${contentSpeaking.image}`}
+                      alt="Thumbnail"
+                      className="w-16 h-16 object-cover rounded"
+                    />
+                  </td>
+
+                  <td className="px-4 py-2">{contentSpeaking.category}</td>
+                  <td className="px-4 py-2">{contentSpeaking.jlptLevel || "N/A"}</td>
+
+                  <td className="px-4 py-2">
+                    <span
+                      className={`text-xs px-2 py-1 rounded font-medium ${contentSpeaking.status === "PUBLIC"
+                        ? "bg-green-100 text-green-700"
+                        : contentSpeaking.status === "PRIVATE"
+                          ? "bg-yellow-100 text-yellow-700"
+                          : "bg-gray-100 text-gray-700"
+                        }`}
+                    >
+                      {contentSpeaking.status}
+                    </span>
+                  </td>
+
+                  <td className="px-4 py-2">
+                    {new Date(contentSpeaking.createdAt).toLocaleDateString()}
+                  </td>
+
+                  <td className="px-4 py-2">
+                    {contentSpeaking.updatedAt
+                      ? new Date(contentSpeaking.updatedAt).toLocaleDateString()
+                      : "Never update"}
+                  </td>
+
+                  <td className="px-4 py-2 space-y-1">
+                    <Link
+                      to={`/admin/content_speaking/${contentSpeaking.contentSpeakingId}/dialogue`}
+                      className="flex items-center text-blue-600 hover:underline mb-1"
+                    >
+                      <MessageSquare size={14} className="mr-1" />
+                      Dialogue
+                    </Link>
+
+                    <div className="flex space-x-2">
+                      <button
+                        onClick={() => startUpdate(contentSpeaking)}
+                        className="text-primary-600 hover:text-primary-800"
+                      >
+                        <Edit size={16} />
+                      </button>
+
+                      {showDeleteConfirm === contentSpeaking.contentSpeakingId ? (
+                        <>
+                          <button
+                            onClick={() => {
+                              handeDelete(contentSpeaking.contentSpeakingId);
+                              setShowDeleteConfirm(null);
+                            }}
+                            className="text-error-500 hover:text-error-700"
+                          >
+                            <Check size={16} />
+                          </button>
+                          <button
+                            onClick={() => setShowDeleteConfirm(null)}
+                            className="text-gray-500 hover:text-gray-700"
+                          >
+                            <X size={16} />
+                          </button>
+                        </>
+                      ) : (
                         <button
                           onClick={() => setShowDeleteConfirm(contentSpeaking.contentSpeakingId)}
                           className="text-error-500 hover:text-error-700"
                         >
                           <Trash2 size={16} />
                         </button>
-                      </>
-                    )}
-                  </div>
-                </div>
-              </div>
-            ))) : (
-            <div className="p-6 text-center text-gray-500">
-              No speaking content found.{search && 'Try a different search term.'}
-            </div>
-          )}
-        </div>
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        ) : (
+          <div className="p-6 text-center text-gray-500">
+            No speaking content found.{search && " Try a different search term."}
+          </div>
+        )}
       </div>
 
       {/* Phan Trang */}
