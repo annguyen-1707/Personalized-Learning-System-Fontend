@@ -83,7 +83,11 @@ const getPageContentSpeaking = async (page, size) => {
     return axios.get(`/api/content_speaking?page=${page}&size=${size}`)
 }
 
+const acceptContent = (id) => {
+    return axios.patch(`/api/content_listening/accept/${id}`)
+}
+
 export {
     getPageContentSpeaking, handleUpdateContent, fetchAllContentSpeaking, fetchAllContentCategorySpeaking,
-    handleCreateContent, handleDeleteContent
+    handleCreateContent, handleDeleteContent, acceptContent
 };

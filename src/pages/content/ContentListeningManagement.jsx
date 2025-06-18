@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
 import { Plus, Search, Edit, Trash2, Check, X, MessageCircleQuestion } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { getPageContentListening, handleUpdateContent, fetchAllContentCategoryListening, handleCreateContent, handleDeleteContent, getJlptLevel, getStatus } from '../../services/ContentListeningService';
+import { getPageContentListening, handleUpdateContent, fetchAllContentCategoryListening, handleCreateContent, handleDeleteContent, getJlptLevel, getStatus, acceptContent } from '../../services/ContentListeningService';
 import ReactPaginate from 'react-paginate';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { toast } from "react-toastify";
+import { useAuth } from '../../context/AuthContext';
 
 function ListeningContentManagement() {
   const [isAdding, setIsAdding] = useState(false);
@@ -22,6 +23,19 @@ function ListeningContentManagement() {
   const [previewAudio, setPreviewAudio] = useState(null);
   const [listStatus, setListStatus] = useState([]);
   const [listLever, setListLever] = useState([]);
+  const { user } = useAuth();
+  const isStaff =
+    user &&
+    Array.isArray(user.role) &&
+    user.role.some(role =>
+      ["STAFF"].includes(role)
+    );
+  const isContentManagerment =
+    user &&
+    Array.isArray(user.role) &&
+    user.role.some(role =>
+      ["CONTENT_MANAGER"].includes(role)
+    );
   const [filters, setFilters] = useState({
     status: '',
     jlptLevel: '',
@@ -196,18 +210,26 @@ function ListeningContentManagement() {
     setNullAllAttribute();
   }
 
+  const handleAccept = async (id) => {
+    await acceptContent(id);
+    await getContentPage(currentPage);
+
+  }
+
   return (
     <div className="animate-fade-in">
       <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between">
         <h1 className="text-2xl font-bold text-gray-900 mb-2 sm:mb-0">Listening Content Management</h1>
-        <button
-          onClick={() => { setIsAdding(true); setIsEditing(null); }}
-          className="btn-primary flex items-center"
-          disabled={isAdding || isEditing}
-        >
-          <Plus size={16} className="mr-1" />
-          Add Listening Content
-        </button>
+        {isStaff && (
+          <button
+            onClick={() => { setIsAdding(true); setIsEditing(null); }}
+            className="btn-primary flex items-center"
+            disabled={isAdding || isEditing}
+          >
+            <Plus size={16} className="mr-1" />
+            Add Listening Content
+          </button>
+        )}
       </div>
 
       {/* Search Bar */}
@@ -453,9 +475,9 @@ function ListeningContentManagement() {
                   <th className="px-4 py-2 text-left font-medium text-gray-700">Category</th>
                   <th className="px-4 py-2 text-left font-medium text-gray-700">JLPT Level</th>
                   <th className="px-4 py-2 text-left font-medium text-gray-700">Status</th>
+                  <th className="px-4 py-2 text-left font-medium text-gray-700">Actions</th>
                   <th className="px-4 py-2 text-left font-medium text-gray-700">Created At</th>
                   <th className="px-4 py-2 text-left font-medium text-gray-700">Updated At</th>
-                  <th className="px-4 py-2 text-left font-medium text-gray-700">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
@@ -500,15 +522,6 @@ function ListeningContentManagement() {
                         {content.status}
                       </span>
                     </td>
-
-                    <td className="px-4 py-2">
-                      {new Date(content.createdAt).toLocaleDateString()}
-                    </td>
-                    <td className="px-4 py-2">
-                      {content.updatedAt
-                        ? new Date(content.updatedAt).toLocaleDateString()
-                        : "Never update"}
-                    </td>
                     <td className="px-4 py-2 space-y-1">
                       <Link
                         to={`/admin/content_listening/${content.contentListeningId}/question`}
@@ -517,40 +530,59 @@ function ListeningContentManagement() {
                         <MessageCircleQuestion size={14} className="mr-1" />
                         Question
                       </Link>
-                      <div className="flex space-x-2">
-                        <button
-                          onClick={() => startUpdate(content)}
-                          className="text-primary-600 hover:text-primary-800"
-                        >
-                          <Edit size={16} />
-                        </button>
-                        {showDeleteConfirm === content.contentListeningId ? (
-                          <>
+                      {isContentManagerment && (
+                        <div className="flex space-x-2">
+                          <button
+                            onClick={() => startUpdate(content)}
+                            className="text-primary-600 hover:text-primary-800"
+                          >
+                            <Edit size={16} />
+                          </button>
+                          {showDeleteConfirm === content.contentListeningId ? (
+                            <>
+                              <button
+                                onClick={() => {
+                                  handleDelete(content.contentListeningId);
+                                  setShowDeleteConfirm(null);
+                                }}
+                                className="text-error-500 hover:text-error-700"
+                              >
+                                <Check size={16} />
+                              </button>
+                              <button
+                                onClick={() => setShowDeleteConfirm(null)}
+                                className="text-gray-500 hover:text-gray-700"
+                              >
+                                <X size={16} />
+                              </button>
+                            </>
+                          ) : (
                             <button
-                              onClick={() => {
-                                handleDelete(content.contentListeningId);
-                                setShowDeleteConfirm(null);
-                              }}
+                              onClick={() => setShowDeleteConfirm(content.contentListeningId)}
                               className="text-error-500 hover:text-error-700"
                             >
-                              <Check size={16} />
+                              <Trash2 size={16} />
                             </button>
-                            <button
-                              onClick={() => setShowDeleteConfirm(null)}
-                              className="text-gray-500 hover:text-gray-700"
-                            >
-                              <X size={16} />
-                            </button>
-                          </>
-                        ) : (
-                          <button
-                            onClick={() => setShowDeleteConfirm(content.contentListeningId)}
-                            className="text-error-500 hover:text-error-700"
-                          >
-                            <Trash2 size={16} />
-                          </button>
-                        )}
-                      </div>
+                          )}
+                        </div>
+                      )}
+                      {isContentManagerment && content.status === "DRAFT" && (
+                        <button
+                          onClick={() => handleAccept(content.contentListeningId)}
+                          className="text-green-600 hover:text-green-800 flex items-center mt-2"
+                        >
+                          <Check size={16} className="mr-1" />
+                          Accept
+                        </button>
+                      )}
+                    </td>
+                    <td className="px-4 py-2">
+                      {new Date(content.createdAt).toLocaleDateString()}
+                    </td>
+                    <td className="px-4 py-2">
+                      {content.updatedAt
+                        ? new Date(content.updatedAt).toLocaleDateString()
+                        : "Never update"}
                     </td>
                   </tr>
                 ))}

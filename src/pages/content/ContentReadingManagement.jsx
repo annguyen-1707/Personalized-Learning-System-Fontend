@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Plus, Search, Edit, Trash2, Check, X, Image, Clock, Book, FileText, LayoutPanelTop, WholeWord } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { getPageContentReading, handleUpdateContent, fetchAllContentCategoryReading, handleCreateContent, handleDeleteContent } from '../../services/ContentReadingService';
+import { getPageContentReading, handleUpdateContent, fetchAllContentCategoryReading, handleCreateContent, handleDeleteContent, acceptContent } from '../../services/ContentReadingService';
 import ReactPaginate from 'react-paginate';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { toast } from "react-toastify";
@@ -215,6 +215,12 @@ function ReadingContentManagement() {
     setIsAdding(false);
     setIsEditing(null);
     setNullAllAttribute();
+  }
+
+  const handleAccept = async (id) => {
+    await acceptContent(id);
+    await getContentPage(currentPage);
+
   }
 
   return (
@@ -494,9 +500,9 @@ function ReadingContentManagement() {
                 <th className="px-4 py-2 text-left font-medium text-gray-700">JLPT Level</th>
                 <th className="px-4 py-2 text-left font-medium text-gray-700">Status</th>
                 <th className="px-4 py-2 text-left font-medium text-gray-700">Time New</th>
+                <th className="px-4 py-2 text-left font-medium text-gray-700">Actions</th>
                 <th className="px-4 py-2 text-left font-medium text-gray-700">Created At</th>
                 <th className="px-4 py-2 text-left font-medium text-gray-700">Updated At</th>
-                <th className="px-4 py-2 text-left font-medium text-gray-700">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
@@ -538,12 +544,6 @@ function ReadingContentManagement() {
                     </span>
                   </td>
                   <td className="px-4 py-2">{new Date(content.timeNew).toLocaleDateString()}</td>
-                  <td className="px-4 py-2">{new Date(content.createdAt).toLocaleDateString()}</td>
-                  <td className="px-4 py-2">
-                    {content.updatedAt
-                      ? new Date(content.updatedAt).toLocaleDateString()
-                      : "Never update"}
-                  </td>
                   <td className="px-4 py-2 space-y-1">
                     <Link
                       to={`/admin/content_reading/${content.contentReadingId}/vocabulary`}
@@ -559,40 +559,58 @@ function ReadingContentManagement() {
                       <LayoutPanelTop size={14} className="mr-1" />
                       Grammar
                     </Link>
-                    <div className="flex space-x-2 mt-2">
-                      <button
-                        onClick={() => startUpdate(content)}
-                        className="text-primary-600 hover:text-primary-800"
-                      >
-                        <Edit size={16} />
-                      </button>
-                      {showDeleteConfirm === content.contentReadingId ? (
-                        <>
+                    {isContentManagerment && (
+                      <div className="flex space-x-2 mt-2">
+                        <button
+                          onClick={() => startUpdate(content)}
+                          className="text-primary-600 hover:text-primary-800"
+                        >
+                          <Edit size={16} />
+                        </button>
+
+                        {showDeleteConfirm === content.contentReadingId ? (
+                          <>
+                            <button
+                              onClick={() => {
+                                handleDelete(content.contentReadingId);
+                                setShowDeleteConfirm(null);
+                              }}
+                              className="text-error-500 hover:text-error-700"
+                            >
+                              <Check size={16} />
+                            </button>
+                            <button
+                              onClick={() => setShowDeleteConfirm(null)}
+                              className="text-gray-500 hover:text-gray-700"
+                            >
+                              <X size={16} />
+                            </button>
+                          </>
+                        ) : (
                           <button
-                            onClick={() => {
-                              handleDelete(content.contentReadingId);
-                              setShowDeleteConfirm(null);
-                            }}
+                            onClick={() => setShowDeleteConfirm(content.contentReadingId)}
                             className="text-error-500 hover:text-error-700"
                           >
-                            <Check size={16} />
+                            <Trash2 size={16} />
                           </button>
-                          <button
-                            onClick={() => setShowDeleteConfirm(null)}
-                            className="text-gray-500 hover:text-gray-700"
-                          >
-                            <X size={16} />
-                          </button>
-                        </>
-                      ) : (
-                        <button
-                          onClick={() => setShowDeleteConfirm(content.contentReadingId)}
-                          className="text-error-500 hover:text-error-700"
-                        >
-                          <Trash2 size={16} />
-                        </button>
-                      )}
-                    </div>
+                        )}
+                      </div>
+                    )}
+                    {isContentManagerment && content.status === "DRAFT" && (
+                      <button
+                        onClick={() => handleAccept(content.contentReadingId)}
+                        className="text-green-600 hover:text-green-800 flex items-center mt-2"
+                      >
+                        <Check size={16} className="mr-1" />
+                        Accept
+                      </button>
+                    )}
+                  </td>
+                  <td className="px-4 py-2">{new Date(content.createdAt).toLocaleDateString()}</td>
+                  <td className="px-4 py-2">
+                    {content.updatedAt
+                      ? new Date(content.updatedAt).toLocaleDateString()
+                      : "Never update"}
                   </td>
                 </tr>
               ))}

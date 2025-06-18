@@ -115,7 +115,11 @@ const getJlptLevel = () => {
     return axios.get(`/api/vocabularies/levels`)
 }
 
+const acceptContent = (id) => {
+    return axios.patch(`/api/content_listening/accept/${id}`)
+}
+
 export {
     getPageContentListening, handleUpdateContent, fetchAllContentListening, fetchAllContentCategoryListening,
-    handleCreateContent, handleDeleteContent, getStatus, getJlptLevel
+    handleCreateContent, handleDeleteContent, getStatus, getJlptLevel, acceptContent
 }

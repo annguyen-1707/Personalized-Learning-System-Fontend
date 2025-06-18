@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react';
 import { Plus, Search, Edit, Trash2, Check, X, MessageSquare } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { getPageContentSpeaking, handleUpdateContent, fetchAllContentCategorySpeaking, handleCreateContent, handleDeleteContent } from '../../services/ContentSpeakingService';
+import { getPageContentSpeaking, handleUpdateContent, fetchAllContentCategorySpeaking, handleCreateContent, handleDeleteContent, acceptContent } from '../../services/ContentSpeakingService';
 import ReactPaginate from 'react-paginate';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { toast } from "react-toastify";
 import { getJlptLevel, getStatus } from '../../services/ContentListeningService';
+import { useAuth } from '../../context/AuthContext';
 
 function SpeakingContentManagement() {
   const [isAdding, setIsAdding] = useState(false);
@@ -22,6 +23,19 @@ function SpeakingContentManagement() {
   const [previewImage, setPreviewImage] = useState(null);
   const [listStatus, setListStatus] = useState([]);
   const [listLever, setListLever] = useState([]);
+  const { user } = useAuth();
+  const isStaff =
+    user &&
+    Array.isArray(user.role) &&
+    user.role.some(role =>
+      ["STAFF"].includes(role)
+    );
+  const isContentManagerment =
+    user &&
+    Array.isArray(user.role) &&
+    user.role.some(role =>
+      ["CONTENT_MANAGER"].includes(role)
+    );
   const [filters, setFilters] = useState({
     status: '',
     jlptLevel: '',
@@ -173,19 +187,27 @@ function SpeakingContentManagement() {
     setIsEditing(null);
     setNullAllAttribute();
   }
+
+  const handleAccept = async (id) => {
+    await acceptContent(id);
+    await getContentPage(currentPage);
+
+  }
   return (
     <div className="animate-fade-in">
       {/* Header */}
       <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between">
         <h1 className="text-2xl font-bold text-gray-900 mb-2 sm:mb-0">Speaking Content Management</h1>
-        <button
-          onClick={() => { setIsAdding(true); setIsEditing(null); }}
-          className="btn-primary flex items-center"
-          disabled={isAdding || isEditing}
-        >
-          <Plus size={16} className="mr-1" />
-          Add
-        </button>
+        {isStaff && (
+          <button
+            onClick={() => { setIsAdding(true); setIsEditing(null); }}
+            className="btn-primary flex items-center"
+            disabled={isAdding || isEditing}
+          >
+            <Plus size={16} className="mr-1" />
+            Add
+          </button>
+        )}
       </div>
 
       {/* Search Bar */}
@@ -417,42 +439,52 @@ function SpeakingContentManagement() {
                       <MessageSquare size={14} className="mr-1" />
                       Dialogue
                     </Link>
+                    {isContentManagerment && (
+                      <div className="flex space-x-2">
+                        <button
+                          onClick={() => startUpdate(contentSpeaking)}
+                          className="text-primary-600 hover:text-primary-800"
+                        >
+                          <Edit size={16} />
+                        </button>
 
-                    <div className="flex space-x-2">
-                      <button
-                        onClick={() => startUpdate(contentSpeaking)}
-                        className="text-primary-600 hover:text-primary-800"
-                      >
-                        <Edit size={16} />
-                      </button>
-
-                      {showDeleteConfirm === contentSpeaking.contentSpeakingId ? (
-                        <>
+                        {showDeleteConfirm === contentSpeaking.contentSpeakingId ? (
+                          <>
+                            <button
+                              onClick={() => {
+                                handeDelete(contentSpeaking.contentSpeakingId);
+                                setShowDeleteConfirm(null);
+                              }}
+                              className="text-error-500 hover:text-error-700"
+                            >
+                              <Check size={16} />
+                            </button>
+                            <button
+                              onClick={() => setShowDeleteConfirm(null)}
+                              className="text-gray-500 hover:text-gray-700"
+                            >
+                              <X size={16} />
+                            </button>
+                          </>
+                        ) : (
                           <button
-                            onClick={() => {
-                              handeDelete(contentSpeaking.contentSpeakingId);
-                              setShowDeleteConfirm(null);
-                            }}
+                            onClick={() => setShowDeleteConfirm(contentSpeaking.contentSpeakingId)}
                             className="text-error-500 hover:text-error-700"
                           >
-                            <Check size={16} />
+                            <Trash2 size={16} />
                           </button>
-                          <button
-                            onClick={() => setShowDeleteConfirm(null)}
-                            className="text-gray-500 hover:text-gray-700"
-                          >
-                            <X size={16} />
-                          </button>
-                        </>
-                      ) : (
-                        <button
-                          onClick={() => setShowDeleteConfirm(contentSpeaking.contentSpeakingId)}
-                          className="text-error-500 hover:text-error-700"
-                        >
-                          <Trash2 size={16} />
-                        </button>
-                      )}
-                    </div>
+                        )}
+                      </div>
+                    )}
+                    {isContentManagerment && contentSpeaking.status === "DRAFT" && (
+                      <button
+                        onClick={() => handleAccept(contentSpeaking.contentReadingId)}
+                        className="text-green-600 hover:text-green-800 flex items-center mt-2"
+                      >
+                        <Check size={16} className="mr-1" />
+                        Accept
+                      </button>
+                    )}
                   </td>
                 </tr>
               ))}
