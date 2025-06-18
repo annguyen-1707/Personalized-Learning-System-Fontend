@@ -1,0 +1,525 @@
+import { useEffect, useState } from 'react';
+import { Plus, Search, Edit, Trash2, Check, X, MessageSquare } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { getPageContentSpeaking, handleUpdateContent, fetchAllContentCategorySpeaking, handleCreateContent, handleDeleteContent, acceptContent } from '../../services/ContentSpeakingService';
+import ReactPaginate from 'react-paginate';
+import 'bootstrap/dist/css/bootstrap.min.css';
+import { toast } from "react-toastify";
+import { getJlptLevel, getStatus } from '../../services/ContentListeningService';
+import { useAuth } from '../../context/AuthContext';
+
+function SpeakingContentManagement() {
+  const [isAdding, setIsAdding] = useState(false);
+  const [isEditing, setIsEditing] = useState(null);
+  const [search, setSearch] = useState('');
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(null);
+  const [listContentSpeakings, setListContentSpeakings] = useState([]);
+  const [listContentCategory, setlistContentCategory] = useState([]);
+  const [pageCount, setPageCount] = useState(0);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [size, setSize] = useState(6); // 1trang bn phan tu
+  const [totalElements, setTotalElements] = useState(); // tong phan tu
+  const [errorMessage, setErrorMessage] = useState("");
+  const [previewImage, setPreviewImage] = useState(null);
+  const [listStatus, setListStatus] = useState([]);
+  const [listLever, setListLever] = useState([]);
+  const { user } = useAuth();
+  const isStaff =
+    user &&
+    Array.isArray(user.role) &&
+    user.role.some(role =>
+      ["STAFF"].includes(role)
+    );
+  const isContentManagerment =
+    user &&
+    Array.isArray(user.role) &&
+    user.role.some(role =>
+      ["CONTENT_MANAGER"].includes(role)
+    );
+  const [filters, setFilters] = useState({
+    status: '',
+    jlptLevel: '',
+    category: ''
+  });
+  const [formData, setFormData] = useState({
+    title: '',
+    image: '',
+    category: '',
+    contentType: 'speaking',
+    status: '',
+    jlptLevel: ''
+  });
+  useEffect(() => {
+    getContentPage(1);
+    setCurrentPage(1);
+    getContentCategorys();
+    getListLever();
+    getListStatus();
+  }, [size])
+
+  const getContentPage = async (page) => {
+    let res = await getPageContentSpeaking(page, size);
+    if (res && res.data && res.data.content) {
+      setListContentSpeakings(res.data.content)
+      setPageCount(res.data.page.totalPages)
+      setTotalElements(res.data.page.totalElements)
+    }
+  }
+
+  const getContentCategorys = async () => {
+    let res = await fetchAllContentCategorySpeaking();
+    if (res && res.data) {
+      setlistContentCategory(res.data)
+    }
+  }
+
+  const getListLever = async () => {
+    let res = await getJlptLevel();
+    if (res && res.data) {
+      setListLever(res.data)
+    }
+  }
+
+  const getListStatus = async () => {
+    let res = await getStatus();
+    if (res && res.data) {
+      setListStatus(res.data)
+    }
+  }
+
+  const setNullAllAttribute = () => {
+    setFormData({
+      title: '',
+      image: '',
+      category: '',
+      contentType: 'speaking',
+      status: '',
+      jlptLevel: ''
+    });
+    setPreviewImage(null)
+    setErrorMessage("");
+  }
+
+  const handeDelete = async (id) => {
+    await handleDeleteContent(id);
+    await getContentPage(1);
+    setCurrentPage(1);
+  }
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (isAdding) {
+      try {
+        await handleCreateContent(formData);
+        await getContentPage(currentPage);
+        // Reset form
+        setNullAllAttribute();
+        setIsAdding(false);
+        toast.success("Tạo content thành công!");
+      } catch (error) {
+        toast.error("Tạo content thất bại!");
+        setErrorMessage(error.message || "Failed to add content Speaking.");
+      }
+    } else if (isEditing) {
+      try {
+        await handleUpdateContent(isEditing, formData);
+        await getContentPage(currentPage);
+        // Reset form
+        setNullAllAttribute();
+        setIsEditing(null);
+        toast.success("Cập nhật content thành công!");
+      } catch (error) {
+        console.error("Error updating content:", error);
+        setErrorMessage(error.message || "Failed to update content Speaking.");
+        toast.error("Cập nhật content thất bại!");
+      }
+    }
+
+  };
+
+  const handleChangeSize = async (newSize) => {
+    setSize(newSize);
+  }
+
+  const filteredContents = listContentSpeakings.filter((content) => {
+    // Search filter (case insensitive)
+    const searchMatch =
+      search === "" ||
+      content.title?.toLowerCase().includes(search.toLowerCase()) ||
+      content.category?.toLowerCase().includes(search.toLowerCase());
+    const leverMatch = !filters.jlptLevel || content.jlptLevel === filters.jlptLevel;
+    const categoryMatch = !filters.category || content.category === filters.category;
+    const statusMatch = !filters.status || content.status === filters.status;
+    return searchMatch && categoryMatch && statusMatch && leverMatch;
+  });
+
+  const startUpdate = (contentSpeaking) => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    setFormData(contentSpeaking);
+    if (contentSpeaking.image && typeof contentSpeaking.image === "string") {
+      setPreviewImage(`http://localhost:8080/images/content_speaking/` + contentSpeaking.image);
+      console.log("Check previewImage" + previewImage)
+    }
+    setIsEditing(contentSpeaking.contentSpeakingId);
+    setIsAdding(false);
+    setErrorMessage("");
+  }
+
+  const handlePageClick = (event) => {
+    const selectedPage = +event.selected + 1;
+    setCurrentPage(selectedPage);
+    getContentPage(selectedPage);
+  }
+
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    setFormData({ ...formData, image: file });
+
+    if (file) {
+      const previewURL = URL.createObjectURL(file);
+      setPreviewImage(previewURL);
+    } else {
+      setPreviewImage(null);
+    }
+  };
+
+  const handleCancel = () => {
+    setIsAdding(false);
+    setIsEditing(null);
+    setNullAllAttribute();
+  }
+
+  const handleAccept = async (id) => {
+    await acceptContent(id);
+    await getContentPage(currentPage);
+
+  }
+  return (
+    <div className="animate-fade-in">
+      {/* Header */}
+      <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between">
+        <h1 className="text-2xl font-bold text-gray-900 mb-2 sm:mb-0">Speaking Content Management</h1>
+        {isStaff && (
+          <button
+            onClick={() => { setIsAdding(true); setIsEditing(null); }}
+            className="btn-primary flex items-center"
+            disabled={isAdding || isEditing}
+          >
+            <Plus size={16} className="mr-1" />
+            Add
+          </button>
+        )}
+      </div>
+
+      {/* Search Bar */}
+      <div className="card p-4 mb-6">
+        <div className="flex items-center gap-4">
+          {/* split search and filter */}
+          <div className="w-1/5">
+            <select
+              className="w-full border border-gray-300 rounded-md py-2 px-2"
+              value={size}
+              onChange={(e) => handleChangeSize(e.target.value)
+              }
+            >
+              <option value="6">6</option>
+              <option value="12">12</option>
+              <option value="24">24</option>
+              <option value="60">60</option>
+              <option value={totalElements} >All </option>
+            </select>
+          </div>
+          <div className="relative w-3/5">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <Search size={18} className="text-gray-400" />
+            </div>
+            <input
+              type="text"
+              placeholder="Search listening content..."
+              className="pl-10"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+          </div>
+          <div className='w-1/5' >
+            <select
+              className="rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 w-full"
+              value={filters.category}
+              onChange={(e) => setFilters({ ...filters, category: e.target.value })}
+            >
+              <option value="">All Category</option>
+              {listContentCategory.map((category) => (
+                <option key={category} value={category}>
+                  {category}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className='w-1/5' >
+            <select
+              className="rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 w-full"
+              value={filters.status}
+              onChange={(e) => setFilters({ ...filters, status: e.target.value })}
+            >
+              <option value="">All Status</option>
+              {listStatus.map((status) => (
+                <option key={status} value={status}>{status}</option>
+              ))}
+            </select>
+          </div>
+          <div className='w-1/5' >
+            <select
+              className="rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 w-full"
+              value={filters.jlptLevel}
+              onChange={(e) => setFilters({ ...filters, jlptLevel: e.target.value })}
+            >
+              <option value="">All Lever</option>
+              {listLever.map((level) => (
+                <option key={level} value={level}>{level}</option>
+              ))}
+            </select>
+          </div>
+
+        </div>
+      </div>
+
+      {/* Add/Edit Form */}
+      {(isAdding || isEditing) && (
+        <div className="card p-6 mb-6">
+          <h2 className="text-xl font-medium mb-4">
+            {isAdding ? 'Add New Speaking Content' : 'Edit Speaking Content'}
+          </h2>
+          {errorMessage && (
+            <div className="mb-4 p-3 rounded bg-red-100 text-red-700 text-sm flex items-center justify-between">
+              <p className="mb-2">{errorMessage}</p>
+              <button className="text-red-700 hover:text-red-900" onClick={() => setErrorMessage("")}>X</button>
+            </div>
+          )}
+          <form onSubmit={handleSubmit}>
+            <div className="grid grid-cols-1 gap-6">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1" >
+                  Title
+                </label>
+                <input
+                  type="text"
+                  value={formData.title}
+                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                  className="w-full"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Image URL
+                </label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageChange}
+                ></input>
+                {previewImage && (
+                  <div style={{ marginTop: "10px" }}>
+                    <img
+                      src={previewImage}
+                      alt="previewImage"
+                      style={{ maxWidth: "300px", maxHeight: "300px", objectFit: "contain" }}
+                    />
+                  </div>
+                )}
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Content category
+                </label>
+              </div>
+              <div>
+                <select
+                  value={formData.category}
+                  onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                  className="w-full"
+                >
+                  <option value="" disabled selected>All Category</option>
+                  {listContentCategory?.length > 0 && listContentCategory.map((category) => (
+                    <option key={category} value={category}>
+                      {category}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+            </div>
+
+            <div className="mt-6 flex justify-end space-x-3">
+              <button
+                type="button"
+                onClick={handleCancel}
+                className="btn-outline"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                className="btn-primary"
+              >
+                {isAdding ? 'Add Content' : 'Save Changes'}
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
+
+      {/* Content List */}
+      <div className="card mb-4 overflow-x-auto">
+        {filteredContents?.length > 0 ? (
+          <table className="min-w-full divide-y divide-gray-200 text-sm table-fixed">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-4 py-2 text-left font-medium text-gray-700 w-[300px]">Title</th>
+                <th className="px-4 py-2 text-left font-medium text-gray-700">Image</th>
+                <th className="px-4 py-2 text-left font-medium text-gray-700">Category</th>
+                <th className="px-4 py-2 text-left font-medium text-gray-700">JLPT Level</th>
+                <th className="px-4 py-2 text-left font-medium text-gray-700">Status</th>
+                <th className="px-4 py-2 text-left font-medium text-gray-700">Created At</th>
+                <th className="px-4 py-2 text-left font-medium text-gray-700">Updated At</th>
+                <th className="px-4 py-2 text-left font-medium text-gray-700">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-100">
+              {filteredContents.map((contentSpeaking) => (
+                <tr key={contentSpeaking.contentSpeakingId} className="hover:bg-gray-50">
+                  <td className="px-4 py-2 font-medium text-gray-900 w-[300px]">
+                    <div className="flex items-center">
+                      {contentSpeaking.title}
+                      <span className="ml-2 badge bg-primary-50 text-primary-700">
+                        {contentSpeaking?.content?.contentType}
+                      </span>
+                    </div>
+                  </td>
+
+                  <td className="px-4 py-2">
+                    <img
+                      src={`http://localhost:8080/images/content_speaking/${contentSpeaking.image}`}
+                      alt="Thumbnail"
+                      className="w-16 h-16 object-cover rounded"
+                    />
+                  </td>
+
+                  <td className="px-4 py-2">{contentSpeaking.category}</td>
+                  <td className="px-4 py-2">{contentSpeaking.jlptLevel || "N/A"}</td>
+
+                  <td className="px-4 py-2">
+                    <span
+                      className={`text-xs px-2 py-1 rounded font-medium ${contentSpeaking.status === "PUBLIC"
+                        ? "bg-green-100 text-green-700"
+                        : contentSpeaking.status === "PRIVATE"
+                          ? "bg-yellow-100 text-yellow-700"
+                          : "bg-gray-100 text-gray-700"
+                        }`}
+                    >
+                      {contentSpeaking.status}
+                    </span>
+                  </td>
+
+                  <td className="px-4 py-2">
+                    {new Date(contentSpeaking.createdAt).toLocaleDateString()}
+                  </td>
+
+                  <td className="px-4 py-2">
+                    {contentSpeaking.updatedAt
+                      ? new Date(contentSpeaking.updatedAt).toLocaleDateString()
+                      : "Never update"}
+                  </td>
+
+                  <td className="px-4 py-2 space-y-1">
+                    <Link
+                      to={`/admin/content_speaking/${contentSpeaking.contentSpeakingId}/dialogue`}
+                      className="flex items-center text-blue-600 hover:underline mb-1"
+                    >
+                      <MessageSquare size={14} className="mr-1" />
+                      Dialogue
+                    </Link>
+                    {isContentManagerment && (
+                      <div className="flex space-x-2">
+                        <button
+                          onClick={() => startUpdate(contentSpeaking)}
+                          className="text-primary-600 hover:text-primary-800"
+                        >
+                          <Edit size={16} />
+                        </button>
+
+                        {showDeleteConfirm === contentSpeaking.contentSpeakingId ? (
+                          <>
+                            <button
+                              onClick={() => {
+                                handeDelete(contentSpeaking.contentSpeakingId);
+                                setShowDeleteConfirm(null);
+                              }}
+                              className="text-error-500 hover:text-error-700"
+                            >
+                              <Check size={16} />
+                            </button>
+                            <button
+                              onClick={() => setShowDeleteConfirm(null)}
+                              className="text-gray-500 hover:text-gray-700"
+                            >
+                              <X size={16} />
+                            </button>
+                          </>
+                        ) : (
+                          <button
+                            onClick={() => setShowDeleteConfirm(contentSpeaking.contentSpeakingId)}
+                            className="text-error-500 hover:text-error-700"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        )}
+                      </div>
+                    )}
+                    {isContentManagerment && contentSpeaking.status === "DRAFT" && (
+                      <button
+                        onClick={() => handleAccept(contentSpeaking.contentReadingId)}
+                        className="text-green-600 hover:text-green-800 flex items-center mt-2"
+                      >
+                        <Check size={16} className="mr-1" />
+                        Accept
+                      </button>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        ) : (
+          <div className="p-6 text-center text-gray-500">
+            No speaking content found.{search && " Try a different search term."}
+          </div>
+        )}
+      </div>
+
+      {/* Phan Trang */}
+      <ReactPaginate
+        nextLabel="next >"
+        onPageChange={handlePageClick}
+        pageRangeDisplayed={3} // giới hạn trang bên trái 1 2 3 .... 99 100
+        marginPagesDisplayed={2} // giới hạn trang bên phải 1 2 3 .... 99 100
+        pageCount={pageCount}
+        previousLabel="< previous"
+        pageClassName="page-item"
+        pageLinkClassName="page-link"
+        previousClassName="page-item"
+        previousLinkClassName="page-link"
+        nextClassName="page-item"
+        nextLinkClassName="page-link"
+        breakLabel="..."
+        breakClassName="page-item"
+        breakLinkClassName="page-link"
+        containerClassName="pagination"
+        activeClassName="active"
+        renderOnZeroPageCount={null}
+      />
+    </div>
+  );
+}
+
+export default SpeakingContentManagement;

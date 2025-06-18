@@ -1,5 +1,5 @@
 import axios from "./customixe-axios";
-import uploadFile from './UploadFileService';
+import { uploadFile } from './UploadFileService';
 import { toast } from "react-toastify";
 // const [errorMessage, setErrorMessage] = useState('');
 
@@ -9,25 +9,34 @@ const fetchAllContentSpeaking = () => {
 }
 
 const fetchAllContentCategorySpeaking = () => {
-    return axios.get(`/api/content_category/speaking`)
+    return axios.get(`/api/content/category/speaking`)
 }
 
 const handleCreateContent = async (data) => {
+    console.log("data before create:", data)
+    if (data.image === null || data.image === "") {
+        throw new Error("upload image before create");
+    }
+    if (data.category === "") {
+        throw new Error("choose category")
+    }
     try {
         // 1. Upload ảnh trước
-        const imageUrl = await uploadFile(data.image);
+        const imageUrl = await uploadFile(data.image, "images/content_speaking");
         // 2. Gửi dữ liệu content kèm URL ảnh
         const formData = {
             title: data.title,
             image: imageUrl,
             category: data.category,
+            status: data.status,
+            jlptLevel: data.jlptLevel
         };
         const response = await axios.post(`/api/content_speaking`, formData);
         return response;
     } catch (error) {
         const allErrors = error.response?.data?.data?.map(e => `${e.message}`).join(", ");
         console.error("All error", allErrors)
-        throw new Error(allErrors || "can not find error");
+        throw new Error(allErrors || "choose content category");
     }
 };
 
@@ -47,11 +56,14 @@ async function handleDeleteContent(id) {
 
 const handleUpdateContent = async (id, data) => {
     try {
+        console.log("1 data:", data)
         // 1. Upload ảnh trước nếu có
         let imageUrl = data.image;
+        console.log("2 image:", imageUrl)
         if (data.image instanceof File) {
-            imageUrl = await uploadFile(data.image);
+            imageUrl = await uploadFile(data.image, "images/content_speaking");
         }
+        console.log("3 image:", imageUrl)
         // 2. Gửi dữ liệu content kèm URL ảnh
         const formData = {
             title: data.title,
@@ -63,7 +75,7 @@ const handleUpdateContent = async (id, data) => {
     } catch (error) {
         const allErrors = error.response?.data?.data?.map(e => `${e.message}`).join(", ");
         console.error("All error", allErrors)
-        throw new Error(allErrors || "Can not create ");
+        throw new Error(allErrors || "Can not update ");
     }
 }
 
@@ -71,4 +83,11 @@ const getPageContentSpeaking = async (page, size) => {
     return axios.get(`/api/content_speaking?page=${page}&size=${size}`)
 }
 
-export { getPageContentSpeaking, handleUpdateContent, fetchAllContentSpeaking, fetchAllContentCategorySpeaking, handleCreateContent, handleDeleteContent }
+const acceptContent = (id) => {
+    return axios.patch(`/api/content_listening/accept/${id}`)
+}
+
+export {
+    getPageContentSpeaking, handleUpdateContent, fetchAllContentSpeaking, fetchAllContentCategorySpeaking,
+    handleCreateContent, handleDeleteContent, acceptContent
+};

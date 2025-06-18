@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useData } from "../../context/DataContext";
 import { toast } from "react-toastify";
+import ReactPaginate from "react-paginate";
 import {
   Edit,
   Trash2,
@@ -13,33 +14,52 @@ import {
   Check,
   X,
 } from "lucide-react";
+import { a, sub } from "framer-motion/client";
 
 function CourseManagement() {
   // Replace courses with subjects and update methods accordingly
-  const { subjects, addSubject, updateSubject, deleteSubject, addLog, fetchSubjects } =
+  const { addSubject, updateSubject, deleteSubject, addLog, fetchSubjects } =
     useData();
   const [isAdding, setIsAdding] = useState(false);
   const [isEditing, setIsEditing] = useState(null);
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("all");
   const [errorMessage, setErrorMessage] = useState("");
+  const [totalPages, setTotalPages] = useState(0);
+  const [currentPage, setCurrentPage] = useState(0);
+  const [totalElements, setTotalElements] = useState(0);
+  const [subjects, setSubjects] = useState([]);
   const [formData, setFormData] = useState({
     subjectCode: "",
     subjectName: "",
     description: "",
     status: "ACTIVE",
+    thumbnailFile: null,
+    thumbnailPreview: null,
   });
 
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(null);
 
   const status = ["ACTIVE", "DRAFT"];
+  const loadSubjects = async () => {
+    const result = await fetchSubjects(currentPage);
+    setSubjects(result.content);
+    setTotalPages(result.page.totalPages);
+    setTotalElements(result.page.totalElements);
+    if (result.page.number !== currentPage) {
+      setCurrentPage(result.page.number); // Chỉ cập nhật nếu khác
+    }
+  };
 
-  // Fetch subjects on component mount
   useEffect(() => {
-    fetchSubjects();
-  }, []);
+    loadSubjects();
+    console.log("Subjects loaded:", subjects);
+    console.log("Total Pages:", totalPages);
+    console.log("Current Page:", currentPage);
+    console.log("Total Elements:", totalElements);
+  }, [currentPage, totalElements, totalPages]);
 
-  // Filter subjects based on search and status
+  //Filter subjects based on search and status
   const filteredSubjects = subjects.filter((subject) => {
     // Search filter (case insensitive)
     const searchMatch =
@@ -54,15 +74,27 @@ function CourseManagement() {
     return searchMatch && statusMatch;
   });
 
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file && file.type.startsWith("image/")) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setFormData((prev) => ({
+          ...prev,
+          thumbnailFile: file,
+          thumbnailPreview: reader.result,
+        }));
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   // Handle form submission for adding subjects
   const handleAddSubmit = async (e) => {
     e.preventDefault();
-    const subjectPayload = {
-      ...formData,
-    };
-
     try {
-      const newSubject = await addSubject(subjectPayload);
+      const newSubject = await addSubject(formData);
+      toast.success("Subject added successfully.");
       addLog(
         "Subject Created",
         `New subject "${newSubject.subjectCode}" was created`
@@ -72,34 +104,39 @@ function CourseManagement() {
         subjectName: "",
         description: "",
         status: "ACTIVE",
-      }); // Reset form
+        thumbnailFile: null,
+        thumbnailPreview: null,
+      });
       setIsAdding(false);
-      setErrorMessage(""); 
+      setErrorMessage("");
+      await loadSubjects();
     } catch (error) {
       console.error("Failed to add subject:", error);
       setErrorMessage(error.message || "Failed to add subject.");
     }
   };
 
-    // Handle form submission for editing subjects
-  const handleEditSubmit =  async (e) => {
+  // Handle form submission for editing subjects
+  const handleEditSubmit = async (e) => {
     e.preventDefault();
     try {
-      const updatedSubject = await updateSubject(isEditing, {
-        ...formData,
-      });
-      if (!updatedSubject) {
-        throw new Error("Failed to update subject");
-      }
-      addLog("Subject Updated", `Subject "${formData.subjectCode}" was updated`);
+      const updatedSubject = await updateSubject(isEditing, formData);
+      toast.success("Subject updated successfully.");
+      addLog(
+        "Subject Updated",
+        `Subject "${formData.subjectCode}" was updated`
+      );
       setFormData({
-      subjectCode: "",
-      subjectName: "",
-      description: "",
-      status: "ACTIVE",
-    });
+        subjectCode: "",
+        subjectName: "",
+        description: "",
+        status: "ACTIVE",
+        thumbnailFile: null,
+        thumbnailPreview: null,
+      });
       setIsEditing(null);
       setErrorMessage("");
+      await loadSubjects();
     } catch (error) {
       console.error("Failed to update subject:", error);
       setErrorMessage(error.message || "Failed to update subject.");
@@ -107,20 +144,28 @@ function CourseManagement() {
   };
 
   const handleDelete = async (id) => {
-  setShowDeleteConfirm(null);
-  try {
-    await deleteSubject(id);
-    addLog("Subject Deleted", `Subject with ID ${id} was deleted`);
-    toast.success("Subject deleted successfully.");
-  } catch (error) {
-    console.error("Failed to delete subject:", error);
-    const message =
-      error?.response?.data?.message ||
-      error?.message ||
-      "Failed to delete subject.";
-     toast.error(message);
-  }
-};
+    setShowDeleteConfirm(null);
+    console.log("Deleting subject with ID:", id);
+    try {
+      await deleteSubject(id);
+      addLog("Subject Deleted", `Subject with ID ${id} was deleted`);
+      toast.success("Subject deleted successfully.");
+      await loadSubjects();
+    } catch (error) {
+      console.error("Failed to delete subject:", error);
+      const message =
+        error?.response?.data?.message ||
+        error?.message ||
+        "Failed to delete subject.";
+      toast.error("Subject has many lessons, cannot delete.");
+      showDeleteConfirm(null);
+    }
+  };
+
+  const handlePageClick = (event) => {
+    const selectedPage = event.selected;
+    setCurrentPage(selectedPage);
+  };
 
   const startEdit = (subject) => {
     setErrorMessage("");
@@ -129,6 +174,10 @@ function CourseManagement() {
       subjectName: subject.subjectName,
       description: subject.description,
       status: subject.status,
+      thumbnailFile: null,
+      thumbnailPreview:
+        "http://localhost:8080/images/content_learning/" +
+          subject.thumbnailUrl || null,
     });
     setIsEditing(subject.subjectId);
     setIsAdding(false);
@@ -139,10 +188,12 @@ function CourseManagement() {
     setIsAdding(false);
     setIsEditing(null);
     setFormData({
-       subjectCode: "",
-        subjectName: "",
-        description: "",
-        status: "ACTIVE",
+      subjectCode: "",
+      subjectName: "",
+      description: "",
+      status: "ACTIVE",
+      thumbnailFile: null,
+      thumbnailPreview: null,
     });
   };
 
@@ -215,77 +266,191 @@ function CourseManagement() {
       {/* Add/Edit Form */}
       {(isAdding || isEditing) && (
         <div className="card p-6 mb-6">
-          <h2 className="text-xl font-medium mb-4">
-            {isAdding ? "Add New Subject" : "Edit Subject"}
-          </h2>
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-xl font-semibold text-gray-900">
+              {isAdding ? "Add New Subject" : "Edit Subject"}
+            </h2>
+            <button
+              onClick={cancelAction}
+              className="text-gray-500 hover:text-gray-700"
+            >
+              <X size={20} />
+            </button>
+          </div>
+
           {errorMessage && (
-            <div className="mb-4 p-3 rounded bg-red-100 text-red-700 text-sm flex items-center justify-between">
-              <p className="mb-2">{errorMessage}</p>
-              <button className="text-red-700 hover:text-red-900" onClick={() => setErrorMessage("")}>X</button>
+            <div className="mb-6 p-4 rounded-lg bg-red-50 border border-red-200">
+              <div className="flex">
+                <div
+                  className="flex-shrink-0"
+                  onClick={() => setErrorMessage("")}
+                >
+                  <X className="h-5 w-5 text-red-400" />
+                </div>
+                <div className="ml-3">
+                  <h3 className="text-sm font-medium text-red-800">
+                    Error occurred
+                  </h3>
+                  <div className="mt-2 text-sm text-red-700">
+                    <p>{errorMessage}</p>
+                  </div>
+                </div>
+              </div>
             </div>
           )}
-          <form onSubmit={isAdding ? handleAddSubmit : handleEditSubmit}>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+
+          <form
+            onSubmit={isAdding ? handleAddSubmit : handleEditSubmit}
+            className="space-y-6"
+          >
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Subject Code */}
               <div className="md:col-span-2">
                 <label
                   htmlFor="subjectCode"
                   className="block text-sm font-medium text-gray-700 mb-1"
                 >
-                  Subject Code
+                  Subject Code <span className="text-red-500">*</span>
                 </label>
-                <input
-                  id="subjectCode"
-                  type="text"
-                  required
-                  value={formData.subjectCode}
-                  onChange={(e) =>
-                    setFormData({ ...formData, subjectCode: e.target.value })
-                  }
-                />
+                <div className="relative rounded-md shadow-sm">
+                  <input
+                    id="subjectCode"
+                    type="text"
+                    required
+                    value={formData.subjectCode}
+                    onChange={(e) =>
+                      setFormData({ ...formData, subjectCode: e.target.value })
+                    }
+                    className="block w-full rounded-md border-gray-300 pr-10 focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+                    placeholder="Enter subject code"
+                  />
+                  <div className="absolute inset-y-0 right-0 flex items-center pr-3">
+                    <Book className="h-5 w-5 text-gray-400" />
+                  </div>
+                </div>
+                <p className="mt-1 text-sm text-gray-500">
+                  A unique identifier for the subject
+                </p>
               </div>
+
+              {/* Subject Name */}
               <div className="md:col-span-2">
                 <label
                   htmlFor="subjectName"
                   className="block text-sm font-medium text-gray-700 mb-1"
                 >
-                  Subject Name
+                  Subject Name <span className="text-red-500">*</span>
                 </label>
-                <input
-                  id="subjectName"
-                  type="text"
-                  required
-                  value={formData.subjectName}
-                  onChange={(e) =>
-                    setFormData({ ...formData, subjectName: e.target.value })
-                  }
-                />
+                <div className="relative rounded-md shadow-sm">
+                  <input
+                    id="subjectName"
+                    type="text"
+                    required
+                    value={formData.subjectName}
+                    onChange={(e) =>
+                      setFormData({ ...formData, subjectName: e.target.value })
+                    }
+                    className="block w-full rounded-md border-gray-300 pr-10 focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+                    placeholder="Enter subject name"
+                  />
+                  <div className="absolute inset-y-0 right-0 flex items-center pr-3">
+                    <Book className="h-5 w-5 text-gray-400" />
+                  </div>
+                </div>
+                <p className="mt-1 text-sm text-gray-500">
+                  The full name of the subject
+                </p>
               </div>
 
+              {/* Description */}
               <div className="md:col-span-2">
                 <label
                   htmlFor="description"
                   className="block text-sm font-medium text-gray-700 mb-1"
                 >
-                  Description
+                  Description <span className="text-red-500">*</span>
                 </label>
                 <textarea
                   id="description"
-                  rows={3}
+                  rows={4}
                   required
                   value={formData.description}
                   onChange={(e) =>
                     setFormData({ ...formData, description: e.target.value })
                   }
-                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
+                  className="block w-full rounded-md border-gray-300 focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+                  placeholder="Enter subject description"
                 />
+                <p className="mt-1 text-sm text-gray-500">
+                  Provide a detailed description of the subject
+                </p>
               </div>
 
+              {/* Thumbnail Upload */}
+              <div className="md:col-span-2">
+                <label
+                  htmlFor="thumbnail"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
+                  Thumbnail Image
+                </label>
+                <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-lg">
+                  <div className="space-y-1 text-center">
+                    {formData.thumbnailPreview ? (
+                      <div className="relative">
+                        <img
+                          src={formData.thumbnailPreview}
+                          alt="Thumbnail preview"
+                          className="mx-auto h-32 w-auto object-cover rounded-lg"
+                        />
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setFormData((prev) => ({
+                              ...prev,
+                              thumbnailFile: null,
+                              thumbnailPreview: null,
+                            }))
+                          }
+                          className="absolute -top-2 -right-2 p-1 bg-red-100 rounded-full hover:bg-red-200"
+                        >
+                          <X className="h-4 w-4 text-red-600" />
+                        </button>
+                      </div>
+                    ) : (
+                      <>
+                        <div className="flex text-sm text-gray-600">
+                          <label
+                            htmlFor="thumbnail"
+                            className="relative cursor-pointer bg-white rounded-md font-medium text-primary-600 hover:text-primary-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-primary-500"
+                          >
+                            <span>Upload a file</span>
+                            <input
+                              id="thumbnail"
+                              type="file"
+                              accept="image/*"
+                              onChange={handleFileChange}
+                              className="sr-only"
+                            />
+                          </label>
+                          <p className="pl-1">or drag and drop</p>
+                        </div>
+                        <p className="text-xs text-gray-500">
+                          PNG, JPG, GIF up to 10MB
+                        </p>
+                      </>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Status */}
               <div>
                 <label
                   htmlFor="status"
                   className="block text-sm font-medium text-gray-700 mb-1"
                 >
-                  Status
+                  Status <span className="text-red-500">*</span>
                 </label>
                 <select
                   id="status"
@@ -293,28 +458,33 @@ function CourseManagement() {
                   onChange={(e) =>
                     setFormData({ ...formData, status: e.target.value })
                   }
-                  className="rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 w-full"
+                  className="block w-full rounded-md border-gray-300 focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
                 >
-                  {Array.isArray(status) &&
-                    status.map((s) => (
-                      <option key={s} value={s}>
-                        {s}
-                      </option>
-                    ))}
+                  {status.map((s) => (
+                    <option key={s} value={s}>
+                      {s}
+                    </option>
+                  ))}
                 </select>
+                <p className="mt-1 text-sm text-gray-500">
+                  Set the current status of the subject
+                </p>
               </div>
             </div>
 
-            <div className="flex justify-end space-x-3">
+            <div className="flex justify-end space-x-3 pt-4 border-t">
               <button
                 type="button"
                 onClick={cancelAction}
-                className="btn-outline"
+                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
               >
                 Cancel
               </button>
-              <button type="submit" className="btn-primary">
-                {isAdding ? "Add Subject" : "Save Changes"}
+              <button
+                type="submit"
+                className="px-4 py-2 text-sm font-medium text-white bg-primary-600 border border-transparent rounded-md shadow-sm hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+              >
+                {isAdding ? "Create Subject" : "Save Changes"}
               </button>
             </div>
           </form>
@@ -341,14 +511,22 @@ function CourseManagement() {
                   <tr key={subject.subjectId} className="animate-fade-in">
                     <td className="px-6 py-4">
                       <div className="flex items-start">
-                        <div className="h-10 w-10 flex-shrink-0 rounded-md bg-primary-100 flex items-center justify-center">
-                          <Book className="h-5 w-5 text-primary-600" />
+                        <div className="h-10 w-10 flex-shrink-0 rounded-md overflow-hidden">
+                          <img
+                            src={
+                              subject.thumbnailUrl
+                                ? `http://localhost:8080/images/content_learning/${subject.thumbnailUrl}`
+                                : "https://via.placeholder.com/40"
+                            }
+                            alt={subject.subjectName}
+                            className="h-full w-full object-cover"
+                          />
                         </div>
                         <div className="ml-4">
                           <div className="font-medium text-gray-900">
                             {subject.subjectName}
                           </div>
-                          <div className="text-sm text-gray-500 line-clamp-1">
+                          <div className="text-sm text-gray-500 whitespace-pre-line max-h-20 overflow-y-auto">
                             {subject.description}
                           </div>
                         </div>
@@ -401,7 +579,7 @@ function CourseManagement() {
                       ) : (
                         <div className="flex items-center space-x-2">
                           <Link
-                            to={`/admin/courses/${subject.subjectId}/lessons`}
+                            to={`/admin/courses/${subject.subjectId}/lessons?subjectPage=${currentPage}`}
                             className="text-secondary-600 hover:text-secondary-800"
                             title="Manage Lessons"
                           >
@@ -445,8 +623,34 @@ function CourseManagement() {
           </table>
         </div>
       </div>
+      {/* Phan Trang */}
+      <ReactPaginate
+        className="pagination mt-6 justify-center"
+        nextLabel="next >"
+        onPageChange={handlePageClick}
+        pageRangeDisplayed={3} // giới hạn trang bên trái 1 2 3 .... 99 100
+        marginPagesDisplayed={2} // giới hạn trang bên phải 1 2 3 .... 99 100
+        pageCount={totalPages}
+        previousLabel="< previous"
+        pageClassName="page-item"
+        pageLinkClassName="page-link"
+        previousClassName="page-item"
+        previousLinkClassName="page-link"
+        nextClassName="page-item"
+        nextLinkClassName="page-link"
+        breakLabel="..."
+        breakClassName="page-item"
+        breakLinkClassName="page-link"
+        containerClassName="pagination"
+        activeClassName="active"
+        renderOnZeroPageCount={null}
+      />
     </div>
   );
+
+  const value = {
+    currentPage,
+  };
 }
 
 export default CourseManagement;

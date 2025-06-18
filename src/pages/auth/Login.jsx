@@ -1,23 +1,37 @@
-import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { BookOpen, Mail, Lock, Github, ToggleLeft as Google, Facebook } from 'lucide-react';
 
 function Login() {
-  const navigate = useNavigate();
-  const { login, loginWithProvider, loading} = useAuth();
+  const { login, loginWithProvider, loading } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const location = useLocation();
+  const [successMessage, setSuccessMessage] = useState('');
+  const isAdminLogin = location.pathname.startsWith('/admin');
+
+
+  useEffect(() => {
+    if (location.state?.successMessage) {
+      setSuccessMessage(location.state.successMessage);
+
+      const timer = setTimeout(() => {
+        setSuccessMessage('');
+      }, 5000); // 5 giây
+
+      return () => clearTimeout(timer);
+    }
+  }, [location.state]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
       setError('');
-      await login(email, password);
-      navigate('/homePage');
+      await login(email, password, isAdminLogin);
     } catch (err) {
-      setError('Failed to sign in');
+      setError(err.message);
     }
   };
 
@@ -25,7 +39,7 @@ function Login() {
     try {
       setError('');
       await loginWithProvider(provider);
-      navigate('/homePage');
+
     } catch (err) {
       setError(`Failed to sign in with ${provider}`);
     }
@@ -42,12 +56,14 @@ function Login() {
         <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
           Sign in to your account
         </h2>
-        <p className="mt-2 text-center text-sm text-gray-600">
-          Or{' '}
-          <Link to="/register" className="font-medium text-primary-600 hover:text-primary-500">
-            create a new account
-          </Link>
-        </p>
+        {!isAdminLogin && (
+          <p className="mt-2 text-center text-sm text-gray-600">
+            Or{' '}
+            <Link to="/register1" className="font-medium text-primary-600 hover:text-primary-500">
+              create a new account
+            </Link>
+          </p>
+        )}
       </div>
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
@@ -57,7 +73,11 @@ function Login() {
               {error}
             </div>
           )}
-
+          {successMessage && (
+            <div className="mb-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded">
+              {successMessage}
+            </div>
+          )}
           <form className="space-y-6" onSubmit={handleSubmit}>
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700">
@@ -70,8 +90,8 @@ function Login() {
                 <input
                   id="email"
                   name="email"
-                  type="email"
-                  autoComplete="email"
+                  type={isAdminLogin ? 'text' : 'email'}
+                  autoComplete={isAdminLogin ? 'username' : 'email'}
                   required
                   className="pl-10"
                   value={email}
@@ -102,23 +122,14 @@ function Login() {
             </div>
 
             <div className="flex items-center justify-between">
-              <div className="flex items-center">
-                <input
-                  id="remember-me"
-                  name="remember-me"
-                  type="checkbox"
-                  className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
-                />
-                <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-900">
-                  Remember me
-                </label>
-              </div>
 
-              <div className="text-sm">
-                <Link to="/forgot-password" className="font-medium text-primary-600 hover:text-primary-500">
-                  Forgot your password?
-                </Link>
-              </div>
+              {!isAdminLogin && (
+                <div className="text-sm">
+                  <Link to="/forgot-password" className="font-medium text-primary-600 hover:text-primary-500">
+                    Forgot your password?
+                  </Link>
+                </div>
+              )}
             </div>
 
             <div>
@@ -140,34 +151,22 @@ function Login() {
           </form>
 
           <div className="mt-6">
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-300" />
-              </div>
-              <div className="relative flex justify-center text-sm">
-                <span className="px-2 bg-white text-gray-500">Or continue with</span>
-              </div>
-            </div>
-
-            <div className="mt-6 grid grid-cols-3 gap-3">
+            <div className={`flex gap-3 ${isAdminLogin ? 'justify-center' : 'justify-between'}`}>
               <button
                 onClick={() => handleProviderLogin('google')}
-                className="btn-outline py-2 px-4 flex justify-center items-center"
+                className="btn-outline py-2 px-4 flex justify-center items-center w-40"
               >
                 <Google className="h-5 w-5" />
               </button>
-              <button
-                onClick={() => handleProviderLogin('facebook')}
-                className="btn-outline py-2 px-4 flex justify-center items-center"
-              >
-                <Facebook className="h-5 w-5" />
-              </button>
-              <button
-                onClick={() => handleProviderLogin('github')}
-                className="btn-outline py-2 px-4 flex justify-center items-center"
-              >
-                <Github className="h-5 w-5" />
-              </button>
+
+              {!isAdminLogin && (
+                <button
+                  onClick={() => handleProviderLogin('facebook')}
+                  className="btn-outline py-2 px-4 flex justify-center items-center w-40"
+                >
+                  <Facebook className="h-5 w-5" />
+                </button>
+              )}
             </div>
           </div>
         </div>

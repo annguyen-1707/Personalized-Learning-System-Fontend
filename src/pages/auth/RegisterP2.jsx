@@ -6,10 +6,10 @@ import { useAuth } from '../../context/AuthContext';
 
 
 function RegisterP2() {
-  const { register2 } = useAuth();
+  const { register2, setUser } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const email = location.state?.email;
+  const email = location.state?.email || localStorage.getItem("email");
 
   const [formData, setFormData] = useState({
     fullName: '',
@@ -18,6 +18,7 @@ function RegisterP2() {
     // avatar: '',
     gender: '',
     phone: '',
+    role: ''
   });
   const [error, setError] = useState('');
 
@@ -28,17 +29,74 @@ function RegisterP2() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!formData.role || !formData.gender) {
+      setError('Please select all required fields');
+      return;
+    }
     try {
       setError('');
-      console.log("✅ SUBMIT CALLED" + formData.fullName);
       await register2(
+
+        email,
         formData.fullName,
         formData.dob,
         formData.address,
         formData.gender,
-        formData.phone
+        formData.phone,
+        formData.role
       );
-      navigate('/learn');
+      if (!email || !email === "undefined") {
+        try {
+          const provider = 'FACEBOOK'
+          const res = await fetch('http://localhost:8080/auth/getOAuthToken', {
+            method: 'Post',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email,  provider}),
+            credentials: 'include'
+          });
+
+          const data = await res.json()
+
+          if (!res.ok) {
+            throw new Error(data.message);
+          }
+
+          localStorage.setItem("accessToken", data.data.accessToken);
+
+          const userRes = await fetch('http://localhost:8080/auth/user', {
+            headers: { Authorization: `Bearer ${data.data.accessToken}` }
+          });
+          const userData = await userRes.json();
+          if (!userRes.status === "OK") {
+            throw new Error(userData.message || 'Failed to fetch user data');
+          }
+          setUser(userData.data);
+          const role = userData.data.roleName;
+          console.log("ádasddasd", userData.data.parents)
+          if (role === "PARENT") {
+            navigate("/parentpage");
+          } else if (role === "USER") {
+            navigate("/");
+          }
+          else {
+            navigate("/admin");
+          }
+
+        } catch (error) {
+          console.error('Login failed:', error);
+          throw error;
+
+        }
+
+        return;
+      }
+      else{
+        navigate('/login', { state: { successMessage: 'Register Successfully' } });
+      }
+
+
+
+
     } catch (err) {
       setError('Failed to create an account');
     }
@@ -85,7 +143,6 @@ function RegisterP2() {
                 />
               </div>
             </div>
-
             <div>
               <label htmlFor="dob" className="block text-sm font-medium text-gray-700">
                 Date of Birth
@@ -168,12 +225,12 @@ function RegisterP2() {
               </label>
               <div className="mt-1 relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Phone className="h-5 w-5 text-gray-400" />
+                  <User className="h-5 w-5 text-gray-400" />
                 </div>
                 <input
                   id="phone"
                   name="phone"
-                  type="tel"
+                  type="text"
                   required
                   className="pl-10 w-full border-gray-300 rounded-md"
                   value={formData.phone}
@@ -182,6 +239,31 @@ function RegisterP2() {
               </div>
             </div>
 
+            <div className="mt-4 pl-1">
+              <label className="block text-sm font-medium text-gray-700 mb-1">Register for:</label>
+              <div className="flex items-center space-x-4">
+                <label className="flex items-center space-x-2">
+                  <input
+                    type="radio"
+                    name="role"
+                    value="PARENT"
+                    checked={formData.role === 'PARENT'}
+                    onChange={handleChange}
+                  />
+                  <span>Parent</span>
+                </label>
+                <label className="flex items-center space-x-2">
+                  <input
+                    type="radio"
+                    name="role"
+                    value="USER"
+                    checked={formData.role === 'USER'}
+                    onChange={handleChange}
+                  />
+                  <span>Student</span>
+                </label>
+              </div>
+            </div>
             <div>
               <button type="submit" className="w-full btn-primary py-2 px-4">
                 Create profile

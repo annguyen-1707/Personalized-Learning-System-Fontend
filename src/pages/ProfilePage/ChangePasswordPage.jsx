@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
+import axios from "../../services/customixe-axios"; // Adjust the import path as necessary
 import { User } from "lucide-react";
 
 function ChangePasswordPage() {
+  const useremail = localStorage.getItem("useremail");  
   const navigate = useNavigate();
   const [passwords, setPasswords] = useState({
     current: "",
@@ -21,31 +22,31 @@ function ChangePasswordPage() {
     e.preventDefault();
     if (!passwords.current.trim() || !passwords.new.trim() || !passwords.confirm.trim()) {
       setError("All password fields are required.");
-      return;
-    }
-    if (passwords.new !== passwords.confirm) {
-      setError("New passwords do not match.");
-      return;
-    }
-    if (passwords.new.length < 8) {
-      setError("New password must be at least 8 characters long.");
+      setSuccess("");
       return;
     }
     setError("");
     setSuccess("");
     try {
       await axios.post("http://localhost:8080/api/user/change-password", {
-        email: useremail,
+        // email: useremail,
         currentPassword: passwords.current,
         newPassword: passwords.new,
         confirmPassword: passwords.confirm,
-      });
-      setSuccess("Password changed successfully!");
-      setTimeout(() => navigate("/profile/edit"), 1500);
+      },{ withCredentials: true });
+      setSuccess("Password changed successfully! You will be redirected shortly.");
+      setTimeout(() => navigate("/profile/edit"), 3000);
     } catch (err) {
-      setError(
-        err.response?.data?.message || "Failed to change password"
-      );
+      if (err.response?.data?.message) {
+        setError(err.response.data.message);
+      } else if (err.response?.data && typeof err.response.data === "string") {
+        setError(err.response.data);
+      } else if (err.message) {
+        setError(err.message);
+      } else {
+        setError("Failed to change password");
+      }
+      setSuccess("");
     }
   };
 

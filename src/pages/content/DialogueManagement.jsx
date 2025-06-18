@@ -18,7 +18,7 @@ function DialogueManagement() {
     const { contentSpeakingId } = useParams();
     const [pageCount, setPageCount] = useState(0); // so luong trang page
     const [currentPage, setCurrentPage] = useState(1); // trang page hien tai
-    const [size, setSize] = useState(5); // 1trang bn phan tu
+    const [size, setSize] = useState(6); // 1trang bn phan tu
     const [totalElements, setTotalElements] = useState(); // tong phan tu
     const [formData, setFormData] = useState({
         questionJp: '',
@@ -82,8 +82,8 @@ function DialogueManagement() {
         console.log("Data page", res)
         if (res && res.data && res.data.content) {
             setDialogues(res.data.content);
-            setPageCount(res.data.totalPages);
-            setTotalElements(res.data.totalElements)
+            setPageCount(res.data.page.totalPages);
+            setTotalElements(res.data.page.totalElements)
         } else {
             console.error("Failed to fetch dialogues");
         }
@@ -144,10 +144,10 @@ function DialogueManagement() {
                             onChange={(e) => handleChangeSize(e.target.value)
                             }
                         >
-                            <option value="5">5</option>
-                            <option value="10">10</option>
-                            <option value="20">20</option>
-                            <option value="50">50</option>
+                            <option value="6">6</option>
+                            <option value="12">12</option>
+                            <option value="24">24</option>
+                            <option value="60">60</option>
                             <option value={totalElements} >All </option>
                         </select>
                     </div>
@@ -262,49 +262,41 @@ function DialogueManagement() {
 
             {/* Dialogues List */}
             <div className="card mb-4">
-                <div className="divide-y divide-gray-200">
-                    {filteredDialogues?.length > 0 ? (
-                        filteredDialogues.map((dialogue, index) => (
-                            <div key={dialogue.dialogueId || index} className="p-6 hover:bg-gray-50">
-                                <div className="flex justify-between items-start">
-                                    <div className="flex-1">
-                                        <div className="flex items-center mb-4">
-                                            <MessageSquare className="h-5 w-5 text-primary-600 mr-2" />
-                                            <span className="badge bg-primary-50 text-primary-700">
-                                                {dialogue?.contentSpeaking?.category}
-                                            </span>
+                {filteredDialogues?.length > 0 ? (
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        {filteredDialogues.map((dialogue, index) => (
+                            <div key={dialogue.dialogueId || index} className="p-6 border rounded-lg shadow hover:bg-gray-50">
+                                <div className="flex flex-col h-full">
+                                    <div className="flex items-center mb-4">
+                                        <MessageSquare className="h-5 w-5 text-primary-600 mr-2" />
+                                        <span className="badge bg-primary-50 text-primary-700">
+                                            {dialogue?.contentSpeaking?.category}
+                                        </span>
+                                    </div>
+
+                                    <div className="grid grid-cols-1 gap-4 flex-1">
+                                        <div>
+                                            <p className="text-sm font-medium text-gray-500">Question (Japanese)</p>
+                                            <p className="text-gray-900">{dialogue.questionJp}</p>
                                         </div>
-
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                            <div className="space-y-2">
-                                                <div>
-                                                    <p className="text-sm font-medium text-gray-500">Question (Japanese)</p>
-                                                    <p className="text-gray-900">{dialogue.questionJp}</p>
-                                                </div>
-                                                <div>
-                                                    <p className="text-sm font-medium text-gray-500">Question (Vietnamese)</p>
-                                                    <p className="text-gray-700">{dialogue.questionVn}</p>
-                                                </div>
-                                            </div>
-
-                                            <div className="space-y-2">
-                                                <div>
-                                                    <p className="text-sm font-medium text-gray-500">Answer (Japanese)</p>
-                                                    <p className="text-gray-900">{dialogue.answerJp}</p>
-                                                </div>
-                                                <div>
-                                                    <p className="text-sm font-medium text-gray-500">Answer (Vietnamese)</p>
-                                                    <p className="text-gray-700">{dialogue.answerVn}</p>
-                                                </div>
-                                            </div>
+                                        <div>
+                                            <p className="text-sm font-medium text-gray-500">Question (Vietnamese)</p>
+                                            <p className="text-gray-700">{dialogue.questionVn}</p>
+                                        </div>
+                                        <div>
+                                            <p className="text-sm font-medium text-gray-500">Answer (Japanese)</p>
+                                            <p className="text-gray-900">{dialogue.answerJp}</p>
+                                        </div>
+                                        <div>
+                                            <p className="text-sm font-medium text-gray-500">Answer (Vietnamese)</p>
+                                            <p className="text-gray-700">{dialogue.answerVn}</p>
                                         </div>
                                     </div>
 
-                                    <div className="ml-4 flex items-center">
+                                    <div className="mt-auto flex justify-end pt-4">
                                         {showDeleteConfirm === dialogue.dialogueId ? (
                                             <div className="flex items-center space-x-2">
                                                 <span className="text-xs text-gray-500">Delete?</span>
-
                                                 <button
                                                     onClick={() => handleDelete(dialogue.dialogueId)}
                                                     className="text-error-500 hover:text-error-700"
@@ -337,13 +329,15 @@ function DialogueManagement() {
                                     </div>
                                 </div>
                             </div>
-                        ))) : (
-                        <div className="p-6 text-center text-gray-500">
-                            <p>No dialogues found. Please add a new dialogue.</p>
-                        </div>
-                    )}
-                </div>
+                        ))}
+                    </div>
+                ) : (
+                    <div className="p-6 text-center text-gray-500">
+                        <p>No dialogues found. Please add a new dialogue.</p>
+                    </div>
+                )}
             </div>
+
             {/* Phan trang */}
             <ReactPaginate
                 nextLabel="next >"

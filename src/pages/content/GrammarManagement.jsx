@@ -1,159 +1,212 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { ArrowLeft, Plus, Search, Edit, Trash2, Check, X, Filter, Book } from 'lucide-react';
+import ReactPaginate from 'react-paginate';
+import { useData } from "../../context/DataContext";
+import { getPageAllGrammar, getGrammarByContentReadingId, handleAddGrammar, handleRemoveGrammar } from '../../services/ContentReadingService';
 
 function GrammarManagement() {
-  const { contentId } = useParams();
+  const { contentReadingId } = useParams();
   const [selectedGrammar, setSelectedGrammar] = useState([]);
   const [search, setSearch] = useState('');
+  const [size, setSize] = useState(6); // 1trang bn phan tu
+  const [pageCount, setPageCount] = useState(0); // so luong trang page
+  const [totalElements, setTotalElements] = useState(); // tong phan tu
+  const [currentPage, setCurrentPage] = useState(1); // trang page hien tai
+  const [allGrammar, setAllGrammar] = useState([]); // To store all grammar items
+  const [levers, setLevers] = useState([]); // To store unique courses
+  const jlptLevelClassMap = {
+    N5: "bg-success-50 text-success-700",
+    N4: "bg-primary-50 text-primary-700",
+    N3: "bg-warning-50 text-warning-700",
+    N2: "bg-orange-50 text-orange-700",
+    N1: "bg-error-50 text-error-700",
+  };
+  const {
+    fetchLevels
+  } = useData();
   const [filters, setFilters] = useState({
-    course: '',
-    lesson: ''
+    lever: '',
   });
 
-  // Mock data for demonstration
-  const [availableGrammar] = useState([
-    {
-      id: '1',
-      pattern: 'てform + います',
-      explanation: 'Used to express ongoing actions',
-      examples: ['食べています - I am eating', '勉強しています - I am studying'],
-      course: 'Basic Japanese',
-      lesson: 'Present Continuous'
-    },
-    {
-      id: '2',
-      pattern: 'なければなりません',
-      explanation: 'Must do something / have to do something',
-      examples: ['勉強しなければなりません - I must study', '行かなければなりません - I have to go'],
-      course: 'Basic Japanese',
-      lesson: 'Obligations'
+  useEffect(() => {
+    getPageGrammarAvailable(1);
+    getGrammarByContentId(contentReadingId);
+    getListLever();
+  }, [size]);
+
+  const handleAddGrammarInContentReading = async (grammarId) => {
+    await handleAddGrammar(contentReadingId, grammarId);
+    await getPageGrammarAvailable(currentPage);
+    await getGrammarByContentId(contentReadingId);
+  };
+
+  const handleRemoveGrammarFromContentReading = async (grammarId) => {
+    await handleRemoveGrammar(contentReadingId, grammarId);
+    await getPageGrammarAvailable(currentPage);
+    await getGrammarByContentId(contentReadingId);
+  };
+
+  const getPageGrammarAvailable = async (page) => {
+    console.log(" Before", page, size);
+    let res = await getPageAllGrammar(page, size);
+    if (res && res.data && res.data.content) {
+      setPageCount(res.data.page.totalPages);
+      setTotalElements(res.data.page.totalElements);
+      setAllGrammar(res.data.content);
+      setCurrentPage(page);
     }
-  ]);
+  }
 
-  const handleAddGrammar = (grammar) => {
-    setSelectedGrammar([...selectedGrammar, grammar]);
-  };
+  const handleChangeSize = async (newSize) => {
+    setSize(newSize);
+  }
 
-  const handleRemoveGrammar = (id) => {
-    setSelectedGrammar(selectedGrammar.filter(g => g.id !== id));
-  };
+  const getListLever = async () => {
+    let res = await fetchLevels();
+    if (res) {
+      setLevers(res);
+    }
+    console.log("res", res);
+  }
+
+  const getGrammarByContentId = async (contentId) => {
+    let res = await getGrammarByContentReadingId(contentId);
+    if (res && res.data) {
+      setSelectedGrammar(res.data);
+    }
+  }
 
   // Get unique courses and lessons for filters
-  const courses = [...new Set(availableGrammar.map(g => g.course))];
-  const lessons = [...new Set(availableGrammar.map(g => g.lesson))];
+
 
   // Filter grammar based on search and filters
-  const filteredGrammar = availableGrammar.filter(grammar => {
-    const searchMatch = 
-      grammar.pattern.toLowerCase().includes(search.toLowerCase()) ||
-      grammar.explanation.toLowerCase().includes(search.toLowerCase()) ||
-      grammar.examples.some(ex => ex.toLowerCase().includes(search.toLowerCase()));
-    
-    const courseMatch = !filters.course || grammar.course === filters.course;
-    const lessonMatch = !filters.lesson || grammar.lesson === filters.lesson;
-    
-    return searchMatch && courseMatch && lessonMatch;
+  const filteredGrammar = allGrammar.filter(grammar => {
+    const searchMatch =
+      (grammar.structure?.toLowerCase() ?? '').includes(search.toLowerCase()) ||
+      (grammar.meaning?.toLowerCase() ?? '').includes(search.toLowerCase()) ||
+      (grammar.titleJp?.toLowerCase() ?? '').includes(search.toLowerCase()) ||
+      (grammar.example?.toLowerCase() ?? '').includes(search.toLowerCase()) ||
+      (grammar.usage?.toLowerCase() ?? '').includes(search.toLowerCase());
+
+    const leverMatch = !filters.lever || grammar.jlptLevel === filters.lever;
+
+    return searchMatch && leverMatch;
   });
+
+  const handlePageClick = (event) => {
+    const selectedPage = +event.selected + 1;
+    setCurrentPage(selectedPage);
+    getPageGrammarAvailable(selectedPage);
+  }
 
   return (
     <div className="animate-fade-in">
       <div className="mb-6">
-        <Link to="/content/reading" className="inline-flex items-center text-primary-600 hover:text-primary-800 mb-4">
+        <Link to="/admin/content_reading" className="inline-flex items-center text-primary-600 hover:text-primary-800 mb-4">
           <ArrowLeft size={16} className="mr-1" />
           Back to Reading Content
         </Link>
-        
+
         <h1 className="text-2xl font-bold text-gray-900">Grammar Management</h1>
-        <p className="text-gray-500 mt-1">Manage grammar points for this content</p>
+        <p className="text-gray-500 mt-1">Manage grammar items for this content</p>
       </div>
 
       {/* Selected Grammar List */}
       <div className="card p-6 mb-6">
-        <h2 className="text-lg font-medium text-gray-900 mb-4">Selected Grammar Points</h2>
+        <h2 className="text-lg font-medium text-gray-900 mb-4">Selected Grammar</h2>
         {selectedGrammar.length > 0 ? (
-          <div className="divide-y divide-gray-200">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-4">
             {selectedGrammar.map((grammar) => (
-              <div key={grammar.id} className="py-4">
-                <div className="flex items-start justify-between">
-                  <div>
-                    <p className="font-medium text-gray-900">{grammar.pattern}</p>
-                    <p className="text-sm text-gray-500 mt-1">{grammar.explanation}</p>
-                    <div className="mt-2 space-y-1">
-                      {grammar.examples.map((example, index) => (
-                        <p key={index} className="text-sm text-gray-600 pl-3 border-l-2 border-primary-200">
-                          {example}
-                        </p>
-                      ))}
-                    </div>
-                  </div>
-                  <button
-                    onClick={() => handleRemoveGrammar(grammar.id)}
-                    className="text-error-500 hover:text-error-700"
+              <div
+                key={grammar.grammarId}
+                className="bg-white border rounded p-3 shadow-sm relative"
+              >
+                <button
+                  onClick={() => handleRemoveGrammarFromContentReading(grammar.grammarId)}
+                  className="absolute top-1 right-1 text-error-500 hover:text-error-700"
+                >
+                  <Trash2 size={14} />
+                </button>
+
+                <h3 className="text-sm font-semibold text-gray-900">{grammar.titleJp}</h3>
+                <p className="text-xs text-gray-500 mt-1">
+                  <strong>Structure:</strong> {grammar.structure}
+                </p>
+                <p className="text-xs text-gray-700">
+                  <strong>Meaning:</strong> {grammar.meaning}
+                </p>
+
+                {grammar.example && (
+                  <p className="text-xs text-gray-700 italic mt-1">
+                    <strong>Ex:</strong> “{grammar.example}”
+                  </p>
+                )}
+
+                <p className="text-[11px] text-gray-400 mt-1">
+                  <strong>Usage:</strong> {grammar.usage}
+                </p>
+
+                {grammar.jlptLevel && (
+                  <span
+                    className={`badge mt-2 text-[10px] ${jlptLevelClassMap[grammar.jlptLevel] || "bg-gray-100 text-gray-500"}`}
                   >
-                    <Trash2 size={16} />
-                  </button>
-                </div>
+                    {grammar.jlptLevel}
+                  </span>
+                )}
               </div>
             ))}
           </div>
         ) : (
-          <p className="text-gray-500 text-center py-4">No grammar points selected</p>
+          <p className="text-gray-500 text-center py-4">No grammar items selected</p>
         )}
       </div>
 
+
       {/* Search and Filters */}
       <div className="card p-4 mb-6">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div>
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <Search size={18} className="text-gray-400" />
-              </div>
-              <input
-                type="text"
-                placeholder="Search grammar points..."
-                className="pl-10"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-              />
-            </div>
+        <div className="flex items-center gap-4">
+          <div className="relative w-1/5">
+            <select
+              className="w-full border border-gray-300 rounded-md py-2 px-2"
+              value={size}
+              onChange={(e) => handleChangeSize(e.target.value)
+              }
+            >
+              <option value="6">6</option>
+              <option value="12">12</option>
+              <option value="24">24</option>
+              <option value="60">60</option>
+              <option value={totalElements} >All </option>
+            </select>
           </div>
-          
-          <div>
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <Book size={18} className="text-gray-400" />
-              </div>
-              <select
-                className="pl-10 rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 w-full"
-                value={filters.course}
-                onChange={(e) => setFilters({...filters, course: e.target.value})}
-              >
-                <option value="">All Courses</option>
-                {courses.map(course => (
-                  <option key={course} value={course}>{course}</option>
-                ))}
-              </select>
+          <div className="relative w-3/5">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <Search size={18} className="text-gray-400" />
             </div>
+            <input
+              type="text"
+              placeholder="Search grammar..."
+              className="pl-10"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
           </div>
-          
-          <div>
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <Filter size={18} className="text-gray-400" />
-              </div>
-              <select
-                className="pl-10 rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 w-full"
-                value={filters.lesson}
-                onChange={(e) => setFilters({...filters, lesson: e.target.value})}
-              >
-                <option value="">All Lessons</option>
-                {lessons.map(lesson => (
-                  <option key={lesson} value={lesson}>{lesson}</option>
-                ))}
-              </select>
+
+          <div className="relative w-1/5">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <Book size={18} className="text-gray-400" />
             </div>
+            <select
+              className="pl-10 pr-3 rounded-md border border-gray-300 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 w-full"
+              value={filters.lever}
+              onChange={(e) => setFilters({ ...filters, lever: e.target.value })}
+            >
+              <option value="">All lever</option>
+              {levers.map(lever => (
+                <option key={lever} value={lever}>{lever}</option>
+              ))}
+            </select>
           </div>
         </div>
       </div>
@@ -161,44 +214,92 @@ function GrammarManagement() {
       {/* Available Grammar List */}
       <div className="card">
         <div className="p-4 border-b border-gray-200">
-          <h2 className="text-lg font-medium text-gray-900">Available Grammar Points</h2>
+          <h2 className="text-lg font-medium text-gray-900">Available Grammar</h2>
         </div>
-        <div className="divide-y divide-gray-200">
-          {filteredGrammar.map((grammar) => (
-            <div key={grammar.id} className="p-4 hover:bg-gray-50">
-              <div className="flex items-start justify-between">
-                <div>
-                  <p className="font-medium text-gray-900">{grammar.pattern}</p>
-                  <p className="text-sm text-gray-500 mt-1">{grammar.explanation}</p>
-                  <div className="mt-2 space-y-1">
-                    {grammar.examples.map((example, index) => (
-                      <p key={index} className="text-sm text-gray-600 pl-3 border-l-2 border-primary-200">
-                        {example}
-                      </p>
-                    ))}
-                  </div>
-                  <div className="mt-2 flex items-center space-x-2">
-                    <span className="text-xs text-gray-500">{grammar.course}</span>
-                    <span className="text-xs text-gray-300">•</span>
-                    <span className="text-xs text-gray-500">{grammar.lesson}</span>
-                  </div>
-                </div>
-                <button
-                  onClick={() => handleAddGrammar(grammar)}
-                  disabled={selectedGrammar.some(g => g.id === grammar.id)}
-                  className={`btn-outline py-1 px-2 ${
-                    selectedGrammar.some(g => g.id === grammar.id)
-                      ? 'opacity-50 cursor-not-allowed'
-                      : ''
-                  }`}
+
+        {filteredGrammar.length > 0 ? (
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-4 p-4">
+            {filteredGrammar.map((grammar) => {
+              const isSelected = selectedGrammar.some(
+                (v) => v.grammarId === grammar.grammarId
+              );
+
+              return (
+                <div
+                  key={grammar.grammarId}
+                  className="bg-white border rounded p-3 shadow-sm relative"
                 >
-                  <Plus size={16} className="mr-1" />
-                  Add
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
+                  <button
+                    onClick={() => handleAddGrammarInContentReading(grammar.grammarId)}
+                    disabled={isSelected}
+                    className={`absolute top-1 right-1 text-xs px-2 py-0.5 rounded ${isSelected
+                      ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                      : "bg-blue-100 text-blue-600 hover:bg-blue-200"
+                      }`}
+                  >
+                    <Plus size={12} className="inline-block mr-1" />
+                    {isSelected ? "Added" : "Add"}
+                  </button>
+
+                  <h3 className="text-sm font-semibold text-gray-900">{grammar.titleJp}</h3>
+
+                  <p className="text-xs text-gray-500 mt-1">
+                    <strong>Structure:</strong> {grammar.structure}
+                  </p>
+
+                  <p className="text-xs text-gray-700">
+                    <strong>Meaning:</strong> {grammar.meaning}
+                  </p>
+
+                  {grammar.example && (
+                    <p className="text-xs text-gray-700 italic mt-1">
+                      <strong>Ex:</strong> “{grammar.example}”
+                    </p>
+                  )}
+
+                  <p className="text-[11px] text-gray-400 mt-1">
+                    <strong>Usage:</strong> {grammar.usage}
+                  </p>
+
+                  {grammar.jlptLevel && (
+                    <span
+                      className={`badge mt-2 text-[10px] ${jlptLevelClassMap[grammar.jlptLevel] || "bg-gray-100 text-gray-500"}`}
+                    >
+                      {grammar.jlptLevel}
+                    </span>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        ) : (
+          <p className="text-gray-500 text-center py-4">No available grammar items</p>
+        )}
+      </div>
+
+
+      {/* Phan trang */}
+      <div className='mt-4'>
+        <ReactPaginate
+          nextLabel="next >"
+          onPageChange={handlePageClick}
+          pageRangeDisplayed={3} // giới hạn trang bên trái 1 2 3 .... 99 100
+          marginPagesDisplayed={2} // giới hạn trang bên phải 1 2 3 .... 99 100
+          pageCount={pageCount}
+          previousLabel="< previous"
+          pageClassName="page-item"
+          pageLinkClassName="page-link"
+          previousClassName="page-item"
+          previousLinkClassName="page-link"
+          nextClassName="page-item"
+          nextLinkClassName="page-link"
+          breakLabel="..."
+          breakClassName="page-item"
+          breakLinkClassName="page-link"
+          containerClassName="pagination"
+          activeClassName="active"
+          renderOnZeroPageCount={null}
+        />
       </div>
     </div>
   );

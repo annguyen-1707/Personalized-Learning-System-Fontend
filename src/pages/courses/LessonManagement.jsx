@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useLocation } from "react-router-dom";
 import { useData } from "../../context/DataContext";
 import {
   ArrowLeft,
@@ -12,130 +12,261 @@ import {
   Check,
   X,
   ExternalLink,
+  Search,
+  Video,
+  Upload,
 } from "lucide-react";
-import { sub } from "framer-motion/client";
+import { g, s, sub, u } from "framer-motion/client";
 import { GiOpenBook } from "react-icons/gi";
+import { toast } from "react-toastify";
+import ReactPaginate from "react-paginate";
+import { use } from "react";
 
 function LessonManagement() {
   const { subjectId } = useParams();
+
   const {
-    subjects,
-    lessons,
     addLesson,
     updateLesson,
     deleteLesson,
     addLog,
     lessonsFetch,
+    fetchLessonStatus,
+    getSubjectById,
   } = useData();
 
   const [subject, setSubject] = useState(null);
   const [subjectLessons, setSubjectLessons] = useState([]);
   const [isAdding, setIsAdding] = useState(false);
   const [isEditing, setIsEditing] = useState(null);
+  const [errorMessage, setErrorMessage] = useState("");
+  const [totalPages, setTotalPages] = useState(0);
+  const [currentPage, setCurrentPage] = useState(0);
+  const [totalElements, setTotalElements] = useState(0);
+  const [search, setSearch] = useState("");
+  const [filter, setFilter] = useState("all");
   const [formData, setFormData] = useState({
     name: "",
     description: "",
-    status: "published",
+    status: "PUBLIC",
+    subjectId: subjectId,
+    videoUrl: null,
+    videoPreview: null,
+    videoDuration: null,
   });
+  const [statusOptions, setStatusOptions] = useState([]);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(null);
 
-  // Get subject and its lessons
- useEffect(() => {
-  if (!subjects || subjects.length === 0) return;
-  if (!subjectId) return;
-
-  const foundSubject = subjects.find((s) => s.subjectId == subjectId);
-  console.log("Found Subject:", foundSubject);
-
-  if (foundSubject) {
-    setSubject(foundSubject);
-    lessonsFetch(subjectId);
-  }
-
-
-}, [subjects, subjectId]);
-
-useEffect(() => {
-  if (lessons && lessons.content) {
-    
-    setSubjectLessons(lessons.content);
-  }
-}, [lessons]);
-
-
-
-  const handleAddSubmit = (e) => {
-    e.preventDefault();
-    const newLesson = addLesson({
-      ...formData,
-      subjectId,
-      order: subjectLessons.length + 1,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    });
-
-    addLog(
-      "Lesson Created",
-      `New lesson "${formData.title}" was created for subject "${subject.title}"`
-    );
-    setSubjectLessons([...subjectLessons, newLesson]);
-    setFormData({
-      title: "",
-      description: "",
-      duration: "",
-      status: "published",
-    });
-
-    setIsAdding(false);
+  const getStatus = async () => {
+    let res = await fetchLessonStatus();
+    if (res) {
+      setStatusOptions(res);
+    }
   };
 
-  const handleEditSubmit = (e) => {
-    e.preventDefault();
+  function extractYouTubeVideoId(url) {
+    const regExp = /^.*(youtu.be\/|v\/|embed\/|watch\?v=)([^#&?]*).*/;
+    const match = url.match(regExp);
+    return match && match[2].length === 11 ? match[2] : null;
+  }
 
-    updateLesson(isEditing, {
-      ...formData
-    });
+  const filteredLessons = subjectLessons.filter((lesson) => {
+    // Search filter (case insensitive)
+    const searchMatch =
+      search === "" ||
+      lesson.name?.toLowerCase().includes(search.toLowerCase()) ||
+      lesson.description?.toLowerCase().includes(search.toLowerCase());
 
-    addLog("Lesson Updated", `Lesson "${formData.title}" was updated`);
+    // Status filter
+    const statusMatch = filter === "all" || lesson.status === filter;
 
-    setFormData({
-      title: "",
-      description: "",
-      duration: "",
-      status: "PUBLIC",
-    });
+    return searchMatch && statusMatch;
+  });
 
-    setIsEditing(null);
+  const getLessons = async () => {
+    try {
+      const res = await lessonsFetch(subjectId, currentPage);
+      if (res) {
+        setSubjectLessons(res.content);
+        setTotalPages(res.page.totalPages);
+        setTotalElements(res.page.totalElements);
+      } else {
+        console.error("Failed to fetch lessons:", res);
+        setErrorMessage("Failed to fetch lessons.");
+      }
+    } catch (error) {
+      console.error("Error fetching lessons:", error);
+      setErrorMessage(error.message || "Failed to fetch lessons.");
+    }
   };
 
-  const handleDelete = (id) => {
-    const lessonToDelete = subjectLessons.find((lesson) => lesson.lessonId === id);
-    deleteLesson(id);
-    addLog(
-      "Lesson Deleted",
-      `Lesson "${lessonToDelete.title}" was deleted from course "${course.title}"`
+  const handlePageClick = (event) => {
+    const selectedPage = event.selected;
+    setCurrentPage(selectedPage);
+  };
+
+  const getSubject = async () => {
+    try {
+      const subject = await getSubjectById(subjectId);
+      if (subject) {
+        setSubject(subject);
+      }
+    } catch (error) {
+      console.error("Error in getSubject:", error);
+    }
+  };
+
+  useEffect(() => {
+    getSubject();
+    getLessons();
+    getStatus();
+  }, [subjectId, currentPage, totalElements, totalPages]);
+
+  const handleVideoChange = (e) => {
+    const file = e.target.files[0];
+    if (file && file.type.startsWith("video/")) {
+      setFormData((prev) => ({
+        ...prev,
+        videoUrl: file,
+        videoPreview: URL.createObjectURL(file),
+      }));
+
+      // Get video duration
+      const video = document.createElement("video");
+      video.preload = "metadata";
+      video.onloadedmetadata = () => {
+        window.URL.revokeObjectURL(video.src);
+        setFormData((prev) => ({
+          ...prev,
+          videoDuration: Math.round(video.duration),
+        }));
+      };
+      video.src = URL.createObjectURL(file);
+    }
+  };
+
+  const formatDuration = (seconds) => {
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = seconds % 60;
+    return `${minutes}:${remainingSeconds.toString().padStart(2, "0")}`;
+  };
+
+  const handleAddSubmit = async (e) => {
+    e.preventDefault();
+    const toastId = toast.loading(
+      "Waiting for uploading video into YouTube..."
     );
+    try {
+      const newLesson = await addLesson(formData);
+      if (newLesson) {
+        setErrorMessage("");
+        toast.dismiss(toastId);
+
+        setTimeout(() => {
+          toast.success(`Lesson "${formData.name}" created successfully!`);
+        }, 200);
+        addLog(
+          "Lesson Created",
+          `New lesson "${formData.name}" was created for subject "${subject.name}"`
+        );
+        setSubjectLessons([...subjectLessons, newLesson]);
+        setFormData({
+          name: "",
+          description: "",
+          status: "PUBLIC",
+          subjectId: subjectId,
+          videoUrl: null,
+          videoPreview: null,
+          videoDuration: null,
+        });
+        setIsAdding(false);
+      }
+    } catch (error) {
+      console.error("Failed to add lesson:", error);
+      setErrorMessage(error.message || "Failed to add lesson.");
+    } finally {
+      setLoading(false); // Kết thúc loading
+    }
+  };
+
+  const handleEditSubmit = async (e) => {
+    e.preventDefault();
+    const toastId = toast.loading(
+      "Waiting for uploading video into YouTube..."
+    );
+
+    try {
+      const updatedLesson = await updateLesson(isEditing, formData);
+      if (updatedLesson.status === "error") {
+        setErrorMessage(updatedLesson.message);
+        return;
+      }
+      toast.dismiss(toastId);
+      setTimeout(() => {
+        toast.success(`Lesson "${formData.name}" updated successfully!`);
+      }, 200);
+      setSubjectLessons((prevLessons) =>
+        prevLessons.map((lesson) =>
+          lesson.lessonId === isEditing ? { ...lesson, ...formData } : lesson
+        )
+      );
+      setFormData({
+        name: "",
+        description: "",
+        status: "PUBLIC",
+        subjectId: subjectId,
+        videoUrl: null,
+        videoPreview: null,
+        videoDuration: null,
+      });
+      setErrorMessage("");
+      setIsEditing(null);
+    } catch (error) {
+      console.error("Error updating lesson:", error);
+      setErrorMessage(error.message || "Failed to update lesson.");
+    }
+  };
+
+  const handleDelete = async (id) => {
+    const result = await deleteLesson(id);
+    if (result.status === "error") {
+      toast.error(result.message);
+      setShowDeleteConfirm(null);
+      return;
+    }
+    toast.success("Lesson deleted successfully!");
     setShowDeleteConfirm(null);
+    setSubjectLessons((prevLessons) =>
+      prevLessons.filter((lesson) => lesson.lessonId !== id)
+    );
   };
 
   const startEdit = (lesson) => {
     setFormData({
-      title: lesson.name,
+      name: lesson.name,
       description: lesson.description,
       status: lesson.status,
+      subjectId: lesson.subjectId,
+      videoUrl: null,
+      videoPreview: lesson.videoUrl || null,
+      videoDuration: lesson.duration || null,
     });
     setIsEditing(lesson.lessonId);
     setIsAdding(false);
   };
 
   const cancelAction = () => {
+    setErrorMessage("");
     setIsAdding(false);
     setIsEditing(null);
     setFormData({
-      title: "",
+      name: "",
       description: "",
-      duration: "",
-      status: "published",
+      status: "PUBLIC",
+      subjectId: subjectId,
+      videoUrl: null,
+      videoPreview: null,
+      videoDuration: null,
     });
   };
 
@@ -203,75 +334,203 @@ useEffect(() => {
         </div>
       </div>
 
+      {/* filter */}
+      <div className="card p-4 mb-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="md:col-span-2">
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <Search size={18} className="text-gray-400" />
+              </div>
+              <input
+                type="text"
+                placeholder="Search lessons by title or description..."
+                className="pl-10"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+            </div>
+          </div>
+
+          <div>
+            <select
+              className="rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 w-full"
+              value={filter}
+              onChange={(e) => setFilter(e.target.value)}
+            >
+              <option value="all">All Status</option>
+              {statusOptions.map((status) => (
+                <option key={status} value={status}>
+                  {status}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+      </div>
+
       {/* Add/Edit Form */}
       {(isAdding || isEditing) && (
         <div className="card p-6 mb-6">
-          <h2 className="text-xl font-medium mb-4">
-            {isAdding ? "Add New Lesson" : "Edit Lesson"}
-          </h2>
-          <form onSubmit={isAdding ? handleAddSubmit : handleEditSubmit}>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-xl font-semibold text-gray-900">
+              {isAdding ? "Add New Lesson" : "Edit Lesson"}
+            </h2>
+            <button
+              onClick={cancelAction}
+              className="text-gray-500 hover:text-gray-700"
+            >
+              <X size={20} />
+            </button>
+          </div>
+
+          {errorMessage && (
+            <div className="mb-6 p-4 rounded-lg bg-red-50 border border-red-200">
+              <div className="flex">
+                <div className="flex-shrink-0">
+                  <X className="h-5 w-5 text-red-400" />
+                </div>
+                <div className="ml-3">
+                  <h3 className="text-sm font-medium text-red-800">
+                    Error occurred
+                  </h3>
+                  <div className="mt-2 text-sm text-red-700">
+                    <p>{errorMessage}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          <form
+            onSubmit={isAdding ? handleAddSubmit : handleEditSubmit}
+            className="space-y-6"
+          >
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Lesson Name */}
               <div className="md:col-span-2">
                 <label
-                  htmlFor="title"
+                  htmlFor="name"
                   className="block text-sm font-medium text-gray-700 mb-1"
                 >
-                  Lesson Title
+                  Lesson Name <span className="text-red-500">*</span>
                 </label>
-                <input
-                  id="title"
-                  type="text"
-                  required
-                  value={formData.title}
-                  onChange={(e) =>
-                    setFormData({ ...formData, title: e.target.value })
-                  }
-                />
+                <div className="relative rounded-md shadow-sm">
+                  <input
+                    id="name"
+                    type="text"
+                    required
+                    value={formData.name}
+                    onChange={(e) =>
+                      setFormData({ ...formData, name: e.target.value })
+                    }
+                    className="block w-full rounded-md border-gray-300 pr-10 focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+                    placeholder="Enter lesson name"
+                  />
+                  <div className="absolute inset-y-0 right-0 flex items-center pr-3">
+                    <FileText className="h-5 w-5 text-gray-400" />
+                  </div>
+                </div>
+                <p className="mt-1 text-sm text-gray-500">
+                  A descriptive name for the lesson
+                </p>
               </div>
 
+              {/* Description */}
               <div className="md:col-span-2">
                 <label
                   htmlFor="description"
                   className="block text-sm font-medium text-gray-700 mb-1"
                 >
-                  Description
+                  Description <span className="text-red-500">*</span>
                 </label>
                 <textarea
                   id="description"
-                  rows={3}
+                  rows={4}
                   required
                   value={formData.description}
                   onChange={(e) =>
                     setFormData({ ...formData, description: e.target.value })
                   }
-                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
+                  className="block w-full rounded-md border-gray-300 focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
+                  placeholder="Enter lesson description"
                 />
+                <p className="mt-1 text-sm text-gray-500">
+                  Provide a detailed description of the lesson content
+                </p>
               </div>
 
-              <div>
+              {/* Video Upload */}
+              <div className="md:col-span-2">
                 <label
-                  htmlFor="duration"
+                  htmlFor="video"
                   className="block text-sm font-medium text-gray-700 mb-1"
                 >
-                  Duration (e.g., "45 minutes")
+                  Lesson Video
                 </label>
-                <input
-                  id="duration"
-                  type="text"
-                  required
-                  value={formData.duration}
-                  onChange={(e) =>
-                    setFormData({ ...formData, duration: e.target.value })
-                  }
-                />
+                <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-lg">
+                  <div className="space-y-1 text-center">
+                    {formData.videoPreview ? (
+                      <div className="relative">
+                        <video
+                          src={formData.videoPreview}
+                          className="mx-auto h-48 w-auto rounded-lg"
+                          controls
+                        />
+                        {formData.videoDuration && (
+                          <span className="absolute bottom-2 right-2 bg-black bg-opacity-50 text-white px-2 py-1 rounded text-sm">
+                            {formatDuration(formData.videoDuration)}
+                          </span>
+                        )}
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setFormData((prev) => ({
+                              ...prev,
+                              videoUrl: null,
+                              videoPreview: null,
+                              videoDuration: null,
+                            }))
+                          }
+                          className="absolute -top-2 -right-2 p-1 bg-red-100 rounded-full hover:bg-red-200"
+                        >
+                          <X className="h-4 w-4 text-red-600" />
+                        </button>
+                      </div>
+                    ) : (
+                      <>
+                        <div className="flex text-sm text-gray-600">
+                          <label
+                            htmlFor="video"
+                            className="relative cursor-pointer bg-white rounded-md font-medium text-primary-600 hover:text-primary-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-primary-500"
+                          >
+                            <span>Upload a video</span>
+                            <input
+                              id="video"
+                              type="file"
+                              accept="video/*"
+                              onChange={handleVideoChange}
+                              className="sr-only"
+                            />
+                          </label>
+                          <p className="pl-1">or drag and drop</p>
+                        </div>
+                        <p className="text-xs text-gray-500">
+                          MP4, WebM up to 100MB
+                        </p>
+                      </>
+                    )}
+                  </div>
+                </div>
               </div>
 
+              {/* Status */}
               <div>
                 <label
                   htmlFor="status"
                   className="block text-sm font-medium text-gray-700 mb-1"
                 >
-                  Status
+                  Status <span className="text-red-500">*</span>
                 </label>
                 <select
                   id="status"
@@ -279,24 +538,33 @@ useEffect(() => {
                   onChange={(e) =>
                     setFormData({ ...formData, status: e.target.value })
                   }
-                  className="rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 w-full"
+                  className="block w-full rounded-md border-gray-300 focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
                 >
-                  <option value="published">Published</option>
-                  <option value="draft">Draft</option>
+                  {statusOptions.map((option) => (
+                    <option key={option} value={option}>
+                      {option}
+                    </option>
+                  ))}
                 </select>
+                <p className="mt-1 text-sm text-gray-500">
+                  Set the visibility of the lesson
+                </p>
               </div>
             </div>
 
-            <div className="flex justify-end space-x-3">
+            <div className="flex justify-end space-x-3 pt-4 border-t">
               <button
                 type="button"
                 onClick={cancelAction}
-                className="btn-outline"
+                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
               >
                 Cancel
               </button>
-              <button type="submit" className="btn-primary">
-                {isAdding ? "Add Lesson" : "Save Changes"}
+              <button
+                type="submit"
+                className="px-4 py-2 text-sm font-medium text-white bg-primary-600 border border-transparent rounded-md shadow-sm hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500"
+              >
+                {isAdding ? "Create Lesson" : "Save Changes"}
               </button>
             </div>
           </form>
@@ -307,97 +575,129 @@ useEffect(() => {
       <div className="card">
         <div className="p-4 border-b border-gray-200">
           <h2 className="text-lg font-medium text-gray-900">
-            Subject Lessons - <span className="text-gray-900">{subjectLessons.length}</span>
+            Subject Lessons -{" "}
+            <span className="text-gray-900">{`(${subjectLessons.length})`}</span>
           </h2>
         </div>
         <div className="divide-y divide-gray-200">
-          {subjectLessons.length > 0 ? (
-            subjectLessons.map((lesson, index) => (
-              <div
-                key={lesson.lessonId}
-                className="p-4 hover:bg-gray-50 animate-fade-in"
-              >
-                <div className="flex justify-between items-start">
-                  <div className="flex items-start">
-                    <div className="flex-shrink-0 mr-3">
-                      <div className="h-10 w-10 rounded-md bg-primary-100 flex items-center justify-center">
-                        <FileText className="h-5 w-5 text-primary-600" />
-                      </div>
-                    </div>
-                    <div>
-                      <div className="flex items-center">
-                        <span className="text-sm text-gray-500 mr-2">
-                          Lesson {index + 1}:
-                        </span>
-                        <h3 className="text-lg font-medium text-gray-900">
-                          {lesson.name}
-                        </h3>
-                      </div>
-                      <p className="text-sm text-gray-500 mt-1">
+          {filteredLessons.length > 0 ? (
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200 text-sm">
+                <thead className="bg-gray-100">
+                  <tr>
+                    <th className="px-4 py-2 text-left font-medium text-gray-700">
+                      #
+                    </th>
+                    <th className="px-4 py-2 text-left font-medium text-gray-700">
+                      Lesson Name
+                    </th>
+                    <th className="px-4 py-2 text-left font-medium text-gray-700">
+                      Description
+                    </th>
+                    <th className="px-4 py-2 text-left font-medium text-gray-700">
+                      Video
+                    </th>
+                    <th className="px-4 py-2 text-left font-medium text-gray-700">
+                      Status
+                    </th>
+                    <th className="px-4 py-2 text-left font-medium text-gray-700">
+                      Actions
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-200">
+                  {filteredLessons.map((lesson, index) => (
+                    <tr key={lesson.lessonId} className="hover:bg-gray-50">
+                      <td className="px-4 py-2 text-gray-600">{index + 1}</td>
+                      <td className="px-4 py-2 font-medium text-gray-900">
+                        {lesson.name}
+                      </td>
+                      <td className="px-4 py-2 text-gray-600">
                         {lesson.description}
-                      </p>
-                      <div className="mt-2 flex items-center space-x-4">
-                        <GiOpenBook className="h-4 w-4 text-gray-400" />
+                      </td>
+                      <td className="px-4 py-2 text-blue-600">
+                        {lesson.videoUrl ? (
+                          <a
+                            href={lesson.videoUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="hover:underline text-sm"
+                          >
+                            {lesson.videoUrl}
+                          </a>
+                        ) : (
+                          <span className="text-gray-400">No video</span>
+                        )}
+                      </td>
+                      <td className="px-4 py-2">
                         <span
                           className={`badge ${
                             lesson.status === "PUBLIC"
-                              ? "bg-success-50 text-success-700"
-                              : "bg-warning-50 text-warning-700"
+                              ? "bg-green-100 text-green-800"
+                              : "bg-yellow-100 text-yellow-800"
                           }`}
                         >
                           {lesson.status === "PUBLIC" ? "Published" : "Draft"}
                         </span>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="flex items-center">
-                    <Link
-                      to={`/courses/${subjectId}/lessons/${lesson.lessonId}/content`}
-                      className="text-secondary-600 hover:text-secondary-800 mr-3"
-                      title="Manage Content"
-                    >
-                      <ExternalLink size={16} />
-                    </Link>
-                    {showDeleteConfirm === lesson.lessonId ? (
-                      <div className="flex items-center space-x-2">
-                        <span className="text-xs text-gray-500">Confirm?</span>
-                        <button
-                          onClick={() => handleDelete(lesson.lessonId)}
-                          className="text-error-500 hover:text-error-700"
-                        >
-                          <Check size={16} />
-                        </button>
-                        <button
-                          onClick={() => setShowDeleteConfirm(null)}
-                          className="text-gray-500 hover:text-gray-700"
-                        >
-                          <X size={16} />
-                        </button>
-                      </div>
-                    ) : (
-                      <>
-                        <button
-                          onClick={() => startEdit(lesson)}
-                          className="text-primary-600 hover:text-primary-800 mr-2"
-                          disabled={isAdding || isEditing}
-                          title="Edit Lesson"
-                        >
-                          <Edit size={16} />
-                        </button>
-                        <button
-                          onClick={() => setShowDeleteConfirm(lesson.id)}
-                          className="text-error-500 hover:text-error-700"
-                          disabled={isAdding || isEditing}
-                          title="Delete Lesson"
-                        >
-                          <Trash2 size={16} />
-                        </button>
-                      </>
-                    )}
-                  </div>
-                </div>
-              </div>
-            ))
+                      </td>
+                      <td className="px-4 py-2 whitespace-nowrap">
+                        <div className="flex items-center space-x-2">
+                          {/* Nút quản lý nội dung */}
+                          <Link
+                            to={`/admin/courses/${subjectId}/lessons/${lesson.lessonId}/content`}
+                            title="Manage Content"
+                            className="text-blue-600 hover:text-blue-800"
+                          >
+                            <ExternalLink size={16} />
+                          </Link>
+
+                          {/* Nếu đang confirm xóa */}
+                          {showDeleteConfirm === lesson.lessonId ? (
+                            <>
+                              <button
+                                onClick={() => handleDelete(lesson.lessonId)}
+                                className="text-red-600 hover:text-red-800"
+                                title="Confirm Delete"
+                              >
+                                <Check size={16} />
+                              </button>
+                              <button
+                                onClick={() => setShowDeleteConfirm(null)}
+                                className="text-gray-500 hover:text-gray-700"
+                                title="Cancel"
+                              >
+                                <X size={16} />
+                              </button>
+                            </>
+                          ) : (
+                            <>
+                              <button
+                                onClick={() => startEdit(lesson)}
+                                className="text-indigo-600 hover:text-indigo-800"
+                                disabled={isAdding || isEditing}
+                                title="Edit Lesson"
+                              >
+                                <Edit size={16} />
+                              </button>
+                              <button
+                                onClick={() =>
+                                  setShowDeleteConfirm(lesson.lessonId)
+                                }
+                                className="text-red-500 hover:text-red-700"
+                                disabled={isAdding || isEditing}
+                                title="Delete Lesson"
+                              >
+                                <Trash2 size={16} />
+                              </button>
+                            </>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           ) : (
             <div className="p-6 text-center text-gray-500">
               <FileText className="h-10 w-10 mx-auto mb-2 text-gray-400" />
@@ -416,6 +716,28 @@ useEffect(() => {
           )}
         </div>
       </div>
+      {/* Phan Trang */}
+      <ReactPaginate
+        className="pagination mt-6 justify-center"
+        nextLabel="next >"
+        onPageChange={handlePageClick}
+        pageRangeDisplayed={3} // giới hạn trang bên trái 1 2 3 .... 99 100
+        marginPagesDisplayed={2} // giới hạn trang bên phải 1 2 3 .... 99 100
+        pageCount={totalPages}
+        previousLabel="< previous"
+        pageClassName="page-item"
+        pageLinkClassName="page-link"
+        previousClassName="page-item"
+        previousLinkClassName="page-link"
+        nextClassName="page-item"
+        nextLinkClassName="page-link"
+        breakLabel="..."
+        breakClassName="page-item"
+        breakLinkClassName="page-link"
+        containerClassName="pagination"
+        activeClassName="active"
+        renderOnZeroPageCount={null}
+      />
     </div>
   );
 }

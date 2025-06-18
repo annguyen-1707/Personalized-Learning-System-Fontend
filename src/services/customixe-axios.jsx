@@ -1,25 +1,28 @@
 import axios from "axios";
-
 const instance = axios.create({
     headers: {
-        'Content-Type': 'application/json',
+        'Content-Type': 'application/json'
     }
 });
 
 // Add a response interceptor
 //Gắn interceptor cho đúng instance
-instance.interceptors.response.use(
-    function (response) {
-        // Any status code that lies within the range of 2xx causes this function to trigger
-        // Do something with response data
-        return response.data;
-    },
-    function (error) {
-        // Any status code that falls outside the range of 2xx causes this function to trigger
-        // Do something with response error
-        return Promise.reject(error);
+// Gắn token vào request trước khi gửi
+instance.interceptors.request.use(
+  (config) => {
+    const accessToken = localStorage.getItem("accessToken");
+    if (accessToken) {
+      config.headers['Authorization'] = `Bearer ${accessToken}`;
     }
+    return config;
+  },
+  (error) => Promise.reject(error)
 );
 
+// Trả về response.data
+instance.interceptors.response.use(
+  (response) => response.data,
+  (error) => Promise.reject(error)
+);
 
 export default instance

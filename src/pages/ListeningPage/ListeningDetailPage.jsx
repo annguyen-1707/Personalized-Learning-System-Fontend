@@ -1,0 +1,96 @@
+import { useParams } from "react-router-dom";
+import { useEffect, useState } from 'react';
+import { motion } from 'framer-motion';
+import { FiHeadphones, FiInfo } from 'react-icons/fi';
+import axios from "axios";
+
+function ListeningDetailPage() {
+  const { contentListeningId } = useParams();
+  const [exercise, setExercise] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [currentTime] = useState(0);
+
+  useEffect(() => {
+    if (!contentListeningId) {
+      setError("Invalid listening ID.");
+      setLoading(false);
+      return;
+    }
+    const fetchDetail = async () => {
+      try {
+        const res = await axios.get(`http://localhost:8080/content_listening/details/${contentListeningId}`);
+        setExercise(res.data.data);
+      } catch (err) {
+        setError("Cannot load listening detail. Please try again later.");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchDetail();
+  }, [contentListeningId]);
+
+  if (loading) return <div className="p-8">Loading...</div>;
+  if (error) return <div className="p-8 text-red-600">{error}</div>;
+  if (!exercise) return <div className="p-8">Not found</div>;
+
+  return (
+    <div className="max-w-4xl mx-auto px-4">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="bg-white rounded-lg shadow-md overflow-hidden mb-8"
+      >
+        <div className="bg-primary-500 text-white p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-2xl font-bold">{exercise.title}</h1>
+              {/* No description field in entity */}
+            </div>
+            <div className="text-lg font-medium">
+              {exercise.category}
+            </div>
+          </div>
+        </div>
+        <div className="p-6">
+          {exercise.audioFile && (
+            <audio controls src={exercise.audioFile} style={{ width: '100%' }} />
+          )}
+        </div>
+      </motion.div>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Transcript */}
+        <div className="lg:col-span-1">
+          <div className="bg-white rounded-lg shadow-md p-6">
+            <h2 className="text-lg font-medium text-gray-900 mb-4">Transcript</h2>
+            <div className="space-y-4">
+              <div className="p-3 rounded-lg bg-gray-50">
+                <div className="text-primary-600">{exercise.scriptJp}</div>
+                <div className="text-sm text-gray-600 mt-1">{exercise.scriptVn}</div>
+              </div>
+            </div>
+          </div>
+          <div className="bg-white rounded-lg shadow-md p-6 mt-6">
+            <h2 className="text-lg font-medium text-gray-900 mb-4">Listening Tips</h2>
+            <div className="space-y-3 text-gray-600">
+              <div className="flex items-start">
+                <FiHeadphones className="h-5 w-5 text-primary-500 mt-0.5 mr-2" />
+                <span>Use headphones for better audio quality</span>
+              </div>
+              <div className="flex items-start">
+                <FiInfo className="h-5 w-5 text-primary-500 mt-0.5 mr-2" />
+                <span>Focus on understanding the main idea first</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        {/* Questions */}
+        <div className="lg:col-span-2">
+          {/* You need to fetch and map questions if available in your backend */}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default ListeningDetailPage;

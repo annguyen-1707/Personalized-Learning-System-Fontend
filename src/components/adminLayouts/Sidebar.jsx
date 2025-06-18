@@ -22,16 +22,16 @@ function Sidebar({ open, setOpen }) {
   const location = useLocation();
 
   const navigation = [
-    { name: "Dashboard", href: "/dashboard", icon: Layout },
+    { name: "Dashboard", href: "/admin", icon: Layout },
     {
       name: "Administration",
       icon: Settings,
       children: [
-        { name: "Admin List", href: "/admins", icon: UserCog },
-        { name: "System Logs", href: "/system-logs", icon: Database },
+        { name: "Admin List", href: "/admin/admins", icon: UserCog },
+        { name: "System Logs", href: "/admin/system-logs", icon: Database },
       ],
     },
-    { name: "User Management", href: "/users", icon: Users },
+    { name: "User Management", href: "/admin/users", icon: Users },
     {
       name: "Content Management",
       icon: BookOpen,
@@ -41,9 +41,17 @@ function Sidebar({ open, setOpen }) {
           name: "Practice",
           icon: Activity,
           children: [
-            { name: "Listening", href: "/listening", icon: Headphones },
+            {
+              name: "Listening",
+              href: "/admin/content_listening",
+              icon: Headphones,
+            },
             { name: "Speaking", href: "/admin/content_speaking", icon: Mic },
-            { name: "Reading", href: "/reading", icon: Newspaper },
+            {
+              name: "Reading",
+              href: "/admin/content_reading",
+              icon: Newspaper,
+            },
           ],
         },
       ],
@@ -61,7 +69,10 @@ function Sidebar({ open, setOpen }) {
     const [open, setOpen] = useState(false);
     return (
       <div className="ml-auto relative">
-        <button onClick={() => setOpen(!open)} className="p-2 focus:outline-none">
+        <button
+          onClick={() => setOpen(!open)}
+          className="p-2 focus:outline-none"
+        >
           <ChevronDown className="h-5 w-5" />
         </button>
         {open && (
@@ -133,7 +144,10 @@ function Sidebar({ open, setOpen }) {
                           {child.name}
                         </Link>
                         {child.children && (
-                          <Dropdown subChildren={child.children} isActive={isActive} />
+                          <Dropdown
+                            subChildren={child.children}
+                            isActive={isActive}
+                          />
                         )}
                       </div>
                     ))}

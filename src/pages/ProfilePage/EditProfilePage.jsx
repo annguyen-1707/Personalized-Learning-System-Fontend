@@ -1,56 +1,66 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
+import { useAuth } from "../../context/AuthContext"; // Adjust the import path as necessary
 
-function EditProfilePage() {
+function EditProfilePage({ }) {
+  const { user } = useAuth();
   const navigate = useNavigate();
-  const storedUser = JSON.parse(localStorage.getItem("user")) || {
-    name: "",
-    email: "",
-    phone: "",
-    addressLine: "",
-    // city: "",
-    // region: "",
-  };
-
-  const [form, setForm] = useState(storedUser);
-  const [error, setError] = useState("");
-  const [passwords, setPasswords] = useState({
-    current: "",
-    new: "",
-    confirm: "",
+  const [form, setForm] = useState({
+    fullName: '',
+    dob: '',
+    address: '',
+    gender: '',
+    phone: '',
+    email: '',
   });
-  const [passwordError, setPasswordError] = useState("");
-  const [showPasswordFields, setShowPasswordFields] = useState(false);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+
+  // Always use the latest user info (especially email) after login
+  useEffect(() => {
+    if (user) {
+      setForm({
+        fullName: user.fullName || '',
+        dob: user.dob || '',
+        address: user.address || '',
+        gender: user.gender || '',
+        phone: user.phone || '',
+        email: user.email || '',
+      });
+    }
+  }, [user]);
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const handlePasswordChange = (e) => {
-    setPasswords({ ...passwords, [e.target.name]: e.target.value });
-  };
-
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!form.name.trim()) {
+    if (!form.fullName.trim()) {
       setError("Full Name is required.");
       return;
     }
     setError("");
-
-    if (showPasswordFields && (passwords.new || passwords.confirm || passwords.current)) {
-      if (!passwords.current || !passwords.new || !passwords.confirm) {
-        setPasswordError("Please fill in all password fields.");
-        return;
-      }
-      if (passwords.new !== passwords.confirm) {
-        setPasswordError("New passwords do not match.");
-        return;
-      }
-      setPasswordError("");
-      alert("Password changed successfully! (Demo only)");
+    setSuccess("");
+    try {
+      await axios.post("http://localhost:8080/api/user/edit", {
+        name: form.fullName,
+        email: form.email,
+        phoneNumber: form.phone,
+        address: form.address,
+        dateOfBirth: form.dob,
+        gender: form.gender,
+      });
+      setSuccess("Profile updated successfully! You will be redirected shortly.");
+      setTimeout(() => navigate("/profile"), 3000);
+    } catch (err) {
+      setError(
+        err.response?.data?.message ||
+        (typeof err.response?.data === "string" ? err.response.data : null) ||
+        "Failed to update profile"
+      );
     }
-
   };
 
   return (
@@ -63,8 +73,8 @@ function EditProfilePage() {
           </label>
           <input
             type="text"
-            name="name"
-            value={form.name}
+            name="fullName"
+            value={form.fullName}
             onChange={handleChange}
             className="input input-bordered w-full"
             placeholder="Full Name"
@@ -95,53 +105,75 @@ function EditProfilePage() {
           />
         </div>
         <div>
-          <label className="block font-medium mb-1">Address Line</label>
+          <label className="block font-medium mb-1">Address</label>
           <input
             type="text"
-            name="addressLine"
-            value={form.addressLine}
+            name="address"
+            value={form.address}
             onChange={handleChange}
             className="input input-bordered w-full"
-            placeholder="Address Line"
+            placeholder="Address"
           />
         </div>
-        {/* <div>
-          <label className="block font-medium mb-1">City</label>
+        <div>
+          <label className="block font-medium mb-1">Date of Birth</label>
           <input
-            type="text"
-            name="city"
-            value={form.city}
+            type="date"
+            name="dob"
+            value={form.dob}
             onChange={handleChange}
             className="input input-bordered w-full"
-            placeholder="City"
           />
-        </div> */}
-        {/* <div>
-          <label className="block font-medium mb-1">Region</label>
-          <input
-            type="text"
-            name="region"
-            value={form.region}
-            onChange={handleChange}
-            className="input input-bordered w-full"
-            placeholder="Region"
-          />
-        </div> */}
-
-        {/* Change Password Button and Section */}
-<div className="pt-6 border-t border-gray-200">
-  <div className="flex justify-end">
-    <button
-      type="button"
-      className="btn border border-gray-300 bg-white text-black hover:bg-gray-100"
-      onClick={() => navigate("/profile/change-password")}
-    >
-      Change Password
-    </button>
-  </div>
-</div>
-
+        </div>
+        <div>
+          <label className="block font-medium mb-1">Gender</label>
+          <div className="flex items-center gap-4 mt-1">
+            <label className="inline-flex items-center">
+              <input
+                type="radio"
+                name="gender"
+                value="MALE"
+                checked={form.gender === "MALE"}
+                onChange={handleChange}
+                className="radio radio-primary"
+              />
+              <span className="ml-2">Male</span>
+            </label>
+            <label className="inline-flex items-center">
+              <input
+                type="radio"
+                name="gender"
+                value="FEMALE"
+                checked={form.gender === "FEMALE"}
+                onChange={handleChange}
+                className="radio radio-primary"
+              />
+              <span className="ml-2">Female</span>
+            </label>
+            <label className="inline-flex items-center">
+              <input
+                type="radio"
+                name="gender"
+                value="OTHER"
+                checked={form.gender === "OTHER"}
+                onChange={handleChange}
+                className="radio radio-primary"
+              />
+              <span className="ml-2">Other</span>
+            </label>
+          </div>
+        </div>
         {error && <div className="text-red-500 text-sm">{error}</div>}
+        {success && <div className="text-green-600 text-sm">{success}</div>}
+        <div className="flex justify-end mt-6">
+          <button
+            type="button"
+            className="btn btn-accent btn-sm"
+            onClick={() => navigate("/profile/change-password")}
+          >
+            Change Password
+          </button>
+        </div>
         <div className="flex gap-2 mt-4">
           <button type="submit" className="btn btn-primary w-full">
             Update
