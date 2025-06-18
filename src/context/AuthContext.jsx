@@ -21,7 +21,6 @@ export function AuthProvider({ children }) {
             method: "GET",
             credentials: "include",
           });
-
           if (response.ok) {
             const data = await response.json();
             const accessToken = data?.data?.accessToken;
