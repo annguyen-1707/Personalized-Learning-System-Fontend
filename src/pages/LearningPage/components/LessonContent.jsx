@@ -28,28 +28,6 @@ function LessonContent({ lesson }) {
         </div>
       )}
 
-      {/* Video or Thumbnail */}
-      <div className="mb-6">
-        {lesson.videoUrl ? (
-          <div className="aspect-video">
-            <iframe
-              src={lesson.videoUrl}
-              title="Lesson Video"
-              className="w-full h-full rounded-lg border"
-              allowFullScreen
-            ></iframe>
-          </div>
-        ) : lesson.thumbnailUrl ? (
-          <div>
-            <img
-              src={lesson.thumbnailUrl}
-              alt="Lesson Thumbnail"
-              className="w-full max-w-2xl rounded-lg border"
-            />
-          </div>
-        ) : null}
-      </div>
-
       {/* Introduction */}
       {lesson.name && (
         <div className="mb-8">
