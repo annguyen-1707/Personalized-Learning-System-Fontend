@@ -3,10 +3,10 @@ import { useEffect } from 'react'
 
 function TestimonialSection() {
 
-  useEffect(() =>{
-    const feedBack
+  // useEffect(() =>{
+  //   const feedBack
 
-  },[]);
+  // },[]);
   const testimonials = [
     {
       content: "I've tried many language apps, but NihonGo's personalized approach helped me progress faster than ever before.",

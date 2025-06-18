@@ -10,7 +10,9 @@ export function useAuth() {
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [isAdmin, setIsAdmin] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(() => {
+    return localStorage.getItem("isAdmin") === "true"; // hoặc false nếu không có
+  });
   const navigate = useNavigate(); // ✅ thêm dòng này
 
   useEffect(() => {
@@ -56,7 +58,6 @@ export function AuthProvider({ children }) {
             method: "GET",
             credentials: "include",
           });
-
           if (response.ok) {
             const data = await response.json();
             const accessToken = data?.data?.accessToken;
@@ -73,6 +74,8 @@ export function AuthProvider({ children }) {
 
             const userData = await userRes.json();
             setUser(userData.data);
+
+            console.log("CIADIMEMAY", userData.data.username)
 
 
           }
@@ -109,14 +112,15 @@ export function AuthProvider({ children }) {
 
   //login
   const login = async (email, password, isAdminLogin) => {
-    setIsAdmin(isAdminLogin)
     setLoading(true);
     let api = 'http://localhost:8080/auth/login'
     let apiUser = 'http://localhost:8080/auth/user'
+    localStorage.setItem("isAdmin", "false");
     try {
       if (isAdminLogin) {
         api = 'http://localhost:8080/admin/login'
         apiUser = 'http://localhost:8080/admin/user'
+        localStorage.setItem("isAdmin", "true");
       }
       const res = await fetch(api, {
         method: 'Post',
