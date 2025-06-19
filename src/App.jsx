@@ -45,6 +45,7 @@ import NotificationSlider from "./pages/HomePage/Notification.jsx";
 import CourseContentPage from "./pages/LearningPage/components/CourseContent.jsx";
 import LessonPage from "./pages/LearningPage/LessonPage.jsx";
 import DoExercise from "./pages/LearningPage/components/DoExercise.jsx";
+import FeedbackWidget from "./components/layout/Feedback.jsx";
 import NewsPage from './pages/NewsPage/NewsPage';
 import AdminRoute from "./context/AdminRoute.jsx";
 
@@ -54,65 +55,65 @@ function App() {
   return (
     <AuthProvider>
       <DataProvider>
-        <Routes>
-          <Route
-            path="/"
-            element={
-              <Layout onNotificationClick={() => setNotificationOpen(true)} />
-            }
-          >
-            <Route index element={<HomePage />} />
-            <Route path="upgrade" element={<UpgradePage />} />
-            <Route path="vnpay-return" element={<VnpayReturn />} />
-            <Route path="profile" element={<ProfilePage />} />
-            <Route path="profile/edit" element={<EditProfilePage />} />
+        <FeedbackWidget />
+          <Routes>
             <Route
-              path="profile/change-password"
-              element={<ChangePasswordPage />}
-            />
-            <Route path="listening" element={<ListeningPage />} />
-            <Route path="/listening/detail/:contentListeningId" element={<ListeningDetailPage />} />
-            <Route path="learning" element={<LearningPage />} />
-            {/* Thêm các route con khác nếu cần */}
-          </Route>
+              path="/"
+              element={
+                <Layout onNotificationClick={() => setNotificationOpen(true)} />
+              }
+            >            <Route index element={<HomePage />} />
+              <Route path="upgrade" element={<UpgradePage />} />
+              <Route path="vnpay-return" element={<VnpayReturn />} />
+              <Route path="profile" element={<ProfilePage />} />
+              <Route path="profile/edit" element={<EditProfilePage />} />
+              <Route
+                path="profile/change-password"
+                element={<ChangePasswordPage />}
+              />
+              <Route path="listening" element={<ListeningPage />} />
+              <Route path="/listening/detail/:contentListeningId" element={<ListeningDetailPage />} />
+              <Route path="learning" element={<LearningPage />} />
+              {/* Thêm các route con khác nếu cần */}
+            </Route>
 
 
-          <Route
-            path="/"
-            element={
-              <LayoutParent onNotificationClick={() => setNotificationOpen(true)} />
-            }
-          >
-            <Route path="/parentPage" element={<ParentPage />} />
-            <Route path="/parentPage/:studentId/view_children" element={<ViewChildren />} />
-          </Route>
-
-          <Route path="oauth-callback" element={<OAuthCallBack />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/register1" element={<RegisterP1 />} />
-          <Route path="/register2" element={<RegisterP2 />} />
-          <Route path="/forgot-password" element={<ForgotPassword />} />
-          <Route path="/admin/login" element={<Login />} />
-          <Route
-            path="/await-confirmation"
-            element={<AwaitEmailConfirmation />}
-          />
-          {/*ProfilePage routes*/}1
-          <Route path="/" element={<Layout />}>
-            <Route path="/profile" element={<ProfilePage />} />
-            <Route path="/profile/edit" element={<EditProfilePage />} />
             <Route
-              path="/profile/change-password"
-              element={<ChangePasswordPage />}
-            />
-          </Route>
-          <Route
-            path="/await-confirmation"
-            element={<AwaitEmailConfirmation />}
-          />
+              path="/"
+              element={
+                <LayoutParent onNotificationClick={() => setNotificationOpen(true)} />
+              }
+            >
+              <Route path="/parentPage" element={<ParentPage />} />
+              <Route path="/parentPage/:studentId/view_children" element={<ViewChildren />} />
+            </Route>
 
-          {/* Do exercise */}
-          <Route path="/do-exercise/:exerciseId" element={<DoExercise />} />
+            <Route path="oauth-callback" element={<OAuthCallBack />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/register1" element={<RegisterP1 />} />
+            <Route path="/register2" element={<RegisterP2 />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/admin/login" element={<Login />} />
+            <Route
+              path="/await-confirmation"
+              element={<AwaitEmailConfirmation />}
+            />
+            {/*ProfilePage routes*/}1
+            <Route path="/" element={<Layout />}>
+              <Route path="/profile" element={<ProfilePage />} />
+              <Route path="/profile/edit" element={<EditProfilePage />} />
+              <Route
+                path="/profile/change-password"
+                element={<ChangePasswordPage />}
+              />
+            </Route>
+            <Route
+              path="/await-confirmation"
+              element={<AwaitEmailConfirmation />}
+            />
+
+            {/* Do exercise */}
+            <Route path="/do-exercise/:exerciseId" element={<DoExercise />} />
 
           {/* Listening routes */}
           <Route path="/" element={<Layout />}>
@@ -120,10 +121,11 @@ function App() {
             <Route path="/listening/:id" element={<ListeningDetailPage />} />
             <Route path="favorites/:type" element={<FavoriteFoldersPage />} />
           </Route>
-          {/* news routes */}
+           {/* news routes */}
           <Route path="/" element={<Layout />}>
             <Route path="/news" element={<NewsPage />} />
           </Route>
+          {/* Public routes */}
           {/* Public routes */}
           <Route path="/" element={<Layout />}>
             <Route index element={<HomePage />} />
@@ -134,14 +136,11 @@ function App() {
               element={<LessonPage />}
             />
           </Route>
+
           <Route path="/admin" element={<MainLayout />}>
             <Route
               path="content_speaking"
-              element={
-                <AdminRoute allowedRoles={["STAFF", "CONTENT_MANAGER"]}>
-                  <ContentSpeakingManagement />
-                </AdminRoute>
-              }
+              element={<ContentSpeakingManagement />}
             />
             <Route
               path="content_speaking/:contentSpeakingId/dialogue"
