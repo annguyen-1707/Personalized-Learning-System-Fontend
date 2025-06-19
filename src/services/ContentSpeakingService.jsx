@@ -1,5 +1,5 @@
 import axios from "./customixe-axios";
-import {uploadFile} from './UploadFileService';
+import { uploadFile } from './UploadFileService';
 import { toast } from "react-toastify";
 // const [errorMessage, setErrorMessage] = useState('');
 
@@ -9,7 +9,7 @@ const fetchAllContentSpeaking = () => {
 }
 
 const fetchAllContentCategorySpeaking = () => {
-    return axios.get(`/api/content_category/speaking`)
+    return axios.get(`/api/content/category/speaking`)
 }
 
 const handleCreateContent = async (data) => {
@@ -27,7 +27,9 @@ const handleCreateContent = async (data) => {
         const formData = {
             title: data.title,
             image: imageUrl,
-            category: data.category
+            category: data.category,
+            status: data.status,
+            jlptLevel: data.jlptLevel
         };
         const response = await axios.post(`/api/content_speaking`, formData);
         return response;
@@ -81,7 +83,11 @@ const getPageContentSpeaking = async (page, size) => {
     return axios.get(`/api/content_speaking?page=${page}&size=${size}`)
 }
 
+const acceptContent = (id) => {
+    return axios.patch(`/api/content_listening/accept/${id}`)
+}
+
 export {
     getPageContentSpeaking, handleUpdateContent, fetchAllContentSpeaking, fetchAllContentCategorySpeaking,
-    handleCreateContent, handleDeleteContent
+    handleCreateContent, handleDeleteContent, acceptContent
 };

@@ -1,82 +1,154 @@
-import { motion } from 'framer-motion'
+import { useEffect, useState } from 'react';
 
 function TestimonialSection() {
-  const testimonials = [
-    {
-      content: "I've tried many language apps, but NihonGo's personalized approach helped me progress faster than ever before.",
-      author: "Emily Chen",
-      role: "Business Professional"
-    },
-    {
-      content: "The AI conversation feature is incredible. It's like having a patient Japanese tutor available 24/7.",
-      author: "David Kim",
-      role: "University Student"
-    },
-    {
-      content: "The flashcard system with SRS helped me memorize kanji in half the time it would have taken otherwise.",
-      author: "Sarah Johnson",
-      role: "Language Enthusiast"
+  const [feedbacks, setFeedbacks] = useState([]);
+  const [showMore, setShowMore] = useState(false);
+  const [selectedRating, setSelectedRating] = useState(null);
+  const [currentPage, setCurrentPage] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
+
+  const fetchFeedbacks = async (page = 0, rating = null) => {
+    const queryParams = new URLSearchParams({
+      page: page,
+      size: 6,
+    });
+
+    if (rating !== null) queryParams.append("rating", rating);
+
+    try {
+      const res = await fetch(`http://localhost:8080/public/get-feedback?${queryParams}`);
+      const data = await res.json();
+      setFeedbacks(data.content || []);
+      setCurrentPage(data.currentPage);
+      setTotalPages(data.totalPages);
+    } catch (err) {
+      console.error("Failed to fetch feedback:", err);
     }
-  ]
+  };
+
+  useEffect(() => {
+    fetchFeedbacks();
+  }, []);
+
+  const handleShowMore = () => {
+    setShowMore(true);
+    fetchFeedbacks(0, selectedRating);
+  };
+
+  const handleFilter = (rating) => {
+    setSelectedRating(rating);
+    fetchFeedbacks(0, rating);
+  };
+
+  const handleReset = () => {
+    setShowMore(false);
+    setSelectedRating(null);
+    fetchFeedbacks();
+  };
+
+  const handlePageChange = (page) => {
+    fetchFeedbacks(page, selectedRating);
+  };
+
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-GB'); // dd/mm/yyyy
+  };
+
+  const formatGender = (gender) => {
+    if (gender === "MALE") return "Male";
+    if (gender === "FEMALE") return "Female";
+    return "Other";
+  };
+
+  const visibleFeedbacks = showMore ? feedbacks : feedbacks.slice(0, 3);
 
   return (
     <section className="py-12 bg-white">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center">
-          <h2 className="text-3xl font-extrabold text-gray-900 sm:text-4xl">
-            What Our Users Are Saying
-          </h2>
-          <p className="mt-3 max-w-2xl mx-auto text-xl text-gray-500 sm:mt-4">
-            Join thousands of satisfied learners on their Japanese language journey
+      <div className="max-w-7xl mx-auto px-4">
+        <div className="text-center mb-6">
+          <h2 className="text-4xl font-extrabold text-gray-900">What Our Users Say</h2>
+          <p className="text-lg text-gray-500 mt-2">
+            Real feedback from our valued learners and parents
           </p>
         </div>
-        <div className="mt-10">
-          <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
-            {testimonials.map((testimonial, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.1 }}
-                viewport={{ once: true }}
-                className="flex flex-col h-full bg-white rounded-lg shadow-lg overflow-hidden"
+
+        {/* Filter by rating */}
+        {showMore && (
+          <div className="flex justify-center gap-2 mb-6 flex-wrap">
+            {[1, 2, 3, 4, 5].map((star) => (
+              <button
+                key={star}
+                onClick={() => handleFilter(star)}
+                className={`px-3 py-1 border rounded ${selectedRating === star ? 'bg-yellow-400 text-white' : 'bg-gray-100'}`}
               >
-                <div className="flex-1 p-6 flex flex-col justify-between">
-                  <div>
-                    <div className="flex items-center">
-                      {[...Array(5)].map((_, i) => (
-                        <svg
-                          key={i}
-                          className="h-5 w-5 text-accent-500"
-                          fill="currentColor"
-                          viewBox="0 0 20 20"
-                        >
-                          <path
-                            d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
-                          />
-                        </svg>
-                      ))}
-                    </div>
-                    <p className="mt-4 text-base text-gray-600">
-                      "{testimonial.content}"
-                    </p>
-                  </div>
-                  <div className="mt-6">
-                    <p className="text-sm font-medium text-gray-900">
-                      {testimonial.author}
-                    </p>
-                    <p className="text-sm text-gray-500">
-                      {testimonial.role}
-                    </p>
-                  </div>
-                </div>
-              </motion.div>
+                {star} star{star > 1 ? 's' : ''}
+              </button>
+            ))}
+            <button
+              onClick={handleReset}
+              className="px-3 py-1 border rounded bg-blue-500 text-white"
+            >
+              All
+            </button>
+          </div>
+        )}
+
+        {/* Feedback cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+          {visibleFeedbacks.map((fb, index) => (
+            <div key={index} className="border p-4 rounded shadow">
+              <p className="text-yellow-500 font-semibold">⭐ {fb.rating} star{fb.rating > 1 ? 's' : ''}</p>
+              <p className="mt-2 text-gray-700">{fb.content}</p>
+              <p className="mt-2 text-sm text-gray-900 font-medium">
+                {fb.user?.fullName || "Anonymous"}
+              </p>
+              <p className="text-sm text-gray-500">
+                {fb.user?.gender === "MALE" ? "Male" : fb.user?.gender === "FEMALE" ? "Female" : "Other"}
+              </p>
+              <p className="text-xs text-gray-400 mt-1">
+                Posted on: {formatDate(fb.createdAt)}
+              </p>
+            </div>
+          ))}
+        </div>
+
+        {/* Pagination */}
+        {showMore && totalPages > 1 && (
+          <div className="flex justify-center gap-2 mt-6 flex-wrap">
+            {Array.from({ length: totalPages }, (_, index) => (
+              <button
+                key={index}
+                onClick={() => handlePageChange(index)}
+                className={`px-3 py-1 border rounded ${index === currentPage ? 'bg-blue-600 text-white' : 'bg-gray-100'}`}
+              >
+                {index + 1}
+              </button>
             ))}
           </div>
+        )}
+
+        {/* View more / Hide */}
+        <div className="text-center mt-6">
+          {!showMore ? (
+            <button
+              onClick={handleShowMore}
+              className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition"
+            >
+              View more
+            </button>
+          ) : (
+            <button
+              onClick={handleReset}
+              className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 transition"
+            >
+              Hide
+            </button>
+          )}
         </div>
       </div>
     </section>
-  )
+  );
 }
 
-export default TestimonialSection
+export default TestimonialSection;

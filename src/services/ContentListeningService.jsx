@@ -1,15 +1,30 @@
 import axios from "./customixe-axios";
-import {uploadFile} from './UploadFileService';
+import { uploadFile } from './UploadFileService';
 import { toast } from "react-toastify";
 const fetchAllContentListening = () => {
     return axios.get(`/api/content_listening`)
 }
 
 const fetchAllContentCategoryListening = () => {
-    return axios.get(`/api/content_category/listening`)
+    return axios.get(`/api/content/category/listening`)
 }
 
 const handleCreateContent = async (data) => {
+    if (data.image === null || data.image === "") {
+        throw new Error("upload image before create");
+    }
+    if (data.audioFile === null || data.audioFile === "") {
+        throw new Error("upload audioFile before create");
+    }
+    if (data.category === "") {
+        throw new Error("choose category")
+    }
+    if (data.status === "") {
+        throw new Error("choose status")
+    }
+    if (data.jlptLevel === "") {
+        throw new Error("choose jlptLevel")
+    }
     try {
         if (data.image === null || data.image === "") {
             throw new Error("upload image before create");
@@ -31,9 +46,11 @@ const handleCreateContent = async (data) => {
             scriptJp: data.scriptJp,
             scriptVn: data.scriptVn,
             audioFile: audio,
+            status: data.status,
+            jlptLevel: data.jlptLevel
         };
         console.log("data", data)
-        const response = await axios.post(`/api/content_listening`, formData, "images/content_listening");
+        const response = await axios.post(`/api/content_listening`, formData);
         return response;
     } catch (error) {
         const allErrors = error.response?.data?.data?.map(e => `${e.message}`).join(", ");
@@ -90,4 +107,19 @@ const getPageContentListening = async (page, size) => {
     return axios.get(`/api/content_listening?page=${page}&size=${size}`)
 }
 
-export { getPageContentListening, handleUpdateContent, fetchAllContentListening, fetchAllContentCategoryListening, handleCreateContent, handleDeleteContent }
+const getStatus = () => {
+    return axios.get(`/api/content/status`)
+}
+
+const getJlptLevel = () => {
+    return axios.get(`/api/vocabularies/levels`)
+}
+
+const acceptContent = (id) => {
+    return axios.patch(`/api/content_listening/accept/${id}`)
+}
+
+export {
+    getPageContentListening, handleUpdateContent, fetchAllContentListening, fetchAllContentCategoryListening,
+    handleCreateContent, handleDeleteContent, getStatus, getJlptLevel, acceptContent
+}

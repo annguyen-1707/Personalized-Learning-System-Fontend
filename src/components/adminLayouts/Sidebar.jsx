@@ -22,7 +22,7 @@ function Sidebar({ open, setOpen }) {
   const location = useLocation();
 
   const navigation = [
-    { name: "Dashboard", href: "/admin/dashboard", icon: Layout },
+    { name: "Dashboard", href: "/admin", icon: Layout },
     {
       name: "Administration",
       icon: Settings,
@@ -59,10 +59,12 @@ function Sidebar({ open, setOpen }) {
   ];
 
   const isActive = (path) => {
-    return (
-      location.pathname === path || location.pathname.startsWith(`${path}/`)
-    );
+    if (path === "/admin") {
+      return location.pathname === "/admin"; // chỉ active đúng "/admin"
+    }
+    return location.pathname.startsWith(path);
   };
+
 
   // Dropdown component for sub-children (Practice)
   function Dropdown({ subChildren, isActive }) {
@@ -81,11 +83,10 @@ function Sidebar({ open, setOpen }) {
               <Link
                 key={subChild.name}
                 to={subChild.href}
-                className={`block px-4 py-2 text-sm ${
-                  isActive(subChild.href)
-                    ? "bg-primary-50 text-primary-700"
-                    : "text-gray-600 hover:bg-gray-50"
-                }`}
+                className={`block px-4 py-2 text-sm ${isActive(subChild.href)
+                  ? "bg-primary-50 text-primary-700"
+                  : "text-gray-600 hover:bg-gray-50"
+                  }`}
               >
                 <subChild.icon className="inline mr-2 h-5 w-5" />
                 {subChild.name}
@@ -109,9 +110,8 @@ function Sidebar({ open, setOpen }) {
 
       {/* Sidebar */}
       <div
-        className={`fixed top-0 left-0 bottom-0 w-64 bg-white border-r border-gray-200 z-30 transform transition-transform duration-300 ease-in-out ${
-          open ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
-        }`}
+        className={`fixed top-0 left-0 bottom-0 w-64 bg-white border-r border-gray-200 z-30 transform transition-transform duration-300 ease-in-out ${open ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
+          }`}
       >
         <div className="flex items-center justify-center h-16 border-b border-gray-200">
           <Link to="/" className="flex items-center gap-2">
@@ -137,11 +137,10 @@ function Sidebar({ open, setOpen }) {
                       <div key={child.name} className="flex items-center">
                         <Link
                           to={child.href}
-                          className={`${
-                            isActive(child.href)
-                              ? "bg-primary-50 text-primary-700"
-                              : "text-gray-600 hover:bg-gray-50"
-                          } group flex items-center px-2 py-2 text-sm font-medium rounded-md flex-1`}
+                          className={`${isActive(child.href)
+                            ? "bg-primary-50 text-primary-700"
+                            : "text-gray-600 hover:bg-gray-50"
+                            } group flex items-center px-2 py-2 text-sm font-medium rounded-md flex-1`}
                         >
                           <child.icon className="mr-3 h-5 w-5" />
                           {child.name}
@@ -160,11 +159,10 @@ function Sidebar({ open, setOpen }) {
                 <Link
                   key={item.name}
                   to={item.href}
-                  className={`${
-                    isActive(item.href)
-                      ? "bg-primary-50 text-primary-700"
-                      : "text-gray-600 hover:bg-gray-50"
-                  } group flex items-center px-2 py-2 text-sm font-medium rounded-md`}
+                  className={`${isActive(item.href)
+                    ? "bg-primary-50 text-primary-700"
+                    : "text-gray-600 hover:bg-gray-50"
+                    } group flex items-center px-2 py-2 text-sm font-medium rounded-md`}
                 >
                   <item.icon className="mr-3 h-5 w-5" />
                   {item.name}

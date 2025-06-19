@@ -70,11 +70,10 @@ function CourseCard({ subject, selected, progressStatus }) {
             <>
               <span className="mx-2">•</span>
               <span
-                className={`text-sm font-medium ${
-                  progressStatus === "IN_PROGRESS"
-                    ? "text-yellow-500"
-                    : "text-green-500"
-                }`}
+                className={`text-sm font-medium ${progressStatus === "IN_PROGRESS"
+                  ? "text-yellow-500"
+                  : "text-green-500"
+                  }`}
               >
                 {progressStatus === "IN_PROGRESS"
                   ? "In Progress..."
@@ -92,8 +91,8 @@ function CourseCard({ subject, selected, progressStatus }) {
             {selected === "all"
               ? "Start Learning"
               : progressStatus === "IN_PROGRESS"
-              ? "Resume Learning"
-              : "Review"}
+                ? "Resume Learning"
+                : "Review"}
           </button>
         </div>
       </div>
