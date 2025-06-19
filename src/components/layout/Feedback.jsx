@@ -6,13 +6,13 @@ const FeedbackWidget = () => {
     const [rating, setRating] = useState(0);
 
     const handleSubmit = async () => {
-        if (!content || rating === 0) {
-            alert("Vui lòng nhập nội dung và chọn số sao.");
+        if (!content || content.trim().length < 5 || rating === 0) {
+            alert("Vui lòng nhập nội dung (ít nhất 5 ký tự) và chọn số sao.");
             return;
         }
 
         try {
-            const res = await fetch('/api/feedback', {
+            const res = await fetch('/public/feedback', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ content, rating })
@@ -38,7 +38,7 @@ const FeedbackWidget = () => {
                 onClick={() => setOpen(!open)}
                 className="fixed bottom-6 right-6 bg-blue-500 text-white p-3 rounded-full shadow-lg hover:bg-blue-600 z-50"
             >
-                ✉️ Góp ý
+                ✉️ FeedBack
             </button>
 
             {/* Feedback popup */}
