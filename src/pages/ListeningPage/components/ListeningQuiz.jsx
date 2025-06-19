@@ -1,30 +1,42 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { FiCheck, FiX } from 'react-icons/fi'
 
-function ListeningQuiz({ questions, currentTime }) {
+function ListeningQuiz({ questions = [], currentTime }) {
   const [answers, setAnswers] = useState({})
   const [showResults, setShowResults] = useState(false)
-  
-  const handleAnswer = (questionId, answer) => {
+  const [quizQuestions, setQuizQuestions] = useState([])
+
+  useEffect(() => {
+    // Defensive: ensure questions is always an array
+    setQuizQuestions(Array.isArray(questions) ? questions : [])
+  }, [questions])
+
+  const handleAnswer = (exerciseQuestionId, answer) => {
     setAnswers({
       ...answers,
-      [questionId]: answer
+      [exerciseQuestionId]: answer
     })
   }
-  
+
   const handleSubmit = () => {
     setShowResults(true)
   }
-  
+
   const getCorrectAnswers = () => {
-    return questions.filter(q => answers[q.id] === q.correctAnswer).length
+    return quizQuestions.filter(q => answers[q.id] === q.correctAnswer).length
   }
-  
-  // Filter questions based on current audio time
-  const activeQuestions = questions.filter(q => 
-    currentTime >= q.startTime && currentTime <= q.endTime
+
+  // Filter questions based on current audio time if startTime/endTime exist
+  const activeQuestions = quizQuestions.filter(q =>
+    typeof q.startTime === 'number' && typeof q.endTime === 'number'
+      ? currentTime >= q.startTime && currentTime <= q.endTime
+      : true // If no timing, show all
   )
+
+  if (!quizQuestions.length) {
+    return <div className="text-gray-400">No questions available</div>
+  }
 
   return (
     <div className="space-y-8">
@@ -36,19 +48,17 @@ function ListeningQuiz({ questions, currentTime }) {
         >
           <div className="text-center mb-6">
             <div className="text-3xl font-bold text-primary-600 mb-2">
-              {getCorrectAnswers()}/{questions.length}
+              {getCorrectAnswers()}/{quizQuestions.length}
             </div>
             <div className="text-gray-600">
-              {getCorrectAnswers() === questions.length
+              {getCorrectAnswers() === quizQuestions.length
                 ? "Perfect! You've mastered this listening exercise."
                 : "Keep practicing to improve your listening skills!"}
             </div>
           </div>
-          
           <div className="space-y-6">
-            {questions.map((question) => {
+            {quizQuestions.map((question) => {
               const isCorrect = answers[question.id] === question.correctAnswer
-              
               return (
                 <div
                   key={question.id}
@@ -78,12 +88,10 @@ function ListeningQuiz({ questions, currentTime }) {
                       </div>
                     </div>
                   </div>
-                  
                   <div className="p-4">
                     <p className="text-gray-800 mb-4">{question.text}</p>
-                    
                     <div className="space-y-2">
-                      {question.options.map((option) => (
+                      {Array.isArray(question.options) && question.options.map((option) => (
                         <div
                           key={option}
                           className={`p-3 rounded-lg ${
@@ -98,7 +106,6 @@ function ListeningQuiz({ questions, currentTime }) {
                         </div>
                       ))}
                     </div>
-                    
                     {!isCorrect && (
                       <div className="mt-4 p-3 bg-gray-50 rounded-lg text-sm text-gray-700">
                         <div className="font-medium">Explanation:</div>
@@ -110,7 +117,6 @@ function ListeningQuiz({ questions, currentTime }) {
               )
             })}
           </div>
-          
           <div className="mt-6 flex justify-center">
             <button
               onClick={() => setShowResults(false)}
@@ -132,11 +138,9 @@ function ListeningQuiz({ questions, currentTime }) {
               <h3 className="text-lg font-medium text-gray-900 mb-4">
                 Question {question.id}
               </h3>
-              
               <p className="text-gray-800 mb-6">{question.text}</p>
-              
               <div className="space-y-3">
-                {question.options.map((option) => (
+                {Array.isArray(question.options) && question.options.map((option) => (
                   <button
                     key={option}
                     onClick={() => handleAnswer(question.id, option)}
@@ -152,8 +156,7 @@ function ListeningQuiz({ questions, currentTime }) {
               </div>
             </motion.div>
           ))}
-          
-          {Object.keys(answers).length === questions.length && (
+          {Object.keys(answers).length === quizQuestions.length && quizQuestions.length > 0 && (
             <div className="flex justify-center">
               <button
                 onClick={handleSubmit}

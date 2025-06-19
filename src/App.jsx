@@ -45,6 +45,7 @@ import NotificationSlider from "./pages/HomePage/Notification.jsx";
 import CourseContentPage from "./pages/LearningPage/components/CourseContent.jsx";
 import LessonPage from "./pages/LearningPage/LessonPage.jsx";
 import DoExercise from "./pages/LearningPage/components/DoExercise.jsx";
+import NewsPage from './pages/NewsPage/NewsPage';
 import AdminRoute from "./context/AdminRoute.jsx";
 
 function App() {
@@ -118,6 +119,10 @@ function App() {
             <Route path="/listening" element={<ListeningPage />} />
             <Route path="/listening/:id" element={<ListeningDetailPage />} />
             <Route path="favorites/:type" element={<FavoriteFoldersPage />} />
+          </Route>
+          {/* news routes */}
+          <Route path="/" element={<Layout />}>
+            <Route path="/news" element={<NewsPage />} />
           </Route>
           {/* Public routes */}
           <Route path="/" element={<Layout />}>

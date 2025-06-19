@@ -82,12 +82,33 @@ const getExercisesByLessonId = async (lessonId) => {
     throw new Error("Failed to fetch exercises");
   }
 };
+
+const handleStartLesson = async (lessonId) => {
+  try {
+    const response = await axios.post(
+      `/api/progress-lessons?lessonId=${lessonId}`,
+      {},
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          'authorization': `Bearer ${localStorage.getItem('accessToken')}`
+        }
+      }
+    );
+    return response;
+  } catch (error) {
+    console.error("Error starting lesson:", error);
+    throw new Error("Failed to start lesson");
+  }
+};
+
 export const CourseContentService = {
   getCourseContentById,
   getProgressCourseBySubjectId,
   getLessonsBySubjectId,
   getProgressByLessonId,
   getExercisesByLessonId,
+  handleStartLesson,
 };
 
 export default CourseContentService;
