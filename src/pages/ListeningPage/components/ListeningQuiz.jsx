@@ -1,175 +1,121 @@
-import { useState, useEffect } from 'react'
-import { motion } from 'framer-motion'
-import { FiCheck, FiX } from 'react-icons/fi'
+import React, { useState, useEffect } from 'react';
+import { FiCheck, FiX } from 'react-icons/fi';
+import axios from 'axios';
+import { useAuth } from '../../../context/AuthContext'; // Import useAuth
 
-function ListeningQuiz({ questions = [], currentTime }) {
-  const [answers, setAnswers] = useState({})
-  const [showResults, setShowResults] = useState(false)
-  const [quizQuestions, setQuizQuestions] = useState([])
+function ListeningQuiz({ questions = [], currentTime, contentId }) {
+  const { user } = useAuth(); // Get user from AuthContext
+  const userId = user?.userId; // Adjust this if your user object uses a different key
+  
+  const [answers, setAnswers] = useState({});
+  const [showResults, setShowResults] = useState(false);
+  const [quizQuestions, setQuizQuestions] = useState([]);
 
   useEffect(() => {
-    // Defensive: ensure questions is always an array
-    setQuizQuestions(Array.isArray(questions) ? questions : [])
-  }, [questions])
+    setQuizQuestions(questions);
+  }, [questions]);
 
-  const handleAnswer = (exerciseQuestionId, answer) => {
-    setAnswers({
-      ...answers,
-      [exerciseQuestionId]: answer
-    })
-  }
+  const handleAnswer = (exerciseQuestionId, answerText) => {
+    if (showResults) return;
+    setAnswers(prev => ({
+      ...prev,
+      [exerciseQuestionId]: { answerText }
+    }));
+  };
+  const handleSubmit = async () => {
+    const userAnswers = Object.entries(answers).map(([exerciseQuestionId, { answerText }]) => {
+      const question = quizQuestions.find(q => q.exerciseQuestionId === Number(exerciseQuestionId));
+      const selectedOption = question?.answerQuestions.find(opt => opt.answerText === answerText);
+      return {
+        answerId: selectedOption?.answerId,
+        answerText
+      };
+    });
 
-  const handleSubmit = () => {
-    setShowResults(true)
-  }
+    const payload = { userAnswers, userId, contentId };
+    console.log('payload:', payload);
+    const response = await axios.post('http://localhost:8080/user/contents_listening/check-answer', payload);
+    const result = response.data;
 
-  const getCorrectAnswers = () => {
-    return quizQuestions.filter(q => answers[q.id] === q.correctAnswer).length
-  }
+    setAnswers(prev =>
+      result.reduce((acc, curr) => {
+        const question = quizQuestions.find(q =>
+          q.answerQuestions.some(opt => opt.answerId === curr.answerId)
+        );
+        if (!question) return acc;
+        return {
+          ...acc,
+          [question.exerciseQuestionId]: {
+            answerText: curr.answerText,
+            isCorrect: curr.isCorrect
+          }
+        };
+      }, prev)
+    );
+    setShowResults(true);
+  };
 
-  // Filter questions based on current audio time if startTime/endTime exist
   const activeQuestions = quizQuestions.filter(q =>
     typeof q.startTime === 'number' && typeof q.endTime === 'number'
       ? currentTime >= q.startTime && currentTime <= q.endTime
-      : true // If no timing, show all
-  )
+      : true
+  );
 
   if (!quizQuestions.length) {
-    return <div className="text-gray-400">No questions available</div>
+    return <div>No questions available.</div>;
   }
 
   return (
-    <div className="space-y-8">
-      {showResults ? (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="bg-white rounded-lg shadow-md p-6"
-        >
-          <div className="text-center mb-6">
-            <div className="text-3xl font-bold text-primary-600 mb-2">
-              {getCorrectAnswers()}/{quizQuestions.length}
-            </div>
-            <div className="text-gray-600">
-              {getCorrectAnswers() === quizQuestions.length
-                ? "Perfect! You've mastered this listening exercise."
-                : "Keep practicing to improve your listening skills!"}
-            </div>
-          </div>
-          <div className="space-y-6">
-            {quizQuestions.map((question) => {
-              const isCorrect = answers[question.id] === question.correctAnswer
+    <div>
+      {activeQuestions.map((question, idx) => (
+        <div key={question.exerciseQuestionId} className="mb-6 bg-white rounded-lg shadow-md p-6">
+          <div className="font-semibold mb-2">Question {idx + 1}</div>
+          <div className="mb-4">{question.questionText}</div>
+          <div className="space-y-3">
+            {Array.isArray(question.answerQuestions) && question.answerQuestions.map((option) => {
+              const selected = answers[question.exerciseQuestionId]?.answerText === option.answerText;
+              const isCorrect = answers[question.exerciseQuestionId]?.isCorrect;
+
               return (
-                <div
-                  key={question.id}
-                  className={`border-2 rounded-lg overflow-hidden ${
-                    isCorrect ? 'border-success-500' : 'border-error-500'
-                  }`}
+                <button
+                  key={option.answerId}
+                  onClick={() => handleAnswer(question.exerciseQuestionId, option.answerText)}
+                  className={`w-full p-3 rounded-lg text-left transition-colors border flex items-center justify-between
+        ${selected && !showResults
+                      ? 'border-blue-500 bg-blue-50 text-blue-700'
+                      : selected && showResults && isCorrect
+                        ? 'border-green-500 bg-green-50 text-green-700'
+                        : selected && showResults && isCorrect === false
+                          ? 'border-red-500 bg-red-50 text-red-700'
+                          : 'border-gray-200 bg-gray-50 text-gray-900 hover:bg-gray-100'
+                    }`}
+                  disabled={showResults}
                 >
-                  <div className={`p-4 ${
-                    isCorrect ? 'bg-success-50' : 'bg-error-50'
-                  }`}>
-                    <div className="flex justify-between items-center">
-                      <h3 className="font-medium">Question {question.id}</h3>
-                      <div className={`flex items-center ${
-                        isCorrect ? 'text-success-600' : 'text-error-600'
-                      }`}>
-                        {isCorrect ? (
-                          <>
-                            <FiCheck className="mr-1" />
-                            <span>Correct</span>
-                          </>
-                        ) : (
-                          <>
-                            <FiX className="mr-1" />
-                            <span>Incorrect</span>
-                          </>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                  <div className="p-4">
-                    <p className="text-gray-800 mb-4">{question.text}</p>
-                    <div className="space-y-2">
-                      {Array.isArray(question.options) && question.options.map((option) => (
-                        <div
-                          key={option}
-                          className={`p-3 rounded-lg ${
-                            option === question.correctAnswer
-                              ? 'bg-success-100 border border-success-500'
-                              : option === answers[question.id]
-                                ? 'bg-error-100 border border-error-500'
-                                : 'bg-gray-50 border border-gray-200'
-                          }`}
-                        >
-                          {option}
-                        </div>
-                      ))}
-                    </div>
-                    {!isCorrect && (
-                      <div className="mt-4 p-3 bg-gray-50 rounded-lg text-sm text-gray-700">
-                        <div className="font-medium">Explanation:</div>
-                        <p>{question.explanation}</p>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )
+                  <span>{option.answerText}</span>
+                  {showResults && selected && (
+                    isCorrect
+                      ? <FiCheck className="ml-2 text-green-500" />
+                      : <FiX className="ml-2 text-red-500" />
+                  )}
+                  {showResults && !selected && option.isCorrect && (
+                    <FiCheck className="ml-2 text-green-500" />
+                  )}
+                </button>
+              );
             })}
           </div>
-          <div className="mt-6 flex justify-center">
-            <button
-              onClick={() => setShowResults(false)}
-              className="btn btn-primary"
-            >
-              Try Again
-            </button>
-          </div>
-        </motion.div>
-      ) : (
-        <div className="space-y-6">
-          {activeQuestions.map((question) => (
-            <motion.div
-              key={question.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="bg-white rounded-lg shadow-md p-6"
-            >
-              <h3 className="text-lg font-medium text-gray-900 mb-4">
-                Question {question.id}
-              </h3>
-              <p className="text-gray-800 mb-6">{question.text}</p>
-              <div className="space-y-3">
-                {Array.isArray(question.options) && question.options.map((option) => (
-                  <button
-                    key={option}
-                    onClick={() => handleAnswer(question.id, option)}
-                    className={`w-full p-3 rounded-lg text-left transition-colors ${
-                      answers[question.id] === option
-                        ? 'bg-primary-50 border-2 border-primary-500'
-                        : 'bg-gray-50 border border-gray-200 hover:bg-gray-100'
-                    }`}
-                  >
-                    {option}
-                  </button>
-                ))}
-              </div>
-            </motion.div>
-          ))}
-          {Object.keys(answers).length === quizQuestions.length && quizQuestions.length > 0 && (
-            <div className="flex justify-center">
-              <button
-                onClick={handleSubmit}
-                className="btn btn-primary"
-              >
-                Submit Answers
-              </button>
-            </div>
-          )}
         </div>
+      ))}
+      {!showResults && (
+        <button
+          onClick={handleSubmit}
+          className="mt-4 px-4 py-2 bg-primary-500 text-white rounded"
+        >
+          Submit
+        </button>
       )}
     </div>
-  )
+  );
 }
 
-export default ListeningQuiz
+export default ListeningQuiz;
