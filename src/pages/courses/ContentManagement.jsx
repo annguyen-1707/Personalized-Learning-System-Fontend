@@ -24,7 +24,7 @@ import {
   Headphones,
   Search,
   Filter,
-  Layers
+  Layers,
 } from "lucide-react";
 import { a, div, s } from "framer-motion/client";
 import ReactPaginate from "react-paginate";
@@ -110,7 +110,7 @@ function ContentManagement() {
   const filteredExercises = lessonExercises.filter((exercise) => {
     const searchMatch =
       search === "" ||
-      exercise.title?.toLowerCase().includes(search.toLowerCase())
+      exercise.title?.toLowerCase().includes(search.toLowerCase());
 
     return searchMatch;
   });
@@ -608,7 +608,9 @@ function ContentManagement() {
                       <X className="h-5 w-5 text-red-400" />
                     </div>
                     <div className="ml-3">
-                      <h3 className="text-sm font-medium text-red-800">Error occurred</h3>
+                      <h3 className="text-sm font-medium text-red-800">
+                        Error occurred
+                      </h3>
                       <div className="mt-2 text-sm text-red-700">
                         <p>{errorMessages}</p>
                       </div>
@@ -620,7 +622,10 @@ function ContentManagement() {
 
             {/* Kanji */}
             <div>
-              <label htmlFor="kanji" className="block text-sm font-medium text-gray-700 mb-1">
+              <label
+                htmlFor="kanji"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
                 Kanji <span className="text-red-500">*</span>
               </label>
               <div className="relative rounded-md shadow-sm">
@@ -629,9 +634,13 @@ function ContentManagement() {
                   type="text"
                   required
                   value={formData.kanji || ""}
-                  onChange={(e) => setFormData({ ...formData, kanji: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, kanji: e.target.value })
+                  }
                   className={`block w-full rounded-md border-gray-300 pr-10 focus:border-primary-500 focus:ring-primary-500 sm:text-sm ${
-                    errors.kanji ? "border-red-500 focus:border-red-500 bg-red-50" : ""
+                    errors.kanji
+                      ? "border-red-500 focus:border-red-500 bg-red-50"
+                      : ""
                   }`}
                   placeholder="Enter kanji characters"
                 />
@@ -642,12 +651,17 @@ function ContentManagement() {
               {errors.kanji && (
                 <p className="mt-1 text-sm text-red-600">{errors.kanji}</p>
               )}
-              <p className="mt-1 text-sm text-gray-500">Japanese kanji characters</p>
+              <p className="mt-1 text-sm text-gray-500">
+                Japanese kanji characters
+              </p>
             </div>
 
             {/* Kana */}
             <div>
-              <label htmlFor="kana" className="block text-sm font-medium text-gray-700 mb-1">
+              <label
+                htmlFor="kana"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
                 Kana <span className="text-red-500">*</span>
               </label>
               <div className="relative rounded-md shadow-sm">
@@ -656,9 +670,13 @@ function ContentManagement() {
                   type="text"
                   required
                   value={formData.kana || ""}
-                  onChange={(e) => setFormData({ ...formData, kana: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, kana: e.target.value })
+                  }
                   className={`block w-full rounded-md border-gray-300 pr-10 focus:border-primary-500 focus:ring-primary-500 sm:text-sm ${
-                    errors.kana ? "border-red-500 focus:border-red-500 bg-red-50" : ""
+                    errors.kana
+                      ? "border-red-500 focus:border-red-500 bg-red-50"
+                      : ""
                   }`}
                   placeholder="Enter kana characters"
                 />
@@ -669,12 +687,17 @@ function ContentManagement() {
               {errors.kana && (
                 <p className="mt-1 text-sm text-red-600">{errors.kana}</p>
               )}
-              <p className="mt-1 text-sm text-gray-500">Japanese kana characters</p>
+              <p className="mt-1 text-sm text-gray-500">
+                Japanese kana characters
+              </p>
             </div>
 
             {/* Romaji */}
             <div>
-              <label htmlFor="romaji" className="block text-sm font-medium text-gray-700 mb-1">
+              <label
+                htmlFor="romaji"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
                 Romaji
               </label>
               <div className="relative rounded-md shadow-sm">
@@ -682,9 +705,13 @@ function ContentManagement() {
                   id="romaji"
                   type="text"
                   value={formData.romaji || ""}
-                  onChange={(e) => setFormData({ ...formData, romaji: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, romaji: e.target.value })
+                  }
                   className={`block w-full rounded-md border-gray-300 pr-10 focus:border-primary-500 focus:ring-primary-500 sm:text-sm ${
-                    errors.romaji ? "border-red-500 focus:border-red-500 bg-red-50" : ""
+                    errors.romaji
+                      ? "border-red-500 focus:border-red-500 bg-red-50"
+                      : ""
                   }`}
                   placeholder="Enter romaji"
                 />
@@ -695,12 +722,17 @@ function ContentManagement() {
               {errors.romaji && (
                 <p className="mt-1 text-sm text-red-600">{errors.romaji}</p>
               )}
-              <p className="mt-1 text-sm text-gray-500">Romanized Japanese text</p>
+              <p className="mt-1 text-sm text-gray-500">
+                Romanized Japanese text
+              </p>
             </div>
 
             {/* Meaning */}
             <div>
-              <label htmlFor="meaning" className="block text-sm font-medium text-gray-700 mb-1">
+              <label
+                htmlFor="meaning"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
                 Meaning <span className="text-red-500">*</span>
               </label>
               <div className="relative rounded-md shadow-sm">
@@ -709,9 +741,13 @@ function ContentManagement() {
                   type="text"
                   required
                   value={formData.meaning || ""}
-                  onChange={(e) => setFormData({ ...formData, meaning: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, meaning: e.target.value })
+                  }
                   className={`block w-full rounded-md border-gray-300 pr-10 focus:border-primary-500 focus:ring-primary-500 sm:text-sm ${
-                    errors.meaning ? "border-red-500 focus:border-red-500 bg-red-50" : ""
+                    errors.meaning
+                      ? "border-red-500 focus:border-red-500 bg-red-50"
+                      : ""
                   }`}
                   placeholder="Enter meaning in English"
                 />
@@ -727,28 +763,42 @@ function ContentManagement() {
 
             {/* Description */}
             <div className="md:col-span-2">
-              <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
+              <label
+                htmlFor="description"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
                 Description
               </label>
               <textarea
                 id="description"
                 rows={3}
                 value={formData.description || ""}
-                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, description: e.target.value })
+                }
                 className={`block w-full rounded-md border-gray-300 focus:border-primary-500 focus:ring-primary-500 sm:text-sm ${
-                  errors.description ? "border-red-500 focus:border-red-500 bg-red-50" : ""
+                  errors.description
+                    ? "border-red-500 focus:border-red-500 bg-red-50"
+                    : ""
                 }`}
                 placeholder="Provide additional context or explanation"
               />
               {errors.description && (
-                <p className="mt-1 text-sm text-red-600">{errors.description}</p>
+                <p className="mt-1 text-sm text-red-600">
+                  {errors.description}
+                </p>
               )}
-              <p className="mt-1 text-sm text-gray-500">Additional context or explanation</p>
+              <p className="mt-1 text-sm text-gray-500">
+                Additional context or explanation
+              </p>
             </div>
 
             {/* Example Sentence */}
             <div className="md:col-span-2">
-              <label htmlFor="example" className="block text-sm font-medium text-gray-700 mb-1">
+              <label
+                htmlFor="example"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
                 Example Sentence
               </label>
               <div className="relative rounded-md shadow-sm">
@@ -756,9 +806,13 @@ function ContentManagement() {
                   id="example"
                   type="text"
                   value={formData.example || ""}
-                  onChange={(e) => setFormData({ ...formData, example: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, example: e.target.value })
+                  }
                   className={`block w-full rounded-md border-gray-300 pr-10 focus:border-primary-500 focus:ring-primary-500 sm:text-sm ${
-                    errors.example ? "border-red-500 focus:border-red-500 bg-red-50" : ""
+                    errors.example
+                      ? "border-red-500 focus:border-red-500 bg-red-50"
+                      : ""
                   }`}
                   placeholder="Enter example sentence"
                 />
@@ -769,21 +823,30 @@ function ContentManagement() {
               {errors.example && (
                 <p className="mt-1 text-sm text-red-600">{errors.example}</p>
               )}
-              <p className="mt-1 text-sm text-gray-500">Example usage in a sentence</p>
+              <p className="mt-1 text-sm text-gray-500">
+                Example usage in a sentence
+              </p>
             </div>
 
             {/* Part of Speech */}
             <div>
-              <label htmlFor="partOfSpeech" className="block text-sm font-medium text-gray-700 mb-1">
+              <label
+                htmlFor="partOfSpeech"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
                 Part of Speech <span className="text-red-500">*</span>
               </label>
               <select
                 id="partOfSpeech"
                 required
                 value={formData.partOfSpeech}
-                onChange={(e) => setFormData({ ...formData, partOfSpeech: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, partOfSpeech: e.target.value })
+                }
                 className={`block w-full rounded-md border-gray-300 focus:border-primary-500 focus:ring-primary-500 sm:text-sm ${
-                  errors.partOfSpeech ? "border-red-500 focus:border-red-500 bg-red-50" : ""
+                  errors.partOfSpeech
+                    ? "border-red-500 focus:border-red-500 bg-red-50"
+                    : ""
                 }`}
               >
                 <option value="">Select part of speech...</option>
@@ -794,23 +857,32 @@ function ContentManagement() {
                 ))}
               </select>
               {errors.partOfSpeech && (
-                <p className="mt-1 text-sm text-red-600">{errors.partOfSpeech}</p>
+                <p className="mt-1 text-sm text-red-600">
+                  {errors.partOfSpeech}
+                </p>
               )}
               <p className="mt-1 text-sm text-gray-500">Grammatical category</p>
             </div>
 
             {/* JLPT Level */}
             <div>
-              <label htmlFor="jlptLevel" className="block text-sm font-medium text-gray-700 mb-1">
+              <label
+                htmlFor="jlptLevel"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
                 JLPT Level <span className="text-red-500">*</span>
               </label>
               <select
                 id="jlptLevel"
                 required
                 value={formData.jlptLevel}
-                onChange={(e) => setFormData({ ...formData, jlptLevel: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, jlptLevel: e.target.value })
+                }
                 className={`block w-full rounded-md border-gray-300 focus:border-primary-500 focus:ring-primary-500 sm:text-sm ${
-                  errors.jlptLevel ? "border-red-500 focus:border-red-500 bg-red-50" : ""
+                  errors.jlptLevel
+                    ? "border-red-500 focus:border-red-500 bg-red-50"
+                    : ""
                 }`}
               >
                 <option value="">Select JLPT level...</option>
@@ -823,7 +895,9 @@ function ContentManagement() {
               {errors.jlptLevel && (
                 <p className="mt-1 text-sm text-red-600">{errors.jlptLevel}</p>
               )}
-              <p className="mt-1 text-sm text-gray-500">Japanese Language Proficiency Test level</p>
+              <p className="mt-1 text-sm text-gray-500">
+                Japanese Language Proficiency Test level
+              </p>
             </div>
           </div>
         );
@@ -1074,102 +1148,116 @@ function ContentManagement() {
     switch (activeTab) {
       case "vocabulary":
         return (
-          <div className="divide-y divide-gray-200">
+          <div className="overflow-x-auto rounded-lg shadow border border-gray-200">
             {filteredVocabularies.length > 0 ? (
-              filteredVocabularies.map((item) => (
-                <div
-                  key={item.vocabularyId}
-                  className="p-4 hover:bg-gray-50 animate-fade-in"
-                >
-                  <div className="flex justify-between items-start">
-                    <div className="w-full">
-                      <div className="flex items-center justify-between">
-                        <h3 className="text-lg font-semibold text-gray-900">
-                          {item.kanji}
-                        </h3>
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Kanji
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Kana / Romaji
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Meaning
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Part of Speech
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      JLPT
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Example
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Updated At
+                    </th>
+                    <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Actions
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-100 animate-fade-in">
+                  {filteredVocabularies.map((item) => (
+                    <tr key={item.vocabularyId} className="hover:bg-gray-50">
+                      <td className="px-4 py-2 font-semibold text-gray-800">
+                        {item.kanji}
+                      </td>
+                      <td className="px-4 py-2 text-sm text-gray-600">
+                        <div>
+                          <strong>Kana:</strong> {item.kana}
+                        </div>
+                        <div>
+                          <strong>Romaji:</strong> {item.romaji}
+                        </div>
+                      </td>
+                      <td className="px-4 py-2 text-sm text-gray-700">
+                        {item.meaning}
+                      </td>
+                      <td className="px-4 py-2 text-sm text-gray-500">
+                        {item.partOfSpeech}
+                      </td>
+                      <td className="px-4 py-2">
                         <span
-                          className={`ml-2 badge ${
+                          className={`text-xs px-2 py-1 rounded-full font-medium ${
                             jlptLevelClassMap[item.jlptLevel] ||
                             "bg-gray-100 text-gray-500"
                           }`}
                         >
                           {item.jlptLevel}
                         </span>
-                      </div>
-
-                      <p className="text-sm text-gray-500 mt-1">
-                        <strong>Kana:</strong> {item.kana} |{" "}
-                        <strong>Romaji:</strong> {item.romaji}
-                      </p>
-
-                      <p className="text-sm text-gray-700 mt-1">
-                        <strong>Meaning:</strong> {item.meaning}
-                      </p>
-
-                      {item.description && (
-                        <p className="text-sm text-gray-600 mt-1">
-                          <strong>Description:</strong> {item.description}
-                        </p>
-                      )}
-
-                      {item.example && (
-                        <p className="text-sm text-gray-700 italic mt-2">
-                          <strong>Example:</strong> “{item.example}”
-                        </p>
-                      )}
-
-                      <div className="text-xs text-gray-400 mt-2 flex justify-between items-center">
-                        <span>
-                          <strong>Part of speech:</strong> {item.partOfSpeech}
-                        </span>
-                        <span>
-                          <strong>Updated:</strong>{" "}
-                          {new Date(item.updatedAt).toLocaleString()}
-                        </span>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center ml-4">
-                      {showDeleteConfirm === item.vocabularyId ? (
-                        <div className="flex items-center space-x-2">
-                          <span className="text-xs text-gray-500">Delete?</span>
-                          <button
-                            onClick={() => handleDelete(item.vocabularyId)}
-                            className="text-error-500 hover:text-error-700"
-                          >
-                            <Check size={16} />
-                          </button>
-                          <button
-                            onClick={() => setShowDeleteConfirm(null)}
-                            className="text-gray-500 hover:text-gray-700"
-                          >
-                            <X size={16} />
-                          </button>
-                        </div>
-                      ) : (
-                        <>
-                          <button
-                            onClick={() => startEdit(item)}
-                            className="text-primary-600 hover:text-primary-800 mr-2"
-                            disabled={isAdding || isEditing}
-                          >
-                            <Edit size={16} />
-                          </button>
-                          <button
-                            onClick={() =>
-                              setShowDeleteConfirm(item.vocabularyId)
-                            }
-                            className="text-error-500 hover:text-error-700"
-                            disabled={isAdding || isEditing}
-                          >
-                            <Trash2 size={16} />
-                          </button>
-                        </>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              ))
+                      </td>
+                      <td className="px-4 py-2 text-sm italic text-gray-600">
+                        {item.example || (
+                          <span className="text-gray-400">N/A</span>
+                        )}
+                      </td>
+                      <td className="px-4 py-2 text-xs text-gray-400">
+                        {new Date(item.updatedAt).toLocaleString()}
+                      </td>
+                      <td className="px-4 py-2 text-center">
+                        {showDeleteConfirm === item.vocabularyId ? (
+                          <div className="flex items-center justify-center space-x-2">
+                            <button
+                              onClick={() => handleDelete(item.vocabularyId)}
+                              className="text-error-500 hover:text-error-700"
+                            >
+                              <Check size={16} />
+                            </button>
+                            <button
+                              onClick={() => setShowDeleteConfirm(null)}
+                              className="text-gray-500 hover:text-gray-700"
+                            >
+                              <X size={16} />
+                            </button>
+                          </div>
+                        ) : (
+                          <div className="flex justify-center items-center space-x-2">
+                            <button
+                              onClick={() => startEdit(item)}
+                              className="text-primary-600 hover:text-primary-800"
+                              disabled={isAdding || isEditing}
+                            >
+                              <Edit size={16} />
+                            </button>
+                            <button
+                              onClick={() =>
+                                setShowDeleteConfirm(item.vocabularyId)
+                              }
+                              className="text-error-500 hover:text-error-700"
+                              disabled={isAdding || isEditing}
+                            >
+                              <Trash2 size={16} />
+                            </button>
+                          </div>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             ) : (
               <div className="p-6 text-center text-gray-500">
                 <BookOpen className="h-10 w-10 mx-auto mb-2 text-gray-400" />
@@ -1191,101 +1279,114 @@ function ContentManagement() {
 
       case "grammar":
         return (
-          <div className="divide-y divide-gray-200">
+          <div className="overflow-x-auto rounded-lg shadow border border-gray-200">
             {filteredGrammars.length > 0 ? (
-              filteredGrammars.map((item) => {
-                const formattedDate = formatDate(item.updatedAt);
-
-                return (
-                  <div
-                    key={item.grammarId}
-                    className="p-4 hover:bg-gray-50 animate-fade-in"
-                  >
-                    <div className="flex justify-between items-start">
-                      <div className="w-full">
-                        <div className="flex items-center justify-between">
-                          <h3 className="text-lg font-semibold text-gray-900">
-                            {item.titleJp}
-                          </h3>
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Title
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Structure
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Meaning
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Example
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Usage
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      JLPT
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Updated At
+                    </th>
+                    <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Actions
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-100 animate-fade-in">
+                  {filteredGrammars.map((item) => {
+                    const formattedDate = formatDate(item.updatedAt);
+                    return (
+                      <tr key={item.grammarId} className="hover:bg-gray-50">
+                        <td className="px-4 py-2 font-semibold text-gray-800">
+                          {item.titleJp}
+                        </td>
+                        <td className="px-4 py-2 text-sm text-gray-700">
+                          {item.structure}
+                        </td>
+                        <td className="px-4 py-2 text-sm text-gray-700">
+                          {item.meaning}
+                        </td>
+                        <td className="px-4 py-2 text-sm italic text-gray-600">
+                          {item.example || (
+                            <span className="text-gray-400">N/A</span>
+                          )}
+                        </td>
+                        <td className="px-4 py-2 text-sm text-gray-600">
+                          {item.usage}
+                        </td>
+                        <td className="px-4 py-2">
                           <span
-                            className={`ml-2 text-xs font-medium px-2 py-1 rounded ${
-                              jlptLevelClassMap[item.jlptLevel]
+                            className={`text-xs px-2 py-1 rounded-full font-medium ${
+                              jlptLevelClassMap[item.jlptLevel] ||
+                              "bg-gray-100 text-gray-500"
                             }`}
                           >
                             {item.jlptLevel}
                           </span>
-                        </div>
-
-                        <p className="text-sm text-gray-500 mt-1">
-                          <strong>Structure:</strong> {item.structure}
-                        </p>
-
-                        <p className="text-sm text-gray-700 mt-1">
-                          <strong>Meaning:</strong> {item.meaning}
-                        </p>
-
-                        {item.example && (
-                          <p className="text-sm text-gray-700 italic mt-2">
-                            <strong>Example:</strong> “{item.example}”
-                          </p>
-                        )}
-
-                        <div className="text-xs text-gray-400 mt-2 flex justify-between items-center">
-                          <span>
-                            <strong>usage:</strong> {item.usage}
-                          </span>
-                          {formattedDate && (
-                            <span>
-                              <strong>Updated:</strong> {formattedDate}
-                            </span>
+                        </td>
+                        <td className="px-4 py-2 text-xs text-gray-400">
+                          {formattedDate}
+                        </td>
+                        <td className="px-4 py-2 text-center">
+                          {showDeleteConfirm === item.grammarId ? (
+                            <div className="flex justify-center items-center space-x-2">
+                              <button
+                                onClick={() => handleDelete(item.grammarId)}
+                                className="text-error-500 hover:text-error-700"
+                              >
+                                <Check size={16} />
+                              </button>
+                              <button
+                                onClick={() => setShowDeleteConfirm(null)}
+                                className="text-gray-500 hover:text-gray-700"
+                              >
+                                <X size={16} />
+                              </button>
+                            </div>
+                          ) : (
+                            <div className="flex justify-center items-center space-x-2">
+                              <button
+                                onClick={() => startEdit(item)}
+                                className="text-primary-600 hover:text-primary-800"
+                                disabled={isAdding || isEditing}
+                              >
+                                <Edit size={16} />
+                              </button>
+                              <button
+                                onClick={() =>
+                                  setShowDeleteConfirm(item.grammarId)
+                                }
+                                className="text-error-500 hover:text-error-700"
+                                disabled={isAdding || isEditing}
+                              >
+                                <Trash2 size={16} />
+                              </button>
+                            </div>
                           )}
-                        </div>
-                      </div>
-
-                      <div className="flex items-center ml-4">
-                        {showDeleteConfirm === item.grammarId ? (
-                          <div className="flex items-center space-x-2">
-                            <span className="text-xs text-gray-500">
-                              Delete?
-                            </span>
-                            <button
-                              onClick={() => handleDelete(item.grammarId)}
-                              className="text-error-500 hover:text-error-700"
-                            >
-                              <Check size={16} />
-                            </button>
-                            <button
-                              onClick={() => setShowDeleteConfirm(null)}
-                              className="text-gray-500 hover:text-gray-700"
-                            >
-                              <X size={16} />
-                            </button>
-                          </div>
-                        ) : (
-                          <>
-                            <button
-                              onClick={() => startEdit(item)}
-                              className="text-primary-600 hover:text-primary-800 mr-2"
-                              disabled={isAdding || isEditing}
-                            >
-                              <Edit size={16} />
-                            </button>
-                            <button
-                              onClick={() =>
-                                setShowDeleteConfirm(item.grammarId)
-                              }
-                              className="text-error-500 hover:text-error-700"
-                              disabled={isAdding || isEditing}
-                            >
-                              <Trash2 size={16} />
-                            </button>
-                          </>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                );
-              })
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
             ) : (
               <div className="p-6 text-center text-gray-500">
                 <BookOpen className="h-10 w-10 mx-auto mb-2 text-gray-400" />
@@ -1351,7 +1452,7 @@ function ContentManagement() {
                           </button>
                         </div>
                       ) : (
-                       <div className="flex items-center space-x-2">
+                        <div className="flex items-center space-x-2">
                           <Link
                             to={`/admin/courses/${subject.subjectId}/lessons/${lessonId}/exercises/${item.id}`}
                             className="text-secondary-600 hover:text-secondary-800"
