@@ -52,6 +52,7 @@ export function AuthProvider({ children }) {
       checkLogin();
     }
     else {
+      console.log("vlonnnn");
       const checkLogin = async () => {
         try {
           const response = await fetch("http://localhost:8080/admin/check-login", {
@@ -106,6 +107,20 @@ export function AuthProvider({ children }) {
       }
     }
     if (isAdmin) {
+      if (location.pathname === "/") {
+        localStorage.setItem("isAdmin", "false");
+
+        const handleLogout = async () => {
+          await fetch("http://localhost:8080/auth/logout", {
+            method: "POST",
+            credentials: "include",
+          });
+          localStorage.removeItem("accessToken");
+          setUser(null);
+        };
+        handleLogout()
+        navigate("/");
+      }
       navigate("/admin");
     }
   }, [user]);
