@@ -59,10 +59,12 @@ function Sidebar({ open, setOpen }) {
   ];
 
   const isActive = (path) => {
-    return (
-      location.pathname === path || location.pathname.startsWith(`${path}/`)
-    );
+    if (path === "/admin") {
+      return location.pathname === "/admin"; // chỉ active đúng "/admin"
+    }
+    return location.pathname.startsWith(path);
   };
+
 
   // Dropdown component for sub-children (Practice)
   function Dropdown({ subChildren, isActive }) {
