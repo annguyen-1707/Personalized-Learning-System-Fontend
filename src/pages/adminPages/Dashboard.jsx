@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useData } from '../../context/DataContext';
 import { Link } from 'react-router-dom';
-import { 
-  Users, 
-  Book, 
-  Layers, 
-  Activity, 
+import {
+  Users,
+  Book,
+  Layers,
+  Activity,
   ArrowUp,
   ArrowDown,
   User,
@@ -13,15 +13,15 @@ import {
   Clock,
   CheckCircle
 } from 'lucide-react';
-import { 
-  Chart as ChartJS, 
-  CategoryScale, 
-  LinearScale, 
-  BarElement, 
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  BarElement,
   LineElement,
   PointElement,
-  Title, 
-  Tooltip, 
+  Title,
+  Tooltip,
   Legend,
   ArcElement
 } from 'chart.js';
@@ -226,7 +226,7 @@ function Dashboard() {
           </div>
         </div>
       </div> */}
-{/* 
+      {/* 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
         <div className="card p-6">
           <h2 className="text-lg font-medium text-gray-900 mb-4">Subject Completion Rates</h2>
