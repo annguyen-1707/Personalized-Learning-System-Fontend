@@ -48,6 +48,7 @@ import DoExercise from "./pages/LearningPage/components/DoExercise.jsx";
 import FeedbackWidget from "./components/layout/Feedback.jsx";
 import NewsPage from './pages/NewsPage/NewsPage';
 import AdminRoute from "./context/AdminRoute.jsx";
+import DenyAdmin from "././pages/auth/DenyAdmin.jsx"
 
 function App() {
   const [notificationOpen, setNotificationOpen] = useState(false);
@@ -56,143 +57,162 @@ function App() {
     <AuthProvider>
       <DataProvider>
         <FeedbackWidget />
-          <Routes>
-            <Route
-              path="/"
-              element={
-                <Layout onNotificationClick={() => setNotificationOpen(true)} />
-              }
-            >            <Route index element={<HomePage />} />
-              <Route path="upgrade" element={<UpgradePage />} />
-              <Route path="vnpay-return" element={<VnpayReturn />} />
-              <Route path="profile" element={<ProfilePage />} />
-              <Route path="profile/edit" element={<EditProfilePage />} />
-              <Route
-                path="profile/change-password"
-                element={<ChangePasswordPage />}
-              />
-              <Route path="listening" element={<ListeningPage />} />
-              <Route path="/listening/detail/:contentListeningId" element={<ListeningDetailPage />} />
-              <Route path="learning" element={<LearningPage />} />
-              {/* Thêm các route con khác nếu cần */}
-            </Route>
-
-
-            <Route
-              path="/"
-              element={
-                <LayoutParent onNotificationClick={() => setNotificationOpen(true)} />
-              }
-            >
-              <Route path="/parentPage" element={<ParentPage />} />
-              <Route path="/parentPage/:studentId/view_children" element={<ViewChildren />} />
-            </Route>
-
-            <Route path="oauth-callback" element={<OAuthCallBack />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/register1" element={<RegisterP1 />} />
-            <Route path="/register2" element={<RegisterP2 />} />
-            <Route path="/forgot-password" element={<ForgotPassword />} />
-            <Route path="/admin/login" element={<Login />} />
-            <Route
-              path="/await-confirmation"
-              element={<AwaitEmailConfirmation />}
-            />
-            {/*ProfilePage routes*/}1
-            <Route path="/" element={<Layout />}>
-              <Route path="/profile" element={<ProfilePage />} />
-              <Route path="/profile/edit" element={<EditProfilePage />} />
-              <Route
-                path="/profile/change-password"
-                element={<ChangePasswordPage />}
-              />
-            </Route>
-            <Route
-              path="/await-confirmation"
-              element={<AwaitEmailConfirmation />}
-            />
-
-            {/* Do exercise */}
-            <Route path="/do-exercise/:exerciseId" element={<DoExercise />} />
-
-          {/* Listening routes */}
-          <Route path="/" element={<Layout />}>
-            <Route path="/listening" element={<ListeningPage />} />
-            <Route path="/listening/:id" element={<ListeningDetailPage />} />
-            <Route path="favorites/:type" element={<FavoriteFoldersPage />} />
-          </Route>
-           {/* news routes */}
-          <Route path="/" element={<Layout />}>
-            <Route path="/news" element={<NewsPage />} />
-          </Route>
-          {/* Public routes */}
-          {/* Public routes */}
-          <Route path="/" element={<Layout />}>
+        <Routes>
+          <Route path="/" element={<Layout onNotificationClick={() => setNotificationOpen(true)} />}>
+            {/* Trang chính */}
             <Route index element={<HomePage />} />
+            <Route path="upgrade" element={<UpgradePage />} />
+            <Route path="vnpay-return" element={<VnpayReturn />} />
+
+            {/* Profile */}
+            <Route path="profile" element={<ProfilePage />} />
+            <Route path="profile/edit" element={<EditProfilePage />} />
+            <Route path="profile/change-password" element={<ChangePasswordPage />} />
+
+            {/* Listening */}
+            <Route path="listening" element={<ListeningPage />} />
+            <Route path="listening/detail/:contentListeningId" element={<ListeningDetailPage />} />
+            <Route path="listening/:id" element={<ListeningDetailPage />} />
+
+            {/* Learning */}
             <Route path="learning" element={<LearningPage />} />
             <Route path="learning/:subjectId" element={<CourseContentPage />} />
-            <Route
-              path="learning/:subjectId/lesson/:lessonId"
-              element={<LessonPage />}
-            />
+            <Route path="learning/:subjectId/lesson/:lessonId" element={<LessonPage />} />
+
+            {/* Favorites */}
+            <Route path="favorites/:type" element={<FavoriteFoldersPage />} />
+
+            {/* News */}
+            <Route path="news" element={<NewsPage />} />
           </Route>
+
+          {/* Routes cho phụ huynh */}
+          <Route path="/" element={<LayoutParent onNotificationClick={() => setNotificationOpen(true)} />}>
+            <Route path="parentPage" element={<ParentPage />} />
+            <Route path="parentPage/:studentId/view_children" element={<ViewChildren />} />
+          </Route>
+
+          {/* Các route độc lập (không dùng Layout) */}
+          <Route path="oauth-callback" element={<OAuthCallBack />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register1" element={<RegisterP1 />} />
+          <Route path="/register2" element={<RegisterP2 />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/admin/login" element={<Login />} />
+          <Route path="/await-confirmation" element={<AwaitEmailConfirmation />} />
+
+          {/* Làm bài tập */}
+          <Route path="/do-exercise/:exerciseId" element={<DoExercise />} />
 
           <Route path="/admin" element={<MainLayout />}>
             <Route
+              path="deny"
+              element={<DenyAdmin />}>
+            </Route>
+            <Route
               path="content_speaking"
-              element={<ContentSpeakingManagement />}
+              element={<AdminRoute allowedRoles={["STAFF", "CONTENT_MANAGER", "SUPER_ADMIN"]}>
+                <ContentSpeakingManagement />
+              </AdminRoute>}
             />
             <Route
               path="content_speaking/:contentSpeakingId/dialogue"
-              element={<DialogueManagement />}
+              element={<AdminRoute allowedRoles={["STAFF", "CONTENT_MANAGER", "SUPER_ADMIN"]}>
+                <DialogueManagement />
+              </AdminRoute>}
             />
             <Route
               path="content_reading"
-              element={<ContentReadingManagement />}
+              element={<AdminRoute allowedRoles={["STAFF", "CONTENT_MANAGER", "SUPER_ADMIN"]}>
+                <ContentReadingManagement />
+              </AdminRoute>}
             />
             <Route
               path="content_reading/:contentReadingId/vocabulary"
-              element={<VocabularyManagement />}
+              element={<AdminRoute allowedRoles={["STAFF", "CONTENT_MANAGER", "SUPER_ADMIN"]}>
+                <VocabularyManagement />
+              </AdminRoute>}
             />
             <Route
               path="content_reading/:contentReadingId/grammar"
-              element={<GrammarManagement />}
+              element={<AdminRoute allowedRoles={["STAFF", "CONTENT_MANAGER", "SUPER_ADMIN"]}>
+                <GrammarManagement />
+              </AdminRoute>}
             />
             <Route
               path="content_listening"
-              element={<ListeningContentManagement />}
+              element={<AdminRoute allowedRoles={["STAFF", "CONTENT_MANAGER", "SUPER_ADMIN"]}>
+                <ListeningContentManagement />
+              </AdminRoute>}
             />
-            <Route path="/admin" element={<Dashboard />} />
-            <Route path="/admin/admins" element={<AdminList />} />
-            <Route path="/admin/system-logs" element={<SystemLogs />} />
-            <Route path="/admin/users" element={<UserManagement />} />
             <Route
-              path="content_listening/:contentListeningId/question"
-              element={<QuestionManagement />}
+              path="courses"
+              element={
+                <AdminRoute allowedRoles={["STAFF", "CONTENT_MANAGER", "SUPER_ADMIN"]}>
+                  <CourseManagement />
+                </AdminRoute>
+              }
             />
-            <Route index element={<Dashboard />} />
-            <Route path="system-logs" element={<SystemLogs />} />
-            <Route path="users" element={<UserManagement />} />
-            <Route path="courses" element={<CourseManagement />} />
             <Route
               path="courses/:subjectId/lessons"
-              element={<LessonManagement />}
+              element={
+                <AdminRoute allowedRoles={["STAFF", "CONTENT_MANAGER", "SUPER_ADMIN"]}>
+                  <LessonManagement />
+                </AdminRoute>
+              }
             />
             <Route
               path="courses/:subjectId/lessons/:lessonId/content"
-              element={<ContentManagement />}
+              element={
+                <AdminRoute allowedRoles={["STAFF", "CONTENT_MANAGER", "SUPER_ADMIN"]}>
+                  <ContentManagement />
+                </AdminRoute>
+              }
             />
             <Route
               path="courses/:subjectId/lessons/:lessonId/exercises/:exerciseId"
-              element={<ExerciseManagement />}
+              element={
+                <AdminRoute allowedRoles={["STAFF", "CONTENT_MANAGER", "SUPER_ADMIN"]}>
+                  <ExerciseManagement />
+                </AdminRoute>
+              }
             />
             <Route
               path="content/reading/:contentId/vocabulary"
-              element={<VocabularyManagement />}
+              element={<AdminRoute allowedRoles={["STAFF", "CONTENT_MANAGER", "SUPER_ADMIN"]}>
+                <VocabularyManagement />
+              </AdminRoute>}
             />
             <Route
               path="content/reading/:contentId/grammar"
-              element={<GrammarManagement />}
+              element={<AdminRoute allowedRoles={["STAFF", "CONTENT_MANAGER", "SUPER_ADMIN"]}>
+                <GrammarManagement />
+              </AdminRoute>}
+            />
+            {/* Dashboard & System Admin Pages */}
+            <Route
+              index
+              element={<AdminRoute allowedRoles={["STAFF", "CONTENT_MANAGER", "SUPER_ADMIN", "USER_MANAGER"]}>
+                <Dashboard />
+              </AdminRoute>}
+            />
+            <Route
+              path="admins"
+              element={<AdminRoute allowedRoles={["SUPER_ADMIN"]}>
+                <AdminList />
+              </AdminRoute>}
+            />
+            <Route
+              path="system-logs"
+              element={<AdminRoute allowedRoles={["SUPER_ADMIN"]}>
+                <SystemLogs />
+              </AdminRoute>}
+            />
+            <Route
+              path="users"
+              element={<AdminRoute allowedRoles={["SUPER_ADMIN", "USER_MANAGER"]}>
+                <UserManagement />
+              </AdminRoute>}
             />
           </Route>
         </Routes>

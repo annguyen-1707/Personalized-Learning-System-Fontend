@@ -71,7 +71,7 @@ function TestimonialSection() {
           <p className="text-lg text-gray-500 mt-2">
             Real feedback from our valued learners and parents
           </p>
-        </div>                  
+        </div>
 
         {/* Filter by rating */}
         {showMore && (
