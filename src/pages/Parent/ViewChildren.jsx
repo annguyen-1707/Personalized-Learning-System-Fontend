@@ -7,7 +7,7 @@ import GrammarProgress from './components/GrammarProgress'
 import StudentInformation from './components/StudentInformation'
 import { getLearningProgressFromAPI, getStudentInfoFromAPI } from '../../services/ParentService'
 import ExerciseProgress from './components/ExerciseProgress'
-import { Link, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft } from 'lucide-react'
 
 
@@ -15,7 +15,8 @@ function ViewChildren() {
     const { studentId } = useParams();
     const [activeTab, setActiveTab] = useState('overview')
     const [learningProgress, setLearningProgress] = useState();
-    const [studentInfo, setStudentInfo] = useState(null); // State to hold student information
+    const [ setStudentInfo] = useState(null);
+    const navigate = useNavigate(); // State to hold student information
     // Example user data - in a real app, this would come from your backend
 
     useEffect(() => {
@@ -38,6 +39,11 @@ function ViewChildren() {
             console.log("Student Info:", res.data)
         }
     }
+
+    const handleUpgradeAccount = async (userId) => {
+        navigate('/upgrade', {state : {userId}})
+    }
+    
 
     const statusColors = {
         NORMAL: "gray",
@@ -83,7 +89,7 @@ function ViewChildren() {
                             </span>
                             <br />
                             <button
-                                onClick={() => handleUpdateAccount(studentInfo?.userId)}
+                                onClick={() => handleUpgradeAccount(studentInfo?.userId)}
                                 className="mt-2 inline-block bg-warning-500 hover:bg-blue-600 text-white font-medium py-1.5 px-4 rounded-lg shadow transition duration-200"
                             >
                                 Upgrade Account
