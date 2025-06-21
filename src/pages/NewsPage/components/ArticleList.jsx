@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion'
 import { FiClock, FiBookmark } from 'react-icons/fi'
+import NewsImg from './NewsImg'
 
 function ArticleList({ articles, selectedArticle, onArticleSelect }) {
   return (
@@ -18,10 +19,9 @@ function ArticleList({ articles, selectedArticle, onArticleSelect }) {
           }`}
         >
           <div className="flex items-start">
-            <img
-              src={article.image}
-              alt={article.title}
-              className="w-24 h-24 object-cover rounded-lg"
+            <NewsImg
+              image={article.image}
+              title={article.title}
             />
             <div className="ml-4 flex-1">
               <h3 className={`font-medium ${

@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { FiHeadphones, FiInfo } from 'react-icons/fi';
 import axios from "axios";
 import ListeningQuiz from "./components/ListeningQuiz";
+import AudioPlayer from "./components/AudioPlayer";
 
 function ListeningDetailPage() {
   const { contentListeningId } = useParams();
@@ -66,7 +67,14 @@ function ListeningDetailPage() {
         </div>
         <div className="p-6">
           {exercise?.audioFile ? (
-            <audio controls src={exercise.audioFile} style={{ width: '100%' }} />
+            <AudioPlayer
+              audioUrl={
+                exercise.audioFile.startsWith("http")
+                  ? exercise.audioFile
+                  : `http://localhost:8080/audio/content_listening/${exercise.audioFile}`
+              }
+              onTimeUpdate={() => {}}
+            />
           ) : (
             <div className="text-gray-400">No audio available</div>
           )}
