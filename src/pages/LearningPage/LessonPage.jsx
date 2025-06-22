@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { CourseContentService } from "../../services/CourseContentService";
 
+
 import {
   FiArrowLeft,
   FiArrowRight,
@@ -26,10 +27,9 @@ function LessonPage() {
   const [videoDuration, setVideoDuration] = useState(0);
   const [videoProgress, setVideoProgress] = useState(0);
   const [isVideoPlaying, setIsVideoPlaying] = useState(false);
-  const { getProgressByLessonId } = CourseContentService;
+  const { getProgressByLessonId, handleStartLesson } = CourseContentService;
   const [completedLessons, setCompletedLessons] = useState([]);
   const [lessons, setLessons] = useState([]);
-
   useEffect(() => {
     // Find the course and lesson based on the URL parameters
     const getLesson = async () => {
@@ -75,6 +75,16 @@ function LessonPage() {
     };
     getLesson();
   }, [subjectId, lessonId]);
+
+    const startLesson =  async (lessonId) => {
+        // Navigate to the lesson content page
+        const res = await handleStartLesson(lessonId);
+        if (res?.status === 200) {
+          console.log("Lesson started successfully:", lessonId);
+      } else {
+        console.error("Failed to start lesson:", res?.message || "Unknown error");
+      }
+    };
 
   const isLessonCompleted = (lessonId) => {
     return completedLessons.includes(lessonId);
@@ -358,6 +368,7 @@ const extractYouTubeVideoId = (url) => {
         <div className="flex justify-between items-center mt-8 bg-white rounded-lg shadow-md p-6">
           {prevLesson ? (
             <Link
+              onClick={() => startLesson(prevLesson.lessonId)}
               to={`/learning/${subjectId}/lesson/${prevLesson.lessonId}`}
               className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md bg-white hover:bg-gray-50"
             >
@@ -370,6 +381,7 @@ const extractYouTubeVideoId = (url) => {
 
           {nextLesson ? (
             <Link
+              onClick={() => startLesson(nextLesson.lessonId)}
               to={`/learning/${subjectId}/lesson/${nextLesson.lessonId}`}
               className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary-500 hover:bg-primary-600"
             >
