@@ -99,7 +99,7 @@ export function AuthProvider({ children }) {
           navigate("/");
         }
         else if (role === "CONTENT_MANAGER") {
-          if (location.pathname === "/") {
+          if (location.pathname === "/log-out") {
             console.log("da log out roi mAAAAAA")
             navigate("/");
             const handleLogout = async () => {
