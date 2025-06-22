@@ -6,10 +6,10 @@ export default function AdminRoute({ children, allowedRoles = [] }) {
 
     if (loading) return <div>Loading...</div>;
 
-    if (!user) return <Navigate to="/admin/login" replace />;
+    if (!user && !user?.roleName  === 'CONTENT_MANAGER') return <Navigate to="/admin/login" replace />;
 
     if (
-        allowedRoles.length > 0 &&
+        allowedRoles.length > 0 && !user?.roleName  === 'CONTENT_MANAGER' &&
         (!Array.isArray(user.role) || !user.role.some(role => allowedRoles.includes(role)))
     ) {
         return <Navigate to="/admin/deny" replace />;
