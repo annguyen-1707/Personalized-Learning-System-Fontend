@@ -258,7 +258,7 @@ function LessonManagement() {
       description: lesson.description,
       status: lesson.status,
       subjectId: lesson.subjectId,
-      videoUrl: null,
+      videoUrl:  lesson.videoUrl || null,
       videoPreview: lesson.videoUrl || null,
       videoDuration: lesson.duration || null,
     });
