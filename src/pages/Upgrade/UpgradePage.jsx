@@ -11,9 +11,9 @@ function UpgradePage() {
 
 
 
-  const handleBuy = async (amount, userId) => {
+  const handleBuy = async (amount, userIdParam) => {
     const accessToken = localStorage.getItem('accessToken');
-
+    const userId = location.state?.userId ?? userIdParam;
     try {
       const response = await fetch(`http://localhost:8080/payment/getMembershipOfUser`, {
         method: 'GET',
