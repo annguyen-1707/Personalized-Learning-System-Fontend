@@ -194,6 +194,7 @@ function LessonManagement() {
       console.error("Failed to add lesson:", error);
       setErrorMessage(error.message || "Failed to add lesson.");
       toast.dismiss(toastId);
+      toast.error("Failed to add lesson.");
     }
   };
 
@@ -232,6 +233,8 @@ function LessonManagement() {
     } catch (error) {
       console.error("Error updating lesson:", error);
       setErrorMessage(error.message || "Failed to update lesson.");
+      toast.dismiss(toastId);
+      toast.error("Failed to update lesson.");
     }
   };
 
