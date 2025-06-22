@@ -162,6 +162,8 @@ function LessonManagement() {
     );
     try {
       const newLesson = await addLesson(formData);
+      console.log("New lesson added:", newLesson);
+      debugger;
       if (newLesson) {
         setErrorMessage("");
         toast.dismiss(toastId);
@@ -184,12 +186,14 @@ function LessonManagement() {
           videoDuration: null,
         });
         setIsAdding(false);
+      } else {
+        toast.dismiss(toastId);
+        toast.error("Failed to add lesson.");
       }
     } catch (error) {
       console.error("Failed to add lesson:", error);
       setErrorMessage(error.message || "Failed to add lesson.");
-    } finally {
-      setLoading(false); // Kết thúc loading
+      toast.dismiss(toastId);
     }
   };
 
