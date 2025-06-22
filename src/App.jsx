@@ -70,9 +70,9 @@ function App() {
             <Route path="profile/change-password" element={<ChangePasswordPage />} />
 
             {/* Listening */}
-            <Route path="listening" element={<ListeningPage/>} />
-            <Route path="listening/detail/:contentListeningId" element={<ListeningDetailPage/>} />
-            <Route path="listening/:id" element={<ListeningDetailPage/>} />
+            <Route path="listening" element={<ListeningPage />} />
+            <Route path="listening/detail/:contentListeningId" element={<ListeningDetailPage />} />
+            <Route path="listening/:id" element={<ListeningDetailPage />} />
 
             {/* Learning */}
             <Route path="learning" element={<LearningPage />} />
