@@ -27,7 +27,11 @@ function FavoriteFoldersPage() {
 
     const handleCopyFolder = async (id) => {
         try {
-            await axios.post('http://localhost:8080/favorites/copy', { folderId: id })
+            await axios.post('http://localhost:8080/favorites/copy', id, {
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            })
             alert('Copied folder successfully!')
         } catch (error) {
             console.error('Failed to copy folder:', error)
