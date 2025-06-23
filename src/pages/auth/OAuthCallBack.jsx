@@ -4,7 +4,7 @@ import { useAuth } from "../../context/AuthContext";
 
 function OAuthCallBack() {
   const navigate = useNavigate();
-  const { setUser } = useAuth();
+  const { setUser, setIsAdmin } = useAuth();
   const calledRef = useRef(false); 
 
   useEffect(() => {
@@ -54,6 +54,9 @@ function OAuthCallBack() {
 
         const userData = await userRes.json();
         setUser(userData.data);
+        if(userData.data?.roleName === 'CONTENT_MANAGER') {
+          navigate("/admin");
+        }
 
         navigate("/");
       } catch (error) {

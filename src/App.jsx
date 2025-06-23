@@ -70,9 +70,9 @@ function App() {
             <Route path="profile/change-password" element={<ChangePasswordPage />} />
 
             {/* Listening */}
-            <Route path="listening" element={<ListeningPage/>} />
-            <Route path="listening/detail/:contentListeningId" element={<ListeningDetailPage/>} />
-            <Route path="listening/:id" element={<ListeningDetailPage/>} />
+            <Route path="listening" element={<ListeningPage />} />
+            <Route path="listening/detail/:contentListeningId" element={<ListeningDetailPage />} />
+            <Route path="listening/:id" element={<ListeningDetailPage />} />
 
             {/* Learning */}
             <Route path="learning" element={<LearningPage />} />
@@ -80,7 +80,7 @@ function App() {
             <Route path="learning/:subjectId/lesson/:lessonId" element={<LessonPage />} />
 
             {/* Favorites */}
-            <Route path="favorites/:type" element={<FavoriteFoldersPage />} />
+            <Route path="favorites" element={<FavoriteFoldersPage />} />
 
             {/* News */}
             <Route path="news" element={<NewsPage />} />

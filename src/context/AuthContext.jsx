@@ -76,9 +76,6 @@ export function AuthProvider({ children }) {
             const userData = await userRes.json();
             setUser(userData.data);
 
-            console.log("CIADIMEMAY", userData.data.username)
-
-
           }
           else {
             console.warn("Phản hồi check-login không ok:", response.status);
@@ -93,13 +90,30 @@ export function AuthProvider({ children }) {
   }, []);
 
   useEffect(() => {
-    if (user && !isAdmin) {
+    if (user !== null && !isAdmin) {
       const role = user.roleName;
       if (location.pathname === "/") {
         if (role === "PARENT") {
           navigate("/parentpage");
         } else if (role === "USER") {
           navigate("/");
+        }
+        else if (role === "CONTENT_MANAGER") {
+          if (location.pathname === "/log-out") {
+            console.log("da log out roi mAAAAAA")
+            navigate("/");
+            const handleLogout = async () => {
+              await fetch("http://localhost:8080/auth/logout", {
+                method: "POST",
+                credentials: "include",
+              });
+              localStorage.removeItem("accessToken");
+              setUser(null);
+            };
+            handleLogout()
+            return;
+          }
+          navigate("/admin");
         }
         else {
           navigate("/login");
@@ -108,8 +122,8 @@ export function AuthProvider({ children }) {
     }
     if (isAdmin) {
       if (location.pathname === "/") {
+        navigate("/");
         localStorage.setItem("isAdmin", "false");
-
         const handleLogout = async () => {
           await fetch("http://localhost:8080/auth/logout", {
             method: "POST",
@@ -119,7 +133,7 @@ export function AuthProvider({ children }) {
           setUser(null);
         };
         handleLogout()
-        navigate("/");
+        return;
       }
       navigate("/admin");
     }
