@@ -781,7 +781,7 @@ function ContentManagement() {
                     ? "border-red-500 focus:border-red-500 bg-red-50"
                     : ""
                 }`}
-                placeholder="Provide additional context or explanation"
+                placeholder="Provide additional context or explanation "
               />
               {errors.description && (
                 <p className="mt-1 text-sm text-red-600">
@@ -789,7 +789,7 @@ function ContentManagement() {
                 </p>
               )}
               <p className="mt-1 text-sm text-gray-500">
-                Additional context or explanation
+                Additional context or example
               </p>
             </div>
 

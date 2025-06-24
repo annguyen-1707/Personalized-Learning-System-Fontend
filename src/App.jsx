@@ -38,7 +38,6 @@ import ParentPage from "./pages/Parent/ParentPage.jsx";
 import ViewChildren from "./pages/Parent/ViewChildren.jsx";
 import ListeningPage from "./pages/ListeningPage/ListeningPage";
 import ListeningDetailPage from "./pages/ListeningPage/ListeningDetailPage";
-import QuestionManagement from "./pages/content/QuestionManagement";
 import ExerciseManagement from "./pages/courses/ExerciseManagement";
 import LearningPage from "./pages/LearningPage/LearningPage";
 import NotificationSlider from "./pages/HomePage/Notification.jsx";
@@ -49,6 +48,9 @@ import FeedbackWidget from "./components/layout/Feedback.jsx";
 import NewsPage from './pages/NewsPage/NewsPage';
 import AdminRoute from "./context/AdminRoute.jsx";
 import DenyAdmin from "././pages/auth/DenyAdmin.jsx"
+import QuizPage from "./QuizPage/QuizPage.jsx";
+
+import { QuizProvider } from "./context/QuizContext.jsx";
 
 function App() {
   const [notificationOpen, setNotificationOpen] = useState(false);
@@ -56,6 +58,7 @@ function App() {
   return (
     <AuthProvider>
       <DataProvider>
+        <QuizProvider> 
         <FeedbackWidget />
         <Routes>
           <Route path="/" element={<Layout onNotificationClick={() => setNotificationOpen(true)} />}>
@@ -70,9 +73,9 @@ function App() {
             <Route path="profile/change-password" element={<ChangePasswordPage />} />
 
             {/* Listening */}
-            <Route path="listening" element={<ListeningPage/>} />
-            <Route path="listening/detail/:contentListeningId" element={<ListeningDetailPage/>} />
-            <Route path="listening/:id" element={<ListeningDetailPage/>} />
+            <Route path="listening" element={<ListeningPage />} />
+            <Route path="listening/detail/:contentListeningId" element={<ListeningDetailPage />} />
+            <Route path="listening/:id" element={<ListeningDetailPage />} />
 
             {/* Learning */}
             <Route path="learning" element={<LearningPage />} />
@@ -84,6 +87,10 @@ function App() {
 
             {/* News */}
             <Route path="news" element={<NewsPage />} />
+
+            
+            <Route path="quiz" element={<QuizPage />} />
+
           </Route>
 
           {/* Routes cho phụ huynh */}
@@ -232,6 +239,7 @@ function App() {
           pauseOnHover
           theme="light"
         />
+        </QuizProvider> 
       </DataProvider>
     </AuthProvider >
   );

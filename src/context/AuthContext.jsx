@@ -111,6 +111,7 @@ export function AuthProvider({ children }) {
               setUser(null);
             };
             handleLogout()
+            
             return;
           }
           navigate("/admin");

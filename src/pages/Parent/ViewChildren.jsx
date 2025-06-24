@@ -15,7 +15,8 @@ function ViewChildren() {
     const { studentId } = useParams();
     const [activeTab, setActiveTab] = useState('overview')
     const [learningProgress, setLearningProgress] = useState();
-    const [ setStudentInfo] = useState(null);
+    const [ studentInfo, setStudentInfo] = useState(null);
+
     const navigate = useNavigate(); // State to hold student information
     // Example user data - in a real app, this would come from your backend
 
