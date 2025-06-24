@@ -170,6 +170,12 @@ function App() {
               }
             />
             <Route
+              path="content_listening/:contentListeningId/question"
+              element={<AdminRoute allowedRoles={["STAFF", "CONTENT_MANAGER", "SUPER_ADMIN"]}>
+                <QuestionManagement />
+              </AdminRoute>}
+            />
+            <Route
               path="courses/:subjectId/lessons/:lessonId/exercises/:exerciseId"
               element={
                 <AdminRoute allowedRoles={["STAFF", "CONTENT_MANAGER", "SUPER_ADMIN"]}>
