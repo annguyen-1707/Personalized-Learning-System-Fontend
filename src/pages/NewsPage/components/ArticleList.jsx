@@ -7,7 +7,7 @@ function ArticleList({ articles, selectedArticle, onArticleSelect }) {
     <div className="space-y-4">
       {articles.map((article, index) => (
         <motion.button
-          key={article.id}
+          key={article.id || index}
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: index * 0.1 }}

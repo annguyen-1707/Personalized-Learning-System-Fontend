@@ -72,12 +72,19 @@ function ContentManagement() {
   const [grammars, setGrammars] = useState([]);
   const [lessonExercises, setLessonExercises] = useState([]);
 
+  // Add these new state variables
+  const [showAddQuestion, setShowAddQuestion] = useState(false);
+  const [currentQuestion, setCurrentQuestion] = useState({
+    questionText: "",
+    answerQuestionRequests: [{ answerText: "", isCorrect: true }],
+  });
+
   const handlePageClick = (event) => {
     const selectedPage = event.selected;
     setCurrentPage(selectedPage);
   };
 
-  const filteredVocabularies = vocabularies.filter((vocabulary) => {
+  const filteredVocabularies = (vocabularies || []).filter((vocabulary) => {
     // Search filter (case insensitive)
     const searchMatch =
       search === "" ||
@@ -93,7 +100,7 @@ function ContentManagement() {
     return searchMatch && levelMatch;
   });
 
-  const filteredGrammars = grammars.filter((grammar) => {
+  const filteredGrammars = (grammars || []).filter((grammar) => {
     const searchMatch =
       search === "" ||
       grammar.titleJp?.toLowerCase().includes(search.toLowerCase()) ||
@@ -107,7 +114,7 @@ function ContentManagement() {
     return searchMatch && levelMatch;
   });
 
-  const filteredExercises = lessonExercises.filter((exercise) => {
+  const filteredExercises = (lessonExercises || []).filter((exercise) => {
     const searchMatch =
       search === "" ||
       exercise.title?.toLowerCase().includes(search.toLowerCase());
@@ -261,7 +268,7 @@ function ContentManagement() {
         setFormData({
           title: "",
           duration: "",
-          content: "",
+          questions: [], // Initialize empty questions array
           lessonId: lessonId,
         });
         break;
@@ -272,10 +279,8 @@ function ContentManagement() {
 
   const handleAddSubmit = async (e) => {
     e.preventDefault();
-
     let newItem;
     let logAction;
-
     let response;
 
     switch (activeTab) {
@@ -322,25 +327,64 @@ function ContentManagement() {
         break;
 
       case "exercises":
-        response = await addExercise({
-          ...formData,
-          content: formData.content,
-        });
-        if (response.status === "error") {
-          const errorMap = {};
-          response.data.forEach((err) => {
-            errorMap[err.field] = err.message;
-          });
-          setErrorMessages(errorMap);
+        try {
+          // Validate required fields
+          if (!formData.title) {
+            setErrorMessages("Title is required");
+            return;
+          }
+
+          // Validate questions
+          if (!formData.questions || formData.questions.length === 0) {
+            setErrorMessages("At least one question is required");
+            return;
+          }
+
+          // Create a properly formatted exercise object
+          const exerciseData = {
+            title: formData.title,
+            duration: formData.duration || "00:00",
+            lessonId: parseInt(lessonId),
+            difficulty: formData.difficulty || "MEDIUM",
+            status: formData.status || "DRAFT",
+            // Use the questions directly from formData
+            content: formData.questions.map(question => ({
+              questionText: question.questionText,
+              // Rename answerQuestionRequests to answers
+              answers: question.answerQuestionRequests.map(answer => ({
+                answerText: answer.answerText,
+                isCorrect: answer.isCorrect
+              }))
+            }))
+          };
+
+          console.log("Submitting exercise data:", exerciseData); // Debug logging
+
+          response = await addExercise(exerciseData);
+
+          if (response && response.status === "error") {
+            if (Array.isArray(response.data)) {
+              const errorMap = {};
+              response.data.forEach((err) => {
+                errorMap[err.field] = err.message;
+              });
+              setErrorMessages(errorMap);
+            } else {
+              setErrorMessages(response.message || "Failed to create exercise");
+            }
+            return;
+          }
+
+          await getLessonExercises(); // Refresh the exercise list
+          toast.success("Exercise added successfully!");
+          logAction = "Exercise Added";
+          newItem = response;
+        } catch (error) {
+          console.error("Error creating exercise:", error);
+          setErrorMessages(error.message || "An unexpected error occurred");
           return;
         }
-        toast.success("Exercise added successfully!");
-        logAction = "Exercise Added";
-        newItem = response;
         break;
-
-      default:
-        return;
     }
 
     // Xoá lỗi cũ sau khi thành công
@@ -409,9 +453,8 @@ function ContentManagement() {
       case "listening":
       case "speaking":
         updateResource(isEditing, formData);
-        logAction = `${
-          activeTab.charAt(0).toUpperCase() + activeTab.slice(1)
-        } Resource Updated`;
+        logAction = `${activeTab.charAt(0).toUpperCase() + activeTab.slice(1)
+          } Resource Updated`;
         break;
       default:
         return;
@@ -419,8 +462,7 @@ function ContentManagement() {
 
     addLog(
       logAction,
-      `${
-        activeTab.charAt(0).toUpperCase() + activeTab.slice(1)
+      `${activeTab.charAt(0).toUpperCase() + activeTab.slice(1)
       } content was updated in lesson "${lesson.title}"`
     );
     setIsEditing(null);
@@ -459,8 +501,7 @@ function ContentManagement() {
 
     addLog(
       logAction,
-      `${
-        activeTab.charAt(0).toUpperCase() + activeTab.slice(1)
+      `${activeTab.charAt(0).toUpperCase() + activeTab.slice(1)
       } content was deleted from lesson "${lesson.title}"`
     );
     setShowDeleteConfirm(null);
@@ -542,7 +583,7 @@ function ContentManagement() {
         setFormData({
           title: "",
           duration: "",
-          content: "",
+          questions: [], // Initialize empty questions array
           lessonId: lessonId,
         });
         break;
@@ -637,11 +678,10 @@ function ContentManagement() {
                   onChange={(e) =>
                     setFormData({ ...formData, kanji: e.target.value })
                   }
-                  className={`block w-full rounded-md border-gray-300 pr-10 focus:border-primary-500 focus:ring-primary-500 sm:text-sm ${
-                    errors.kanji
-                      ? "border-red-500 focus:border-red-500 bg-red-50"
-                      : ""
-                  }`}
+                  className={`block w-full rounded-md border-gray-300 pr-10 focus:border-primary-500 focus:ring-primary-500 sm:text-sm ${errors.kanji
+                    ? "border-red-500 focus:border-red-500 bg-red-50"
+                    : ""
+                    }`}
                   placeholder="Enter kanji characters"
                 />
                 <div className="absolute inset-y-0 right-0 flex items-center pr-3">
@@ -673,11 +713,10 @@ function ContentManagement() {
                   onChange={(e) =>
                     setFormData({ ...formData, kana: e.target.value })
                   }
-                  className={`block w-full rounded-md border-gray-300 pr-10 focus:border-primary-500 focus:ring-primary-500 sm:text-sm ${
-                    errors.kana
-                      ? "border-red-500 focus:border-red-500 bg-red-50"
-                      : ""
-                  }`}
+                  className={`block w-full rounded-md border-gray-300 pr-10 focus:border-primary-500 focus:ring-primary-500 sm:text-sm ${errors.kana
+                    ? "border-red-500 focus:border-red-500 bg-red-50"
+                    : ""
+                    }`}
                   placeholder="Enter kana characters"
                 />
                 <div className="absolute inset-y-0 right-0 flex items-center pr-3">
@@ -708,11 +747,10 @@ function ContentManagement() {
                   onChange={(e) =>
                     setFormData({ ...formData, romaji: e.target.value })
                   }
-                  className={`block w-full rounded-md border-gray-300 pr-10 focus:border-primary-500 focus:ring-primary-500 sm:text-sm ${
-                    errors.romaji
-                      ? "border-red-500 focus:border-red-500 bg-red-50"
-                      : ""
-                  }`}
+                  className={`block w-full rounded-md border-gray-300 pr-10 focus:border-primary-500 focus:ring-primary-500 sm:text-sm ${errors.romaji
+                    ? "border-red-500 focus:border-red-500 bg-red-50"
+                    : ""
+                    }`}
                   placeholder="Enter romaji"
                 />
                 <div className="absolute inset-y-0 right-0 flex items-center pr-3">
@@ -744,11 +782,10 @@ function ContentManagement() {
                   onChange={(e) =>
                     setFormData({ ...formData, meaning: e.target.value })
                   }
-                  className={`block w-full rounded-md border-gray-300 pr-10 focus:border-primary-500 focus:ring-primary-500 sm:text-sm ${
-                    errors.meaning
-                      ? "border-red-500 focus:border-red-500 bg-red-50"
-                      : ""
-                  }`}
+                  className={`block w-full rounded-md border-gray-300 pr-10 focus:border-primary-500 focus:ring-primary-500 sm:text-sm ${errors.meaning
+                    ? "border-red-500 focus:border-red-500 bg-red-50"
+                    : ""
+                    }`}
                   placeholder="Enter meaning in English"
                 />
                 <div className="absolute inset-y-0 right-0 flex items-center pr-3">
@@ -776,12 +813,11 @@ function ContentManagement() {
                 onChange={(e) =>
                   setFormData({ ...formData, description: e.target.value })
                 }
-                className={`block w-full rounded-md border-gray-300 focus:border-primary-500 focus:ring-primary-500 sm:text-sm ${
-                  errors.description
-                    ? "border-red-500 focus:border-red-500 bg-red-50"
-                    : ""
-                }`}
-                placeholder="Provide additional context or explanation "
+                className={`block w-full rounded-md border-gray-300 focus:border-primary-500 focus:ring-primary-500 sm:text-sm ${errors.description
+                  ? "border-red-500 focus:border-red-500 bg-red-50"
+                  : ""
+                  }`}
+                placeholder="Provide additional context or explanation"
               />
               {errors.description && (
                 <p className="mt-1 text-sm text-red-600">
@@ -809,11 +845,10 @@ function ContentManagement() {
                   onChange={(e) =>
                     setFormData({ ...formData, example: e.target.value })
                   }
-                  className={`block w-full rounded-md border-gray-300 pr-10 focus:border-primary-500 focus:ring-primary-500 sm:text-sm ${
-                    errors.example
-                      ? "border-red-500 focus:border-red-500 bg-red-50"
-                      : ""
-                  }`}
+                  className={`block w-full rounded-md border-gray-300 pr-10 focus:border-primary-500 focus:ring-primary-500 sm:text-sm ${errors.example
+                    ? "border-red-500 focus:border-red-500 bg-red-50"
+                    : ""
+                    }`}
                   placeholder="Enter example sentence"
                 />
                 <div className="absolute inset-y-0 right-0 flex items-center pr-3">
@@ -843,11 +878,10 @@ function ContentManagement() {
                 onChange={(e) =>
                   setFormData({ ...formData, partOfSpeech: e.target.value })
                 }
-                className={`block w-full rounded-md border-gray-300 focus:border-primary-500 focus:ring-primary-500 sm:text-sm ${
-                  errors.partOfSpeech
-                    ? "border-red-500 focus:border-red-500 bg-red-50"
-                    : ""
-                }`}
+                className={`block w-full rounded-md border-gray-300 focus:border-primary-500 focus:ring-primary-500 sm:text-sm ${errors.partOfSpeech
+                  ? "border-red-500 focus:border-red-500 bg-red-50"
+                  : ""
+                  }`}
               >
                 <option value="">Select part of speech...</option>
                 {partOfSpeech.map((part) => (
@@ -879,11 +913,10 @@ function ContentManagement() {
                 onChange={(e) =>
                   setFormData({ ...formData, jlptLevel: e.target.value })
                 }
-                className={`block w-full rounded-md border-gray-300 focus:border-primary-500 focus:ring-primary-500 sm:text-sm ${
-                  errors.jlptLevel
-                    ? "border-red-500 focus:border-red-500 bg-red-50"
-                    : ""
-                }`}
+                className={`block w-full rounded-md border-gray-300 focus:border-primary-500 focus:ring-primary-500 sm:text-sm ${errors.jlptLevel
+                  ? "border-red-500 focus:border-red-500 bg-red-50"
+                  : ""
+                  }`}
               >
                 <option value="">Select JLPT level...</option>
                 {levels.map((level) => (
@@ -924,11 +957,10 @@ function ContentManagement() {
                 onChange={(e) =>
                   setFormData({ ...formData, titleJp: e.target.value })
                 }
-                className={`input border rounded px-3 py-2 w-full ${
-                  errors.titleJp
-                    ? "border-red-500 focus:border-red-500 bg-red-50"
-                    : "border-gray-300 focus:border-blue-500 bg-white"
-                }`}
+                className={`input border rounded px-3 py-2 w-full ${errors.titleJp
+                  ? "border-red-500 focus:border-red-500 bg-red-50"
+                  : "border-gray-300 focus:border-blue-500 bg-white"
+                  }`}
               />
               {errors.titleJp && (
                 <p className="text-red-500 text-xs mt-1">{errors.titleJp}</p>
@@ -950,11 +982,10 @@ function ContentManagement() {
                   setFormData({ ...formData, structure: e.target.value })
                 }
                 className={`w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 
-                focus:outline-none focus:ring-1 focus:ring-primary-500 ${
-                  errors.structure
+                focus:outline-none focus:ring-1 focus:ring-primary-500 ${errors.structure
                     ? "border-red-500 focus:border-red-500 bg-red-50"
                     : "border-gray-300 focus:border-blue-500 bg-white"
-                }`}
+                  }`}
               />
               {errors.structure && (
                 <p className="text-red-500 text-xs mt-1">{errors.structure}</p>
@@ -975,11 +1006,10 @@ function ContentManagement() {
                 onChange={(e) =>
                   setFormData({ ...formData, meaning: e.target.value })
                 }
-                className={`w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 ${
-                  errors.meaning
-                    ? "border-red-500 focus:border-red-500 bg-red-50"
-                    : "border-gray-300 focus:border-blue-500 bg-white"
-                }`}
+                className={`w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 ${errors.meaning
+                  ? "border-red-500 focus:border-red-500 bg-red-50"
+                  : "border-gray-300 focus:border-blue-500 bg-white"
+                  }`}
               />
               {errors.meaning && (
                 <p className="text-red-500 text-xs mt-1">{errors.meaning}</p>
@@ -1000,11 +1030,10 @@ function ContentManagement() {
                 onChange={(e) =>
                   setFormData({ ...formData, example: e.target.value })
                 }
-                className={`w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 ${
-                  errors.example
-                    ? "border-red-500 focus:border-red-500 bg-red-50"
-                    : "border-gray-300 focus:border-blue-500 bg-white"
-                }`}
+                className={`w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 ${errors.example
+                  ? "border-red-500 focus:border-red-500 bg-red-50"
+                  : "border-gray-300 focus:border-blue-500 bg-white"
+                  }`}
                 placeholder="例えば、これは例文です。"
               />
               {errors.example && (
@@ -1026,11 +1055,10 @@ function ContentManagement() {
                 onChange={(e) =>
                   setFormData({ ...formData, usage: e.target.value })
                 }
-                className={`w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 ${
-                  errors.usage
-                    ? "border-red-500 focus:border-red-500 bg-red-50"
-                    : "border-gray-300 focus:border-blue-500 bg-white"
-                }`}
+                className={`w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 ${errors.usage
+                  ? "border-red-500 focus:border-red-500 bg-red-50"
+                  : "border-gray-300 focus:border-blue-500 bg-white"
+                  }`}
               />
               {errors.usage && (
                 <p className="text-red-500 text-xs mt-1">{errors.usage}</p>
@@ -1050,11 +1078,10 @@ function ContentManagement() {
                 onChange={(e) =>
                   setFormData({ ...formData, jlptLevel: e.target.value })
                 }
-                className={`input border rounded px-3 py-2 w-full ${
-                  errors.jlptLevel
-                    ? "border-red-500 focus:border-red-500 bg-red-50"
-                    : "border-gray-300 focus:border-blue-500 bg-white"
-                }`}
+                className={`input border rounded px-3 py-2 w-full ${errors.jlptLevel
+                  ? "border-red-500 focus:border-red-500 bg-red-50"
+                  : "border-gray-300 focus:border-blue-500 bg-white"
+                  }`}
               >
                 <option value="">Select...</option>
                 {levels.map((level) => (
@@ -1072,69 +1099,78 @@ function ContentManagement() {
 
       case "exercises":
         return (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-            <div className="">
-              <label
-                htmlFor="title"
-                className="block text-sm font-medium text-gray-700 mb-1"
-              >
+          <div className="grid grid-cols-1 gap-4 mb-4">
+            <div>
+              <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-1">
                 Exercise Title
               </label>
               <input
                 id="title"
                 type="text"
                 value={formData.title || ""}
-                onChange={(e) =>
-                  setFormData({ ...formData, title: e.target.value })
-                }
+                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                className="w-full rounded-md border border-gray-300 px-3 py-2"
               />
             </div>
 
-            <div className="">
-              <label
-                htmlFor="duration"
-                className="block text-sm font-medium text-gray-700 mb-1"
-              >
+            <div>
+              <label htmlFor="duration" className="block text-sm font-medium text-gray-700 mb-1">
                 Set Time
               </label>
               <LocalizationProvider dateAdapter={AdapterDayjs}>
                 <DemoItem label={'"minutes" and "seconds"'}>
                   <MultiSectionDigitalClock
                     views={["minutes", "seconds"]}
-                    value={
-                      formData.duration
-                        ? dayjs(formData.duration, "mm:ss")
-                        : null
-                    }
-                    onChange={(value) =>
-                      setFormData({
-                        ...formData,
-                        duration: value?.format?.("mm:ss"),
-                      })
-                    }
+                    value={formData.duration ? dayjs(formData.duration, "mm:ss") : null}
+                    onChange={(value) => setFormData({ ...formData, duration: value?.format?.("mm:ss") })}
                   />
                 </DemoItem>
               </LocalizationProvider>
             </div>
 
-            <div className="md:col-span-2">
-              <label
-                htmlFor="content"
-                className="block text-sm font-medium text-gray-700 mb-1"
+            {/* Question Builder */}
+            <div className="mt-4 border-t pt-4">
+              <h3 className="font-medium text-lg mb-4">Exercise Questions</h3>
+
+              {/* List of questions already added */}
+              {formData.questions && formData.questions.length > 0 && (
+                <div className="mb-6">
+                  <h4 className="text-sm font-medium text-gray-700 mb-2">Added Questions:</h4>
+                  <div className="space-y-3">
+                    {formData.questions.map((question, qIndex) => (
+                      <div key={qIndex} className="p-3 border rounded-md bg-gray-50">
+                        <div className="flex justify-between">
+                          <div className="font-medium">{question.questionText}</div>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const newQuestions = [...formData.questions];
+                              newQuestions.splice(qIndex, 1);
+                              setFormData({ ...formData, questions: newQuestions });
+                            }}
+                            className="text-red-500 hover:text-red-700"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        </div>
+                        <div className="mt-1 text-sm text-gray-500">
+                          {question.answerQuestionRequests.length} answer options
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Add new question button */}
+              <button
+                type="button"
+                onClick={() => setShowAddQuestion(true)}
+                className="btn-secondary flex items-center"
               >
-                Exercise Content (JSON format)
-              </label>
-              <textarea
-                id="content"
-                rows={6}
-                required
-                value={formData.content || ""}
-                onChange={(e) =>
-                  setFormData({ ...formData, content: e.target.value })
-                }
-                className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 font-mono"
-                placeholder={`[{"questionText": "Thủ đô của Thái Lan là gì?","answerQuestionRequests": [{"answerText": "Hà Nội","isCorrect": true},{"answerText": "Hồ Chí Minh","isCorrect": false},{"answerText": "Đà Nẵng","isCorrect": false},{"answerText": "Huế","isCorrect": false}]}]`}
-              />
+                <Plus size={16} className="mr-1" />
+                Add New Question
+              </button>
             </div>
           </div>
         );
@@ -1201,10 +1237,9 @@ function ContentManagement() {
                       </td>
                       <td className="px-4 py-2">
                         <span
-                          className={`text-xs px-2 py-1 rounded-full font-medium ${
-                            jlptLevelClassMap[item.jlptLevel] ||
+                          className={`text-xs px-2 py-1 rounded-full font-medium ${jlptLevelClassMap[item.jlptLevel] ||
                             "bg-gray-100 text-gray-500"
-                          }`}
+                            }`}
                         >
                           {item.jlptLevel}
                         </span>
@@ -1334,10 +1369,9 @@ function ContentManagement() {
                         </td>
                         <td className="px-4 py-2">
                           <span
-                            className={`text-xs px-2 py-1 rounded-full font-medium ${
-                              jlptLevelClassMap[item.jlptLevel] ||
+                            className={`text-xs px-2 py-1 rounded-full font-medium ${jlptLevelClassMap[item.jlptLevel] ||
                               "bg-gray-100 text-gray-500"
-                            }`}
+                              }`}
                           >
                             {item.jlptLevel}
                           </span>
@@ -1503,17 +1537,155 @@ function ContentManagement() {
     }
   };
 
+  const renderQuestionModal = () => {
+    if (!showAddQuestion) return null;
+
+    return (
+      <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50">
+        <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-2xl">
+          <h2 className="text-xl font-semibold mb-4">Add New Question</h2>
+
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Question
+            </label>
+            <input
+              type="text"
+              value={currentQuestion.questionText}
+              onChange={(e) => setCurrentQuestion({
+                ...currentQuestion,
+                questionText: e.target.value
+              })}
+              className="w-full rounded-md border border-gray-300 p-2"
+            />
+          </div>
+
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Answer Questions:
+            </label>
+
+            {currentQuestion.answerQuestionRequests.map((answer, index) => (
+              <div key={index} className="flex items-center mb-2 gap-2">
+                <input
+                  type="text"
+                  value={answer.answerText}
+                  onChange={(e) => {
+                    const newAnswers = [...currentQuestion.answerQuestionRequests];
+                    newAnswers[index].answerText = e.target.value;
+                    setCurrentQuestion({ ...currentQuestion, answerQuestionRequests: newAnswers });
+                  }}
+                  className="flex-1 rounded-md border border-gray-300 p-2"
+                  placeholder={`Option ${index + 1}`}
+                />
+                <div className="flex items-center">
+                  <input
+                    type="radio"
+                    checked={answer.isCorrect}
+                    onChange={() => {
+                      const newAnswers = currentQuestion.answerQuestionRequests.map((a, i) => ({
+                        ...a,
+                        isCorrect: i === index
+                      }));
+                      setCurrentQuestion({ ...currentQuestion, answerQuestionRequests: newAnswers });
+                    }}
+                    className="mr-2"
+                  />
+                  <label className="text-sm text-gray-700">Correct</label>
+                </div>
+
+                {currentQuestion.answerQuestionRequests.length > 1 && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const newAnswers = [...currentQuestion.answerQuestionRequests];
+                      newAnswers.splice(index, 1);
+                      setCurrentQuestion({ ...currentQuestion, answerQuestionRequests: newAnswers });
+                    }}
+                    className="text-red-500 hover:text-red-700"
+                  >
+                    Delete
+                  </button>
+                )}
+              </div>
+            ))}
+
+            <button
+              type="button"
+              onClick={() => {
+                setCurrentQuestion({
+                  ...currentQuestion,
+                  answerQuestionRequests: [
+                    ...currentQuestion.answerQuestionRequests,
+                    { answerText: "", isCorrect: false }
+                  ]
+                });
+              }}
+              className="text-blue-600 hover:text-blue-800 text-sm mt-2"
+            >
+              Add Option
+            </button>
+          </div>
+
+          <div className="flex justify-end space-x-2">
+            <button
+              type="button"
+              onClick={() => setShowAddQuestion(false)}
+              className="btn-outline"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                // Validate question
+                if (!currentQuestion.questionText.trim()) {
+                  toast.error("Question text is required");
+                  return;
+                }
+
+                // Validate answers
+                if (currentQuestion.answerQuestionRequests.some(a => !a.answerText.trim())) {
+                  toast.error("All answer options must have text");
+                  return;
+                }
+
+                // Add to questions list, keeping the same structure we send to API
+                const updatedQuestions = [...(formData.questions || []), {
+                  questionText: currentQuestion.questionText,
+                  // We'll leave as answerQuestionRequests in formData, and transform before API call
+                  answerQuestionRequests: currentQuestion.answerQuestionRequests
+                }];
+
+                setFormData({...formData, questions: updatedQuestions});
+
+                // Reset and close modal
+                setCurrentQuestion({
+                  questionText: "",
+                  answerQuestionRequests: [{ answerText: "", isCorrect: true }]
+                });
+                setShowAddQuestion(false);
+              }}
+              className="btn-primary"
+            >
+              Add Question
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="animate-fade-in">
       <div className="mb-6">
         <Link
           to={`/admin/courses/${subjectId}/lessons`}
-          className="inline-flex items-center text-primary-600 hover:text-primary-800 mb-4"
+          className="inline-flex items-center text-primary-600 hover:text-primary-800 mb-2"
         >
-          <ArrowLeft size={16} className="mr-1" />
+          <ArrowLeft size={18} className="mr-2" />
           Back to Lessons
         </Link>
-
         <div className="flex justify-between items-center">
           <div>
             <h1 className="text-2xl font-bold text-gray-900">
@@ -1603,10 +1775,9 @@ function ContentManagement() {
                   key={tab}
                   onClick={() => setActiveTab(tab)}
                   className={`
-                    flex items-center px-4 py-3 text-sm font-medium border-b-2 ${
-                      activeTab === tab
-                        ? "border-primary-600 text-primary-600"
-                        : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                    flex items-center px-4 py-3 text-sm font-medium border-b-2 ${activeTab === tab
+                      ? "border-primary-600 text-primary-600"
+                      : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
                     }
                   `}
                 >
@@ -1623,12 +1794,10 @@ function ContentManagement() {
           <div className="p-6 border-b border-gray-200 bg-gray-50">
             <h2 className="text-xl font-medium mb-4">
               {isAdding
-                ? `Add New ${
-                    activeTab.charAt(0).toUpperCase() + activeTab.slice(1)
-                  }`
-                : `Edit ${
-                    activeTab.charAt(0).toUpperCase() + activeTab.slice(1)
-                  }`}
+                ? `Add New ${activeTab.charAt(0).toUpperCase() + activeTab.slice(1)
+                }`
+                : `Edit ${activeTab.charAt(0).toUpperCase() + activeTab.slice(1)
+                }`}
             </h2>
             <form onSubmit={isAdding ? handleAddSubmit : handleEditSubmit}>
               {renderForm()}
@@ -1655,8 +1824,8 @@ function ContentManagement() {
         className="pagination mt-6 justify-center"
         nextLabel="next >"
         onPageChange={handlePageClick}
-        pageRangeDisplayed={3} // giới hạn trang bên trái 1 2 3 .... 99 100
-        marginPagesDisplayed={2} // giới hạn trang bên phải 1 2 3 .... 99 100
+        pageRangeDisplayed={3} 
+        marginPagesDisplayed={2} 
         pageCount={totalPages}
         previousLabel="< previous"
         pageClassName="page-item"
@@ -1672,6 +1841,8 @@ function ContentManagement() {
         activeClassName="active"
         renderOnZeroPageCount={null}
       />
+
+      {renderQuestionModal()}
     </div>
   );
 }

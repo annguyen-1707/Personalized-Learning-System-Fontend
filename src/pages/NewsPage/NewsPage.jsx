@@ -47,8 +47,9 @@ function NewsPage() {
       setError(null)
       try {
         const res = await getPageContentReading(page, 20)
+        console.log("API response:", res.data.content[0]); 
         const mapped = res.data.content.map(item => ({
-          id: item.id,
+          id: item.contentReadingId,  // Sửa từ item.id thành item.contentReadingId
           title: item.title,
           titleJapanese: item.scriptJp,
           excerpt: item.scriptVn?.slice(0, 60) + '...',
@@ -74,10 +75,7 @@ function NewsPage() {
     fetchArticles()
   }, [page])
 
-  const handlePageClick = (event) => {
-    setPage(event.selected + 1);
-  };
-
+  //khai báo filteredArticles
   const filteredArticles = articles.filter(article => {
     const matchesSearch = article.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       (article.titleJapanese && article.titleJapanese.includes(searchTerm))
@@ -86,6 +84,22 @@ function NewsPage() {
 
     return matchesSearch && matchesCategory
   })
+
+  // // Sau đó là useEffect sử dụng filteredArticles
+  // useEffect(() => {
+  //   if (!loading && !error) {
+  //     if (filteredArticles.length > 0) {
+  //       if (!selectedArticle || !filteredArticles.find(article => article.id === selectedArticle.id)) {
+  //         // Tự động chọn bài viết đầu tiên
+  //         setSelectedArticle(filteredArticles[0]);
+  //       }
+  //     }
+  //   }
+  // }, [filteredArticles, loading, error, selectedArticle]);
+
+  const handlePageClick = (event) => {
+    setPage(event.selected + 1);
+  };
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

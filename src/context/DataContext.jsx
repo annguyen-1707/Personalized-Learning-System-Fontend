@@ -489,15 +489,45 @@ export function DataProvider({ children }) {
 
   // Exercise and Resource CRUD operations
 
-  const getLessonExercisesById = async (lessonId, page) => {
-    const res = await fetch(`/api/exercise-questions?lessonId=${lessonId}&page=${page}`);
-    if (!res.ok) {
-      const data = await res.json();
-      return data;
+  const getLessonExercisesById = async (lessonId, page = 0) => {
+    try {
+      const response = await fetch(`/api/exercise-questions?lessonId=${lessonId}&page=${page}`, {
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${localStorage.getItem('accessToken')}`
+        }
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        setErrorMessage(data.message || `Failed to fetch exercises for lesson ${lessonId}`);
+        throw new Error(data.message || `Failed to fetch exercises for lesson ${lessonId}`);
+      }
+
+      const data = await response.json();
+
+      // Ensure we return a properly structured object even if the API response is incomplete
+      return {
+        content: data.data?.content || [],
+        page: {
+          totalPages: data.data?.page?.totalPages || 0,
+          number: data.data?.page?.number || 0,
+          totalElements: data.data?.page?.totalElements || 0
+        }
+      };
+    } catch (error) {
+      console.error("Error fetching lesson exercises:", error);
+      // Return empty data structure on error to prevent undefined errors
+      return {
+        content: [],
+        page: {
+          totalPages: 0,
+          number: 0,
+          totalElements: 0
+        }
+      };
     }
-    const data = await res.json();
-    return data.data;
-  }
+  };
 
   const getExerciseDetailsById = async (exerciseId) => {
     const res = await fetch(`/api/exercise-questions/exercise-details?exerciseId=${exerciseId}`);
@@ -509,22 +539,99 @@ export function DataProvider({ children }) {
     return data.data;
   };
 
-  const addExercise = (item) => {
-    const newItem = { ...item, id: Date.now().toString() };
-    setExercises([...exercises, newItem]);
-    return newItem;
+  const addExercise = async (item) => {
+    try {
+      // Validate item before sending
+      if (!item || typeof item !== 'object') {
+        throw new Error("Invalid exercise data: data must be an object");
+      }
+
+      // Ensure required fields are present
+      if (!item.lessonId) {
+        throw new Error("lessonId is required for creating an exercise");
+      }
+
+      // Create a clean copy of the data and ensure answerQuestionRequests is always included
+      const cleanItem = {
+        ...Object.fromEntries(
+          Object.entries(item).filter(([_, v]) => v !== undefined)
+        ),
+        // Make sure answerQuestionRequests is always an array (even if empty)
+        answerQuestionRequests: item.answerQuestionRequests || []
+      };
+
+      console.log("Sending exercise data:", cleanItem); // Debug logging
+
+      const response = await fetch("/api/exercise-questions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${localStorage.getItem('accessToken')}`
+        },
+        body: JSON.stringify(cleanItem),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setErrorMessage(data.message || "Failed to create exercise");
+        throw new Error(data.message || "Failed to create exercise");
+      }
+
+      // Return the created exercise from the API response
+      return data.data;
+    } catch (error) {
+      console.error("Error adding exercise:", error);
+      throw error;
+    }
   };
 
-  const updateExercise = (id, updatedItem) => {
-    setExercises(
-      exercises.map((item) =>
-        item.id === id ? { ...item, ...updatedItem } : item
-      )
-    );
+  const updateExercise = async (id, updatedItem) => {
+    try {
+      const response = await fetch(`/api/exercise-questions/${id}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${localStorage.getItem('accessToken')}`
+        },
+        body: JSON.stringify(updatedItem),
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        setErrorMessage(data.message || "Failed to update exercise");
+        throw new Error(data.message || "Failed to update exercise");
+      }
+
+      // Return the updated exercise from the API response
+      return data.data;
+    } catch (error) {
+      console.error("Error updating exercise:", error);
+      throw error;
+    }
   };
 
-  const deleteExercise = (id) => {
-    setExercises(exercises.filter((item) => item.id !== id));
+  const deleteExercise = async (id) => {
+    try {
+      const response = await fetch(`/api/exercise-questions/${id}`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${localStorage.getItem('accessToken')}`
+        }
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        setErrorMessage(data.message || "Failed to delete exercise");
+        throw new Error(data.message || "Failed to delete exercise");
+      }
+
+      // Return true if deletion was successful
+      return true;
+    } catch (error) {
+      console.error("Error deleting exercise:", error);
+      throw error;
+    }
   };
 
   const addResource = (item) => {

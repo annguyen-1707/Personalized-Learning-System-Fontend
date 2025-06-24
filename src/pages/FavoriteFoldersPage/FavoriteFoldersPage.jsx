@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import axios from 'axios'
+import axios from '../../services/customixe-axios'
 import { FiFolder, FiUser, FiPlus, FiEdit, FiTrash2 } from 'react-icons/fi'
 
 function FavoriteFoldersPage() {
@@ -49,7 +49,7 @@ function FavoriteFoldersPage() {
             }
 
             const response = await axios.get('http://localhost:8080/favorites', { params })
-            const data = response.data.data
+            const data = response.data
             setFolders(data.content || [])
             setTotalPages(data.page?.totalPages || 1)
         } catch (error) {
@@ -85,7 +85,7 @@ function FavoriteFoldersPage() {
         try {
             await axios.put(`http://localhost:8080/favorites/${editingFolder.id}`, {
                 name: editName,
-                isPublic: !!editIsPublic, // ← ép lại lần nữa để đảm bảo không gửi null
+                isPublic: !!editIsPublic,
             })
             fetchFolders()
             setEditingFolder(null)
