@@ -208,7 +208,7 @@ export function DataProvider({ children }) {
 
   const addLesson = async (lesson) => {
     try {
-      const res = await uploadVideoToYouTube(lesson.videoFile, lesson.lessonName);
+      const res = await uploadVideoToYouTube(lesson.videoUrl, lesson.name);
       lesson.videoUrl = res.data;
       const response = await fetch("/api/lessons", {
         method: "POST",

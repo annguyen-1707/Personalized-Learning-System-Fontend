@@ -66,8 +66,6 @@ const fetchLessons = async () => {
 
 
   const startLesson =  async (lessonId) => {
-    console.log("Starting lesson:", lessonId);
-    
       // Navigate to the lesson content page
       const res = await handleStartLesson(lessonId);
       if (res?.status === 200) {
@@ -227,7 +225,7 @@ const fetchLessons = async () => {
                       </div>
 
                       {/* Lesson Content */}
-                      <div className="flex-1">
+                      <div className="flex-1 min-w-0 pr-6">
                         <div className="flex items-center justify-between">
                           <div>
                             <h3 className="text-lg font-medium text-gray-900">
@@ -241,7 +239,7 @@ const fetchLessons = async () => {
                           </div>
 
                           {/* Action Button */}
-                          <div className="ml-4">
+                          <div className="flex-shrink-0">
                             <button
                               onClick={() => startLesson(lesson.lessonId)}
                               className={`inline-flex items-center px-4 py-2 rounded-md text-sm font-medium ${

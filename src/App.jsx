@@ -80,7 +80,7 @@ function App() {
             <Route path="learning/:subjectId/lesson/:lessonId" element={<LessonPage />} />
 
             {/* Favorites */}
-            <Route path="favorites/:type" element={<FavoriteFoldersPage />} />
+            <Route path="favorites" element={<FavoriteFoldersPage />} />
 
             {/* News */}
             <Route path="news" element={<NewsPage />} />

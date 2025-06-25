@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { FiHeadphones, FiInfo } from 'react-icons/fi';
 import axios from "axios";
 import ListeningQuiz from "./components/ListeningQuiz";
+import AudioPlayer from "./components/AudioPlayer";
 
 function ListeningDetailPage() {
   const { contentListeningId } = useParams();
@@ -22,6 +23,7 @@ function ListeningDetailPage() {
       try {
         // Fetch listening detail
         const res = await axios.get(`http://localhost:8080/content_listening/details/${contentListeningId}`);
+        console.log("Content listening details response:", res.data);
         setExercise(res.data.data);
         // Fetch questions for this listening (page=0 for first page)
         const qRes = await axios.get(`http://localhost:8080/question/content_listening/${contentListeningId}?page=1&size=5`);
@@ -47,6 +49,12 @@ function ListeningDetailPage() {
   if (error) return <div className="p-8 text-red-600">{error}</div>;
   if (!exercise) return <div className="p-8">Not found</div>;
 
+  // Add this before rendering the AudioPlayer
+  console.log("Audio file value:", exercise.audioFile);
+  console.log("Constructed audio URL:", exercise.audioFile.startsWith("http")
+    ? exercise.audioFile
+    : `http://localhost:8080/audio/content_listening/${exercise.audioFile}`);
+
   return (
     <div className="max-w-4xl mx-auto px-4">
       <motion.div
@@ -66,7 +74,16 @@ function ListeningDetailPage() {
         </div>
         <div className="p-6">
           {exercise?.audioFile ? (
-            <audio controls src={exercise.audioFile} style={{ width: '100%' }} />
+            <AudioPlayer
+              audioUrl={
+                exercise.audioFile.startsWith("http")
+                  ? exercise.audioFile 
+                  : exercise.audioFile.startsWith("data:") 
+                    ? exercise.audioFile // Handle data URLs
+                    : `http://localhost:8080/audio/content_listening/${exercise.audioFile}`
+              }
+              onTimeUpdate={() => {}}
+            />
           ) : (
             <div className="text-gray-400">No audio available</div>
           )}
