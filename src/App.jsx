@@ -49,6 +49,8 @@ import FeedbackWidget from "./components/layout/Feedback.jsx";
 import NewsPage from './pages/NewsPage/NewsPage';
 import AdminRoute from "./context/AdminRoute.jsx";
 import DenyAdmin from "././pages/auth/DenyAdmin.jsx"
+import VocabularyBank from "./pages/contentBank/VocabularyBank.jsx";
+import GrammarBank from "./pages/contentBank/GrammarBank.jsx";
 
 function App() {
   const [notificationOpen, setNotificationOpen] = useState(false);
@@ -109,6 +111,18 @@ function App() {
               path="deny"
               element={<DenyAdmin />}>
             </Route>
+            <Route
+              path="content-bank/vocabulary"
+              element={<AdminRoute allowedRoles={["STAFF", "CONTENT_MANAGER", "SUPER_ADMIN"]}>
+                <VocabularyBank />
+              </AdminRoute>}
+            />
+            <Route
+              path="content-bank/grammar"
+              element={<AdminRoute allowedRoles={["STAFF", "CONTENT_MANAGER", "SUPER_ADMIN"]}>
+                <GrammarBank />
+              </AdminRoute>}
+            />
             <Route
               path="content_speaking"
               element={<AdminRoute allowedRoles={["STAFF", "CONTENT_MANAGER", "SUPER_ADMIN"]}>

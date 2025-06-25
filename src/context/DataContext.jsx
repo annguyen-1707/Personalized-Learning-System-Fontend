@@ -558,6 +558,27 @@ export function DataProvider({ children }) {
     return newLog;
   };
 
+  // Approve (status change) functions
+  const approveVocabulary = async (id) => {
+    const response = await fetch(`/api/vocabularies/${id}/status`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ status: "approved" }),
+    });
+    const data = await response.json();
+    return data;
+  };
+
+  const approveGrammar = async (id) => {
+    const response = await fetch(`/api/grammars/${id}/status`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ status: "approved" }),
+    });
+    const data = await response.json();
+    return data;
+  };
+
   const value = {
     admins,
     users,
@@ -601,7 +622,9 @@ export function DataProvider({ children }) {
     getSubjectById,
     fetchGrammar,
     getLessonExercisesById,
-    getExerciseDetailsById
+    getExerciseDetailsById,
+    approveVocabulary,
+    approveGrammar
   };
 
   return <DataContext.Provider value={value}>{children}</DataContext.Provider>;
