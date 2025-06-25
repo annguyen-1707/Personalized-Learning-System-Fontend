@@ -104,7 +104,9 @@ function App() {
           {/* Làm bài tập */}
           <Route path="/do-exercise/:exerciseId" element={<DoExercise />} />
 
-          <Route path="/admin" element={<MainLayout />}>
+          <Route path="/admin" element={<AdminRoute allowedRoles={["STAFF", "CONTENT_MANAGER", "SUPER_ADMIN", "USER_MANAGER"]}>
+            <MainLayout />
+          </AdminRoute>}>
             <Route
               path="deny"
               element={<DenyAdmin />}>
@@ -143,6 +145,12 @@ function App() {
               path="content_listening"
               element={<AdminRoute allowedRoles={["STAFF", "CONTENT_MANAGER", "SUPER_ADMIN"]}>
                 <ListeningContentManagement />
+              </AdminRoute>}
+            />
+            <Route
+              path="content_listening/:contentListeningId/question"
+              element={<AdminRoute allowedRoles={["STAFF", "CONTENT_MANAGER", "SUPER_ADMIN"]}>
+                <QuestionManagement />
               </AdminRoute>}
             />
             <Route
