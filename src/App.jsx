@@ -51,6 +51,7 @@ import DenyAdmin from "././pages/auth/DenyAdmin.jsx"
 import QuizPage from "./QuizPage/QuizPage.jsx";
 
 import { QuizProvider } from "./context/QuizContext.jsx";
+import QuestionManagement from "./pages/content/QuestionManagement.jsx";
 
 function App() {
   const [notificationOpen, setNotificationOpen] = useState(false);

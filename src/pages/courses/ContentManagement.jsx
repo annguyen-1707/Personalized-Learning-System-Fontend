@@ -340,20 +340,15 @@ function ContentManagement() {
             return;
           }
 
-          // Create a properly formatted exercise object
           const exerciseData = {
             title: formData.title,
-            duration: formData.duration || "00:00",
+            duration: parseInt(formData.duration) || 30,
             lessonId: parseInt(lessonId),
-            difficulty: formData.difficulty || "MEDIUM",
-            status: formData.status || "DRAFT",
-            // Use the questions directly from formData
-            content: formData.questions.map(question => ({
-              questionText: question.questionText,
-              // Rename answerQuestionRequests to answers
-              answers: question.answerQuestionRequests.map(answer => ({
-                answerText: answer.answerText,
-                isCorrect: answer.isCorrect
+            content: (formData.questions || []).map(q => ({
+              questionText: q.questionText,
+              answers: (q.answers || []).map(a => ({
+                answerText: a.answerText,
+                isCorrect: a.isCorrect
               }))
             }))
           };
@@ -446,18 +441,28 @@ function ContentManagement() {
         setErrors({});
         break;
       case "exercises":
-        updateExercise(isEditing, formData);
+        const resExercise = await updateExercise(isEditing, formData);
+
+        if (resExercise.status === "error") {
+          const errorMap = {};
+          if (Array.isArray(resExercise.data)) {
+            resExercise.data.forEach((err) => {
+              errorMap[err.field] = err.message;
+            });
+          } else {
+            setErrorMessages(resExercise.message);
+          }
+          setErrors(errorMap);
+          return;
+        }
+
+        toast.success("Exercise updated successfully!");
+        setIsEditing(null);
+        resetForm();
+        setErrors({});
+        getExercises(); // nếu bạn có hàm này để reload danh sách
         logAction = "Exercise Updated";
         break;
-      case "reading":
-      case "listening":
-      case "speaking":
-        updateResource(isEditing, formData);
-        logAction = `${activeTab.charAt(0).toUpperCase() + activeTab.slice(1)
-          } Resource Updated`;
-        break;
-      default:
-        return;
     }
 
     addLog(
@@ -1657,7 +1662,7 @@ function ContentManagement() {
                   answerQuestionRequests: currentQuestion.answerQuestionRequests
                 }];
 
-                setFormData({...formData, questions: updatedQuestions});
+                setFormData({ ...formData, questions: updatedQuestions });
 
                 // Reset and close modal
                 setCurrentQuestion({
@@ -1824,8 +1829,8 @@ function ContentManagement() {
         className="pagination mt-6 justify-center"
         nextLabel="next >"
         onPageChange={handlePageClick}
-        pageRangeDisplayed={3} 
-        marginPagesDisplayed={2} 
+        pageRangeDisplayed={3}
+        marginPagesDisplayed={2}
         pageCount={totalPages}
         previousLabel="< previous"
         pageClassName="page-item"

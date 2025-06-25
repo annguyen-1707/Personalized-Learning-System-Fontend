@@ -9,6 +9,7 @@ export function useAuth() {
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
+  const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
   const [isAdmin, setIsAdmin] = useState(() => {
     return localStorage.getItem("isAdmin") === "true"; // hoặc false nếu không có
@@ -111,7 +112,7 @@ export function AuthProvider({ children }) {
               setUser(null);
             };
             handleLogout()
-            
+
             return;
           }
           navigate("/admin");
@@ -213,10 +214,10 @@ export function AuthProvider({ children }) {
   const register2 = async (email, fullName, dob, address, gender, phone, role) => {
     setLoading(true);
     try {
-      console.log("✅ Register2 called with email:", email);
-      if (email === null || email === undefined) {
-        email = localStorage.getItem("email")
+      if (!email) {
+        email = localStorage.getItem("email");
       }
+
       const response = await fetch(`http://localhost:8080/auth/complete-profile?email=${email}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -224,20 +225,32 @@ export function AuthProvider({ children }) {
         credentials: 'include',
       });
 
-      if (!response.ok) throw new Error('Failed to complete profile');
-
-      // Optional: update user state if backend returns updated info
       const result = await response.json();
-      const updatedUser = result.data;
-      navigate("/login");
-      setUser(updatedUser);
+
+      if (!response.ok) {
+        if (result.status === "error" && result.data) {
+          const errorMap = {};
+          result.data.forEach(err => {
+            errorMap[err.field] = err.message;
+          });
+
+          console.error("🛑 Field validation errors:", errorMap);
+          return errorMap; // ✅ QUAN TRỌNG: return lỗi thay vì throw
+        }
+
+        return { general: result.message || "Unknown error" }; // return lỗi chung
+      }
+
+      // Thành công, không lỗi
+      return null;
     } catch (error) {
-      console.error('Profile update failed:', error);
-      throw error;
+      console.error('Registration failed:', error);
+      return { general: error.message || "Unexpected error" };
     } finally {
       setLoading(false);
     }
   };
+
 
 
   const register1 = async (email, password) => {
@@ -287,6 +300,8 @@ export function AuthProvider({ children }) {
   const value = {
     user,
     setUser,
+    errors,
+    setErrors,
     loading,
     isAdmin,
     login,
