@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { FiVolume2, FiPlus, FiCheck } from "react-icons/fi";
+import FlashCardsPage from "../../FlashcardsPage/FlashcardsPage";
 
 function LessonVocabulary({ lesson }) {
   const [savedWords, setSavedWords] = useState([]);
@@ -44,6 +45,9 @@ function LessonVocabulary({ lesson }) {
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-bold text-gray-900">Vocabulary</h2>
+      </div>
+      <div className="mb-4">
+        <FlashCardsPage words={lesson.vocabularies} />
       </div>
 
       {lesson.vocabularies && lesson.vocabularies.length > 0 ? (
