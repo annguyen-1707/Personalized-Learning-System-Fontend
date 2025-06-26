@@ -50,6 +50,7 @@ function ExerciseManagement() {
         currentPage
       );
 
+      console.log("Lesson Exercises:", lessonExercises);
       if (lessonExercises) {
         setLessonExercises(lessonExercises.content);
         setTotalPages(lessonExercises.page.totalPages);
