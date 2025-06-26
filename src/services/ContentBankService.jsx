@@ -20,9 +20,9 @@ const getPageAllVocabulary = async (page, size) => {
   }
 };
 
-const editVocabulary = async (vocabulary) => {
+const editVocabulary = async (vocabularyId, vocabulary) => {
   try {
-    const response = await axios.put(`/api/vocabularies/${vocabulary.id}`, vocabulary);
+    const response = await axios.put(`/api/vocabularies/${vocabularyId}`, vocabulary);
     return response.data;
   } catch (error) {
     console.error("Error editing vocabulary:", error);
@@ -40,9 +40,20 @@ const addVocabulary = async (vocabulary) => {
   }
 };
 
+const deleteVocabulary = async (vocabularyId) => {
+  try {
+    const response = await axios.delete(`/api/vocabularies/${vocabularyId}`);
+    return response.data;
+  } catch (error) {
+    console.error("Error deleting vocabulary:", error);
+    throw error;
+  }
+};
+
 export {
     fetchAllGrammar,
     getPageAllVocabulary,
     editVocabulary,
     addVocabulary,
+    deleteVocabulary
 }

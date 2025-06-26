@@ -18,6 +18,7 @@ import {
   getPageAllVocabulary,
   editVocabulary,
   addVocabulary,
+  deleteVocabulary
 } from "../../services/ContentBankService";
 
 export default function VocabularyBank() {
@@ -32,7 +33,6 @@ export default function VocabularyBank() {
   const [levers, setLevers] = useState([]); // To store unique levels
   const [partOfSpeech, setPartOfSpeech] = useState([]); // To store unique part of speech
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(null);
-  const [errorMessage, setErrorMessage] = useState("");
   const [errors, setErrors] = useState({});
   const [errorMessages, setErrorMessages] = useState("");
   const jlptLevelClassMap = {
@@ -93,18 +93,14 @@ export default function VocabularyBank() {
     setIsEditing(null);
     resetForm();
     setErrors({});
-    setErrorMessage("");
+    setErrorMessages("");
   };
 
   useEffect(() => {
     getPageVocabularyAvailable(currentPage, size);
     getListLever();
     getListPartOfSpeech();
-  }, [size, currentPage]);
-
-  const handleRemoveVocabularyFromContentReading = async (vocabularyId) => {
-    await getPageVocabularyAvailable(currentPage);
-  };
+  }, [size, currentPage, totalElements]);
 
   const getPageVocabularyAvailable = async (page, size) => {
     let res = await getPageAllVocabulary(page, size);
@@ -139,41 +135,82 @@ export default function VocabularyBank() {
     e.preventDefault();
     try {
       await addVocabulary({ ...formData });
-      getPageVocabularyAvailable(currentPage, size);
-      cancelAction();
+      await getPageVocabularyAvailable(currentPage, size);
       toast.success("Vocabulary added successfully");
+      cancelAction();
     } catch (error) {
-      if (error.response && error.response.data) {
-        const res = error.response.data;
-        if (Array.isArray(res.data)) {
-          const errorMap = {};
-          res.data.forEach((err) => {
-            errorMap[err.field] = err.message;
-          });
-          setErrors(errorMap);
-          setErrorMessage(""); // không hiển thị lỗi tổng nếu đã có lỗi field
-        } else {
-          setErrorMessage(res.message || "An unexpected error occurred.");
-          setErrors({});
-        }
-      } else {
-        setErrorMessage("Something went wrong. Please try again.");
-        setErrors({});
-      }
+      debugger;
+    const responseData = error.response?.data;
+
+    if (!Array.isArray(responseData?.data)) {
+      setErrorMessages(responseData?.message || "An unexpected error occurred");
+      return;
+    }
+    const errorMap = {};
+    responseData.data.forEach((err) => {
+      errorMap[err.field] = err.message;
+    });
+
+    if (Object.keys(errorMap).length > 0) {
+      setErrors(errorMap);
+    }  
     }
   };
 
   const handleEditSubmit = async (e) => {
-    e.preventDefault();
+  e.preventDefault();
+  try {
+    await editVocabulary(isEditing, formData);
+    await getPageVocabularyAvailable(currentPage, size);
+    toast.success("Vocabulary updated successfully");
+    resetForm();
+    setIsEditing(null);
+  } catch (error) {
+    const responseData = error.response?.data;
+
+    if (!Array.isArray(responseData?.data)) {
+      // Lỗi không phải danh sách field -> chỉ hiển thị message chung
+      setErrorMessages(responseData?.message || "An unexpected error occurred");
+      return;
+    }
+
+    // Xử lý lỗi theo từng trường
+    const errorMap = {};
+    responseData.data.forEach((err) => {
+      errorMap[err.field] = err.message;
+    });
+
+    if (Object.keys(errorMap).length > 0) {
+      setErrors(errorMap);
+    }
+  }
+};
+
+  const handleDelete = async (vocabularyId) => {
     try {
-      await editVocabulary(isEditing, formData);
-      toast.success("Vocabulary updated successfully");
-      resetForm();
-      setIsEditing(null);
+      await deleteVocabulary(vocabularyId);
+      await getPageVocabularyAvailable(currentPage, size);
+      setShowDeleteConfirm(null);
+      toast.success("Vocabulary deleted successfully");
     } catch (error) {
-      toast.error("Error updating vocabulary");
+      const responseData = error.response?.data;
+
+      if (!Array.isArray(responseData?.data)) {
+        setErrorMessages(responseData?.message || "An unexpected error occurred");
+        return;
+      }
+
+      const errorMap = {};
+      responseData.data.forEach((err) => {
+        errorMap[err.field] = err.message;
+      });
+
+      if (Object.keys(errorMap).length > 0) {
+        setErrors(errorMap);
+      }
     }
   };
+
 
   // Filter vocabulary based on search and filters
   const filteredVocabulary = allVocabulary.filter((vocab) => {
@@ -304,27 +341,6 @@ export default function VocabularyBank() {
             </button>
           </div>
 
-          {errorMessage && (
-            <div className="mb-6 p-4 rounded-lg bg-red-50 border border-red-200">
-              <div className="flex">
-                <div
-                  className="flex-shrink-0"
-                  onClick={() => setErrorMessage("")}
-                >
-                  <X className="h-5 w-5 text-red-400" />
-                </div>
-                <div className="ml-3">
-                  <h3 className="text-sm font-medium text-red-800">
-                    Error occurred
-                  </h3>
-                  <div className="mt-2 text-sm text-red-700">
-                    <p>{errorMessage}</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
           <form
             onSubmit={isAdding ? handleAddSubmit : handleEditSubmit}
             className="space-y-6"
@@ -334,9 +350,9 @@ export default function VocabularyBank() {
                 {errorMessages && (
                   <div className="p-4 rounded-lg bg-red-50 border border-red-200 mb-4">
                     <div className="flex">
-                      <div className="flex-shrink-0">
+                      <button className="flex-shrink-0" onClick={() => setErrorMessages("")}>
                         <X className="h-5 w-5 text-red-400" />
-                      </div>
+                      </button>
                       <div className="ml-3">
                         <h3 className="text-sm font-medium text-red-800">
                           Error occurred
