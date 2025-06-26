@@ -489,9 +489,9 @@ export function DataProvider({ children }) {
 
   // Exercise and Resource CRUD operations
 
-  const getLessonExercisesById = async (lessonId, page = 0) => {
+  const getLessonExercisesById = async (lessonId, page = 1) => {
     try {
-      const response = await fetch(`/api/exercise-questions?lessonId=${lessonId}&page=${page}`, {
+      const response = await fetch(`http://localhost:8080/exercise-questions?lessonId=${lessonId}&page=1`, {
         headers: {
           "Content-Type": "application/json",
           "Authorization": `Bearer ${localStorage.getItem('accessToken')}`
@@ -539,36 +539,27 @@ export function DataProvider({ children }) {
     return data.data;
   };
 
-  const addExercise = async (item) => {
+  const addExercise = async (exerciseData) => {
     try {
-      // Validate item before sending
-      if (!item || typeof item !== 'object') {
+      if (!exerciseData || typeof exerciseData !== 'object') {
         throw new Error("Invalid exercise data: data must be an object");
       }
 
-      // Ensure required fields are present
-      if (!item.lessonId) {
+      if (!exerciseData.lessonId) {
         throw new Error("lessonId is required for creating an exercise");
       }
 
-      // Create a clean copy of the data and ensure answerQuestionRequests is always included
-      const cleanItem = {
-        ...Object.fromEntries(
-          Object.entries(item).filter(([_, v]) => v !== undefined)
-        ),
-        // Make sure answerQuestionRequests is always an array (even if empty)
-        answerQuestionRequests: item.answerQuestionRequests || []
-      };
+      // Không thêm answerQuestionRequests ở đây nữa
 
-      console.log("Sending exercise data:", cleanItem); // Debug logging
-
-      const response = await fetch("/api/exercise-questions", {
+      console.log("Exercise Data to Send:", exerciseData);
+      console.log("Stringified:", JSON.stringify(exerciseData));
+      const response = await fetch("http://localhost:8080/exercise-questions", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           "Authorization": `Bearer ${localStorage.getItem('accessToken')}`
         },
-        body: JSON.stringify(cleanItem),
+        body: JSON.stringify(exerciseData),
       });
 
       const data = await response.json();
@@ -578,7 +569,6 @@ export function DataProvider({ children }) {
         throw new Error(data.message || "Failed to create exercise");
       }
 
-      // Return the created exercise from the API response
       return data.data;
     } catch (error) {
       console.error("Error adding exercise:", error);
@@ -588,7 +578,7 @@ export function DataProvider({ children }) {
 
   const updateExercise = async (id, updatedItem) => {
     try {
-      const response = await fetch(`/api/exercise-questions/${id}`, {
+      const response = await fetch(`http://localhost:8080/exercise-questions?exercise-questions/${id}`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
@@ -612,7 +602,7 @@ export function DataProvider({ children }) {
 
   const deleteExercise = async (id) => {
     try {
-      const response = await fetch(`/api/exercise-questions/${id}`, {
+      const response = await fetch(`http://localhost:8080/exercise-questions/${id}`, {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",

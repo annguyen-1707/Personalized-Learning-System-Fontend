@@ -367,7 +367,7 @@ export const mockGrammar = [
     id: '1',
     lessonId: '1',
     title: 'The Alphabet',
-    explanation: 'The English alphabet consists of 26 letters...',
+    example: 'The English alphabet consists of 26 letters...',
     examples: ['A is for Apple', 'B is for Book', 'C is for Cat'],
     notes: 'Practice writing each letter several times'
   },
@@ -375,7 +375,7 @@ export const mockGrammar = [
     id: '2',
     lessonId: '2',
     title: 'Basic Greeting Structures',
-    explanation: 'When greeting someone in English, you can use...',
+    example: 'When greeting someone in English, you can use...',
     examples: ['Hello, how are you?', 'Good morning!', 'Nice to meet you.'],
     notes: 'Greetings change based on time of day'
   },
@@ -383,7 +383,7 @@ export const mockGrammar = [
     id: '3',
     lessonId: '4',
     title: 'Present Simple Tense',
-    explanation: 'We use the present simple for habits, facts, and routines...',
+    example: 'We use the present simple for habits, facts, and routines...',
     examples: ['I work every day.', 'She likes coffee.', 'They play tennis on Sundays.'],
     notes: 'Remember to add -s for third person singular (he/she/it)'
   },
@@ -391,7 +391,7 @@ export const mockGrammar = [
     id: '4',
     lessonId: '4',
     title: 'Present Continuous Tense',
-    explanation: 'We use the present continuous for actions happening now...',
+    example: 'We use the present continuous for actions happening now...',
     examples: ['I am working now.', 'She is drinking coffee.', 'They are playing tennis.'],
     notes: 'Form: subject + am/is/are + verb-ing'
   },
@@ -399,7 +399,7 @@ export const mockGrammar = [
     id: '5',
     lessonId: '6',
     title: 'Formal Business Language',
-    explanation: 'In business settings, it\'s important to use formal language...',
+    example: 'In business settings, it\'s important to use formal language...',
     examples: ['I would be grateful if you could...', 'We look forward to hearing from you.', 'Please do not hesitate to contact me.'],
     notes: 'Avoid contractions in formal written business communication'
   }

@@ -94,6 +94,10 @@ function ProfilePage() {
                 <FiEdit2 className="h-5 w-5" />
               </button>
             </div>
+             <div className="mt-10 sm:mt-0 sm:ml-6 text-center sm:text-left">
+              <h1 className="text-2xl font-bold text-gray-900">{studentInfo.fullName}</h1>
+              <p className="text-gray-600">Level: {studentInfo.membershipLevel}  </p>
+            </div>
             <div className="mt-6 sm:mt-0 sm:ml-auto">
               <button
                 className="btn btn-secondary flex items-center"
