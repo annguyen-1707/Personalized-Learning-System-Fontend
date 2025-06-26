@@ -1,8 +1,11 @@
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { FiClock, FiBookmark, FiShare2, FiExternalLink } from 'react-icons/fi'
+import { FiClock, FiBookmark, FiShare2, FiExternalLink, FiCheck } from 'react-icons/fi'
 import NewsImg from './NewsImg';
 import axios from 'axios';
+import NewsAudio from './NewsAudio';
+import { useAuth } from '../../../context/AuthContext'; // Adjust path as needed
+import { toast } from 'react-toastify'; // If you use toast notifications
 
 // Tạo instance axios
 const api = axios.create({
@@ -10,14 +13,32 @@ const api = axios.create({
 });
 
 function ArticleViewer({ article }) {
+  // Add user from auth context
+  const { user } = useAuth();
+  
   const [showTranslation, setShowTranslation] = useState(false)
   const [showVocab, setShowVocab] = useState(false)
   const [showGrammar, setShowGrammar] = useState(false)
   const [vocabData, setVocabData] = useState([])
   const [grammarData, setGrammarData] = useState([])
-  //vocabulary khi showVocab bật
-    useEffect(() => {
-    console.log('Article selected:', article);
+  const [isDone, setIsDone] = useState(false)
+  const [audioUrl, setAudioUrl] = useState(null); // Changed initial value to null
+  
+  useEffect(() => {
+    if (article) {
+      console.log('Article selected:', article);
+      console.log('Article properties:', Object.keys(article));
+      
+      // Kiểm tra và xây dựng URL audio
+      if (article.audioFile) {
+        const fullAudioUrl = `http://localhost:8080/audio/content_reading/${article.audioFile}`;
+        console.log('Constructed audio URL:', fullAudioUrl);
+        setAudioUrl(fullAudioUrl);
+      } else {
+        console.log('No audioFile property found in article');
+        setAudioUrl(null);
+      }
+    }
   }, [article]);
 
   useEffect(() => {
@@ -53,6 +74,71 @@ function ArticleViewer({ article }) {
     }
   }, [showGrammar, article?.id]);
 
+  // Check initial completion status when article changes
+  useEffect(() => {
+    const userId = user?.id || user?.userId || user?._id;
+    
+    if (userId && article?.id) {
+      // Check if this article is already marked as done
+      api.post('/api/progressReading/CheckStatus', null, {
+        params: {
+          userId: userId,
+          contentReadingId: article.id
+        }
+      })
+      .then(res => {
+        if (res.data && res.data.data === true) {
+          setIsDone(true);
+        } else {
+          setIsDone(false);
+        }
+      })
+      .catch(err => {
+        console.error('Error checking reading progress:', err);
+        setIsDone(false);
+      });
+    }
+  }, [article?.id, user]);
+
+  // Updated handleMarkAsDone function to call your API
+  const handleMarkAsDone = () => {
+    // Add debugging
+    console.log('Current user:', user);
+    
+    // More flexible user ID check
+    const userId = user?.id || user?.userId || user?._id;
+    
+    if (!userId) {
+      console.error('User is logged in but ID is missing:', user);
+      toast?.error('User ID not found. Please log out and log in again.');
+      return;
+    }
+    
+    // Call the markAsDone API with the correct user ID
+    api.post('/api/progressReading/markAsDone', null, {
+      params: {
+        userId: userId,
+        contentReadingId: article.id
+      }
+    })
+    .then(res => {
+      if (res.data && res.data.status === "success") {
+        setIsDone(true);
+        toast?.success('Progress saved successfully!');
+      } else {
+        toast?.error('Failed to save progress. Please try again.');
+      }
+    })
+    .catch(err => {
+      console.error('Error marking as done:', err);
+      toast?.error('Failed to save progress. Please try again.');
+    });
+  };
+
+  useEffect(() => {
+    console.log('User auth state:', user);
+  }, [user]);
+
   if (!article) {
     return (
       <div className="h-full flex items-center justify-center text-gray-500">
@@ -71,6 +157,28 @@ function ArticleViewer({ article }) {
         image={article.image}
         title={article.title}
       />
+
+      {/* Audio Player Section */}
+      {audioUrl ? (
+        <div className="mt-4">
+          <NewsAudio 
+            audioUrl={audioUrl}
+            onTimeUpdate={(time) => console.log('Current audio time:', time)}
+          />
+          <div className="text-xs text-gray-500 mt-1">
+            Audio file: {article.audioFile}
+          </div>
+        </div>
+      ) : (
+        <div className="mt-4 p-3 bg-gray-100 rounded text-center text-gray-500">
+          No audio available for this article
+          {article.audioFile && (
+            <div className="text-xs mt-1">
+              (Attempted URL: http://localhost:8080/audio/content_reading/{article.audioFile})
+            </div>
+          )}
+        </div>
+      )}
 
       <div className="flex items-center justify-between">
         <div className="flex items-center text-sm text-gray-500">
@@ -128,12 +236,17 @@ function ArticleViewer({ article }) {
             <FiExternalLink className="ml-2" />
           </button>
         </div>
-        <div className="flex items-center text-sm text-gray-500">
-          <span>Reading time: {article.readingTime} min</span>
-        </div>
+        <button
+          className={`btn ${isDone ? 'btn-success' : 'btn-primary'} flex items-center`}
+          onClick={handleMarkAsDone}
+          disabled={isDone || !user}
+        >
+          {isDone ? 'Completed' : 'Mark as done'}
+          <FiCheck className="ml-2" />
+        </button>
       </div>
 
-      {/* Translation vẫn giữ nguyên */}
+      {/* Translation section */}
       {showTranslation && (
         <div className="mt-6 space-y-6">
           {article.content.map((section, index) => (
