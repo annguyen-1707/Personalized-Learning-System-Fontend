@@ -32,6 +32,7 @@ import OAuthCallBack from "./pages/auth/OAuthCallBack";
 import ContentReadingManagement from "./pages/content/ContentReadingManagement";
 import ListeningContentManagement from "./pages/content/ContentListeningManagement";
 import FavoriteFoldersPage from './pages/FavoriteFoldersPage/FavoriteFoldersPage'
+import FavoriteFolderDetailsPage from './pages/FavoriteFoldersPage/FavoriteFolderDetailsPage.jsx'
 import UpgradePage from "./pages/Upgrade/UpgradePage";
 import VnpayReturn from "./pages/Upgrade/VnpayReturn.jsx";
 import ParentPage from "./pages/Parent/ParentPage.jsx";
@@ -49,6 +50,7 @@ import FeedbackWidget from "./components/layout/Feedback.jsx";
 import NewsPage from './pages/NewsPage/NewsPage';
 import AdminRoute from "./context/AdminRoute.jsx";
 import DenyAdmin from "././pages/auth/DenyAdmin.jsx"
+import FlashcardsPage from './pages/FlashcardsPage/FlashcardsPage.jsx'
 
 function App() {
   const [notificationOpen, setNotificationOpen] = useState(false);
@@ -81,7 +83,10 @@ function App() {
 
             {/* Favorites */}
             <Route path="favorites" element={<FavoriteFoldersPage />} />
+            <Route path="favorites/:folderId" element={<FavoriteFolderDetailsPage />} />
 
+            { /* Flashcard */}
+            <Route path="flashcards" element={<FlashcardsPage />} />
             {/* News */}
             <Route path="news" element={<NewsPage />} />
           </Route>
