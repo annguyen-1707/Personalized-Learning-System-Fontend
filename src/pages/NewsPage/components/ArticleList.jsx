@@ -10,7 +10,9 @@ function ArticleList({ articles, selectedArticle, onArticleSelect }) {
 
   const handleArticleClick = (article) => {
     // Check if user is logged in using the auth context
+    console.log("List article:", articles);
     if (!user) {
+
       // Save the intended destination for after login
       localStorage.setItem("redirectAfterLogin", `/news/detail/${article.id}`);
       

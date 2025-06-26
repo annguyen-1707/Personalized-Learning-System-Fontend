@@ -56,6 +56,7 @@ function NewsPage() {
           image: item.image,
           date: item.timeNew || item.createdAt,
           category: item.category,
+          audioFile: item.audioFile,
           readingTime: 5,
           content: [
             {

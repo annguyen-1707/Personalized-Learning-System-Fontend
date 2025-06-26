@@ -1,15 +1,26 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { motion } from 'framer-motion'
 import { FiClock, FiBookmark, FiShare2, FiExternalLink, FiCheck } from 'react-icons/fi'
 import NewsImg from './NewsImg';
 import axios from 'axios';
 import NewsAudio from './NewsAudio';
-import { useAuth } from '../../../context/AuthContext'; // Adjust path as needed
-import { toast } from 'react-toastify'; // If you use toast notifications
+import { useAuth } from '../../../context/AuthContext'; 
+import { toast } from 'react-toastify';
 
-// Tạo instance axios
+// Create axios instance
 const api = axios.create({
   baseURL: 'http://localhost:8080'
+});
+
+// Add this interceptor code right after creating the axios instance
+api.interceptors.request.use(config => {
+  const token = localStorage.getItem('token'); // or from context/auth
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+}, error => {
+  return Promise.reject(error);
 });
 
 function ArticleViewer({ article }) {
@@ -22,14 +33,15 @@ function ArticleViewer({ article }) {
   const [vocabData, setVocabData] = useState([])
   const [grammarData, setGrammarData] = useState([])
   const [isDone, setIsDone] = useState(false)
-  const [audioUrl, setAudioUrl] = useState(null); // Changed initial value to null
-  
+  const [audioUrl, setAudioUrl] = useState(null)
+  const [isMarking, setIsMarking] = useState(false)
+
   useEffect(() => {
     if (article) {
       console.log('Article selected:', article);
       console.log('Article properties:', Object.keys(article));
       
-      // Kiểm tra và xây dựng URL audio
+      // Check and build audio URL
       if (article.audioFile) {
         const fullAudioUrl = `http://localhost:8080/audio/content_reading/${article.audioFile}`;
         console.log('Constructed audio URL:', fullAudioUrl);
@@ -47,7 +59,7 @@ function ArticleViewer({ article }) {
       api.get(`/content_reading/${article.id}/vocabularies`) 
         .then(res => {
           console.log('Vocab response:', res.data);
-          // Hiển thị dữ liệu JSON nhận về để debug
+          // Display received JSON data for debugging
           setVocabData(res.data.data || []);
         })
         .catch(err => {
@@ -57,14 +69,14 @@ function ArticleViewer({ article }) {
     }
   }, [showVocab, article?.id]);
 
-  //grammar khi showGrammar bật
+  // Grammar when showGrammar is on
   useEffect(() => {
     if (showGrammar && article?.id) {
       setGrammarData([]); // loading
       api.get(`/content_reading/${article.id}/grammars`) 
         .then(res => {
           console.log('Grammar response:', res.data);
-          // Hiển thị dữ liệu JSON nhận về để debug
+          // Display received JSON data for debugging
           setGrammarData(res.data.data || []);
         })
         .catch(err => {
@@ -78,16 +90,17 @@ function ArticleViewer({ article }) {
   useEffect(() => {
     const userId = user?.id || user?.userId || user?._id;
     
-    if (userId && article?.id) {
-      // Check if this article is already marked as done
-      api.post('/api/progressReading/CheckStatus', null, {
+    if (userId && article?.id) {    
+      // Fix to call API correctly
+      api.get('/api/progressReading/checkStatus', {
         params: {
           userId: userId,
           contentReadingId: article.id
         }
       })
       .then(res => {
-        if (res.data && res.data.data === true) {
+        // Fix response checking method
+        if (res.data?.data === true) {
           setIsDone(true);
         } else {
           setIsDone(false);
@@ -102,19 +115,15 @@ function ArticleViewer({ article }) {
 
   // Updated handleMarkAsDone function to call your API
   const handleMarkAsDone = () => {
-    // Add debugging
-    console.log('Current user:', user);
-    
-    // More flexible user ID check
     const userId = user?.id || user?.userId || user?._id;
     
     if (!userId) {
-      console.error('User is logged in but ID is missing:', user);
-      toast?.error('User ID not found. Please log out and log in again.');
+      toast.error('User ID not found. Please log in again.');
       return;
     }
     
-    // Call the markAsDone API with the correct user ID
+    setIsMarking(true); // Set loading state
+    
     api.post('/api/progressReading/markAsDone', null, {
       params: {
         userId: userId,
@@ -122,17 +131,68 @@ function ArticleViewer({ article }) {
       }
     })
     .then(res => {
-      if (res.data && res.data.status === "success") {
+      // Check response more simply
+      if (res.data?.status === "success" || res.status === 200) {
         setIsDone(true);
-        toast?.success('Progress saved successfully!');
+        toast.success('Progress saved successfully!');
       } else {
-        toast?.error('Failed to save progress. Please try again.');
+        toast.error('Failed to save progress.');
       }
     })
     .catch(err => {
       console.error('Error marking as done:', err);
-      toast?.error('Failed to save progress. Please try again.');
+      toast.error('Failed to save progress. Please try again.');
+    })
+    .finally(() => {
+      setIsMarking(false); // Clear loading state
     });
+  };
+
+  // Enhanced version with useCallback (if you want to use it)
+  const checkCompletionStatus = useCallback(async () => {
+    try {
+      const userId = user?.id || user?.userId || user?._id;
+      if (!userId || !article?.id) return;
+      
+      const response = await api.get('/api/progressReading/checkStatus', {
+        params: { userId, contentReadingId: article.id }
+      });
+      
+      setIsDone(response.data?.data === true);
+    } catch (error) {
+      console.error('Error checking status:', error);
+      setIsDone(false);
+    }
+  }, [user, article?.id]);
+
+  // Function to render action button
+  const renderActionButton = () => {
+    if (!user) {
+      return (
+        <button className="btn btn-disabled" disabled>
+          Please login
+        </button>
+      );
+    }
+    
+    if (isDone) {
+      return (
+        <button className="btn btn-success flex items-center" disabled>
+          <FiCheck className="mr-2" />
+          Completed
+        </button>
+      );
+    }
+    
+    return (
+      <button 
+        className={`btn btn-primary flex items-center ${isMarking ? 'loading' : ''}`}
+        onClick={handleMarkAsDone}
+        disabled={isMarking}
+      >
+        {isMarking ? 'Processing...' : 'Mark as completed'}
+      </button>
+    );
   };
 
   useEffect(() => {
@@ -166,7 +226,7 @@ function ArticleViewer({ article }) {
             onTimeUpdate={(time) => console.log('Current audio time:', time)}
           />
           <div className="text-xs text-gray-500 mt-1">
-            Audio file: {article.audioFile}
+            {/* Audio file: {article.audioFile} */}
           </div>
         </div>
       ) : (
@@ -236,17 +296,10 @@ function ArticleViewer({ article }) {
             <FiExternalLink className="ml-2" />
           </button>
         </div>
-        <button
-          className={`btn ${isDone ? 'btn-success' : 'btn-primary'} flex items-center`}
-          onClick={handleMarkAsDone}
-          disabled={isDone || !user}
-        >
-          {isDone ? 'Completed' : 'Mark as done'}
-          <FiCheck className="ml-2" />
-        </button>
+        {renderActionButton()}
       </div>
 
-      {/* Translation section */}
+      {/* Translation section */} 
       {showTranslation && (
         <div className="mt-6 space-y-6">
           {article.content.map((section, index) => (

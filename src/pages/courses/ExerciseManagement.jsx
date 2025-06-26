@@ -46,10 +46,11 @@ function ExerciseManagement() {
   const getLessonExercises = async () => {
     try {
       const lessonExercises = await getExerciseDetailsById(
-        lessonId,
+        exerciseId,
         currentPage
       );
 
+      console.log("Lesson Exercises:", lessonExercises);
       if (lessonExercises) {
         setLessonExercises(lessonExercises.content);
         setTotalPages(lessonExercises.page.totalPages);
