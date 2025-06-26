@@ -6,6 +6,7 @@ import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { MultiSectionDigitalClock } from "@mui/x-date-pickers/MultiSectionDigitalClock";
 import dayjs from "dayjs";
+import HandleAddVocabularyInLesson from "./HandleAddVocabularyInLesson";
 
 import {
   ArrowLeft,
@@ -28,6 +29,7 @@ import {
 } from "lucide-react";
 import { a, div, s } from "framer-motion/client";
 import ReactPaginate from "react-paginate";
+import HandleAddGrammarInLesson from "./HandleAddGrammarInLesson";
 
 function ContentManagement() {
   const { subjectId, lessonId } = useParams();
@@ -61,7 +63,6 @@ function ContentManagement() {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(null);
   const [totalPages, setTotalPages] = useState(0);
   const [currentPage, setCurrentPage] = useState(0);
-  const [totalElements, setTotalElements] = useState(0);
   const [vocabularies, setVocabularies] = useState([]);
   const [levels, setLevels] = useState([]);
   const [partOfSpeech, setPartOfSpeech] = useState([]);
@@ -189,6 +190,7 @@ function ContentManagement() {
       console.error("Error in getVocabulary:", error);
     }
   };
+
 
   const getLevels = async () => {
     try {
@@ -344,13 +346,13 @@ function ContentManagement() {
             title: formData.title,
             duration: parseInt(formData.duration) || 30,
             lessonId: parseInt(lessonId),
-            content: (formData.questions || []).map(q => ({
+            content: (formData.questions || []).map((q) => ({
               questionText: q.questionText,
-              answers: (q.answers || []).map(a => ({
+              answers: (q.answers || []).map((a) => ({
                 answerText: a.answerText,
-                correct: a.correct
-              }))
-            }))
+                correct: a.correct,
+              })),
+            })),
           };
 
           console.log("Submitting exercise data:", exerciseData); // Debug logging
@@ -465,7 +467,8 @@ function ContentManagement() {
 
     addLog(
       logAction,
-      `${activeTab.charAt(0).toUpperCase() + activeTab.slice(1)
+      `${
+        activeTab.charAt(0).toUpperCase() + activeTab.slice(1)
       } content was updated in lesson "${lesson.title}"`
     );
     setIsEditing(null);
@@ -504,7 +507,8 @@ function ContentManagement() {
 
     addLog(
       logAction,
-      `${activeTab.charAt(0).toUpperCase() + activeTab.slice(1)
+      `${
+        activeTab.charAt(0).toUpperCase() + activeTab.slice(1)
       } content was deleted from lesson "${lesson.title}"`
     );
     setShowDeleteConfirm(null);
@@ -546,14 +550,14 @@ function ContentManagement() {
           // questions: item.questions || [],
           title: item.title,
           duration: item.duration,
-          lessonId: item.lessonId || lessonId,  // Use item.lessonId if available, otherwise fallback
-          questions: (item.content || item.questions || []).map(q => ({
+          lessonId: item.lessonId || lessonId, // Use item.lessonId if available, otherwise fallback
+          questions: (item.content || item.questions || []).map((q) => ({
             questionText: q.questionText,
-            answers: (q.answers || []).map(a => ({
+            answers: (q.answers || []).map((a) => ({
               answerText: a.answerText,
-              correct: a.correct
-            }))
-          }))
+              correct: a.correct,
+            })),
+          })),
         };
         break;
       default:
@@ -647,481 +651,45 @@ function ContentManagement() {
     switch (activeTab) {
       case "vocabulary":
         return (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-            <div className="col-span-2">
-              {errorMessages && (
-                <div className="p-4 rounded-lg bg-red-50 border border-red-200 mb-4">
-                  <div className="flex">
-                    <div className="flex-shrink-0">
-                      <X className="h-5 w-5 text-red-400" />
-                    </div>
-                    <div className="ml-3">
-                      <h3 className="text-sm font-medium text-red-800">
-                        Error occurred
-                      </h3>
-                      <div className="mt-2 text-sm text-red-700">
-                        <p>{errorMessages}</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Kanji */}
-            <div>
-              <label
-                htmlFor="kanji"
-                className="block text-sm font-medium text-gray-700 mb-1"
-              >
-                Kanji <span className="text-red-500">*</span>
-              </label>
-              <div className="relative rounded-md shadow-sm">
-                <input
-                  id="kanji"
-                  type="text"
-                  required
-                  value={formData.kanji || ""}
-                  onChange={(e) =>
-                    setFormData({ ...formData, kanji: e.target.value })
-                  }
-                  className={`block w-full rounded-md border-gray-300 pr-10 focus:border-primary-500 focus:ring-primary-500 sm:text-sm ${errors.kanji
-                    ? "border-red-500 focus:border-red-500 bg-red-50"
-                    : ""
-                    }`}
-                  placeholder="Enter kanji characters"
-                />
-                <div className="absolute inset-y-0 right-0 flex items-center pr-3">
-                  <Book className="h-5 w-5 text-gray-400" />
-                </div>
-              </div>
-              {errors.kanji && (
-                <p className="mt-1 text-sm text-red-600">{errors.kanji}</p>
-              )}
-              <p className="mt-1 text-sm text-gray-500">
-                Japanese kanji characters
-              </p>
-            </div>
-
-            {/* Kana */}
-            <div>
-              <label
-                htmlFor="kana"
-                className="block text-sm font-medium text-gray-700 mb-1"
-              >
-                Kana <span className="text-red-500">*</span>
-              </label>
-              <div className="relative rounded-md shadow-sm">
-                <input
-                  id="kana"
-                  type="text"
-                  required
-                  value={formData.kana || ""}
-                  onChange={(e) =>
-                    setFormData({ ...formData, kana: e.target.value })
-                  }
-                  className={`block w-full rounded-md border-gray-300 pr-10 focus:border-primary-500 focus:ring-primary-500 sm:text-sm ${errors.kana
-                    ? "border-red-500 focus:border-red-500 bg-red-50"
-                    : ""
-                    }`}
-                  placeholder="Enter kana characters"
-                />
-                <div className="absolute inset-y-0 right-0 flex items-center pr-3">
-                  <Book className="h-5 w-5 text-gray-400" />
-                </div>
-              </div>
-              {errors.kana && (
-                <p className="mt-1 text-sm text-red-600">{errors.kana}</p>
-              )}
-              <p className="mt-1 text-sm text-gray-500">
-                Japanese kana characters
-              </p>
-            </div>
-
-            {/* Romaji */}
-            <div>
-              <label
-                htmlFor="romaji"
-                className="block text-sm font-medium text-gray-700 mb-1"
-              >
-                Romaji
-              </label>
-              <div className="relative rounded-md shadow-sm">
-                <input
-                  id="romaji"
-                  type="text"
-                  value={formData.romaji || ""}
-                  onChange={(e) =>
-                    setFormData({ ...formData, romaji: e.target.value })
-                  }
-                  className={`block w-full rounded-md border-gray-300 pr-10 focus:border-primary-500 focus:ring-primary-500 sm:text-sm ${errors.romaji
-                    ? "border-red-500 focus:border-red-500 bg-red-50"
-                    : ""
-                    }`}
-                  placeholder="Enter romaji"
-                />
-                <div className="absolute inset-y-0 right-0 flex items-center pr-3">
-                  <Book className="h-5 w-5 text-gray-400" />
-                </div>
-              </div>
-              {errors.romaji && (
-                <p className="mt-1 text-sm text-red-600">{errors.romaji}</p>
-              )}
-              <p className="mt-1 text-sm text-gray-500">
-                Romanized Japanese text
-              </p>
-            </div>
-
-            {/* Meaning */}
-            <div>
-              <label
-                htmlFor="meaning"
-                className="block text-sm font-medium text-gray-700 mb-1"
-              >
-                Meaning <span className="text-red-500">*</span>
-              </label>
-              <div className="relative rounded-md shadow-sm">
-                <input
-                  id="meaning"
-                  type="text"
-                  required
-                  value={formData.meaning || ""}
-                  onChange={(e) =>
-                    setFormData({ ...formData, meaning: e.target.value })
-                  }
-                  className={`block w-full rounded-md border-gray-300 pr-10 focus:border-primary-500 focus:ring-primary-500 sm:text-sm ${errors.meaning
-                    ? "border-red-500 focus:border-red-500 bg-red-50"
-                    : ""
-                    }`}
-                  placeholder="Enter meaning in English"
-                />
-                <div className="absolute inset-y-0 right-0 flex items-center pr-3">
-                  <Book className="h-5 w-5 text-gray-400" />
-                </div>
-              </div>
-              {errors.meaning && (
-                <p className="mt-1 text-sm text-red-600">{errors.meaning}</p>
-              )}
-              <p className="mt-1 text-sm text-gray-500">English translation</p>
-            </div>
-
-            {/* Description */}
-            <div className="md:col-span-2">
-              <label
-                htmlFor="description"
-                className="block text-sm font-medium text-gray-700 mb-1"
-              >
-                Description
-              </label>
-              <textarea
-                id="description"
-                rows={3}
-                value={formData.description || ""}
-                onChange={(e) =>
-                  setFormData({ ...formData, description: e.target.value })
-                }
-                className={`block w-full rounded-md border-gray-300 focus:border-primary-500 focus:ring-primary-500 sm:text-sm ${errors.description
-                  ? "border-red-500 focus:border-red-500 bg-red-50"
-                  : ""
-                  }`}
-                placeholder="Provide additional context or explanation"
-              />
-              {errors.description && (
-                <p className="mt-1 text-sm text-red-600">
-                  {errors.description}
-                </p>
-              )}
-              <p className="mt-1 text-sm text-gray-500">
-                Additional context or example
-              </p>
-            </div>
-
-            {/* Example Sentence */}
-            <div className="md:col-span-2">
-              <label
-                htmlFor="example"
-                className="block text-sm font-medium text-gray-700 mb-1"
-              >
-                Example Sentence
-              </label>
-              <div className="relative rounded-md shadow-sm">
-                <input
-                  id="example"
-                  type="text"
-                  value={formData.example || ""}
-                  onChange={(e) =>
-                    setFormData({ ...formData, example: e.target.value })
-                  }
-                  className={`block w-full rounded-md border-gray-300 pr-10 focus:border-primary-500 focus:ring-primary-500 sm:text-sm ${errors.example
-                    ? "border-red-500 focus:border-red-500 bg-red-50"
-                    : ""
-                    }`}
-                  placeholder="Enter example sentence"
-                />
-                <div className="absolute inset-y-0 right-0 flex items-center pr-3">
-                  <Book className="h-5 w-5 text-gray-400" />
-                </div>
-              </div>
-              {errors.example && (
-                <p className="mt-1 text-sm text-red-600">{errors.example}</p>
-              )}
-              <p className="mt-1 text-sm text-gray-500">
-                Example usage in a sentence
-              </p>
-            </div>
-
-            {/* Part of Speech */}
-            <div>
-              <label
-                htmlFor="partOfSpeech"
-                className="block text-sm font-medium text-gray-700 mb-1"
-              >
-                Part of Speech <span className="text-red-500">*</span>
-              </label>
-              <select
-                id="partOfSpeech"
-                required
-                value={formData.partOfSpeech}
-                onChange={(e) =>
-                  setFormData({ ...formData, partOfSpeech: e.target.value })
-                }
-                className={`block w-full rounded-md border-gray-300 focus:border-primary-500 focus:ring-primary-500 sm:text-sm ${errors.partOfSpeech
-                  ? "border-red-500 focus:border-red-500 bg-red-50"
-                  : ""
-                  }`}
-              >
-                <option value="">Select part of speech...</option>
-                {partOfSpeech.map((part) => (
-                  <option key={part} value={part}>
-                    {part}
-                  </option>
-                ))}
-              </select>
-              {errors.partOfSpeech && (
-                <p className="mt-1 text-sm text-red-600">
-                  {errors.partOfSpeech}
-                </p>
-              )}
-              <p className="mt-1 text-sm text-gray-500">Grammatical category</p>
-            </div>
-
-            {/* JLPT Level */}
-            <div>
-              <label
-                htmlFor="jlptLevel"
-                className="block text-sm font-medium text-gray-700 mb-1"
-              >
-                JLPT Level <span className="text-red-500">*</span>
-              </label>
-              <select
-                id="jlptLevel"
-                required
-                value={formData.jlptLevel}
-                onChange={(e) =>
-                  setFormData({ ...formData, jlptLevel: e.target.value })
-                }
-                className={`block w-full rounded-md border-gray-300 focus:border-primary-500 focus:ring-primary-500 sm:text-sm ${errors.jlptLevel
-                  ? "border-red-500 focus:border-red-500 bg-red-50"
-                  : ""
-                  }`}
-              >
-                <option value="">Select JLPT level...</option>
-                {levels.map((level) => (
-                  <option key={level} value={level}>
-                    {level}
-                  </option>
-                ))}
-              </select>
-              {errors.jlptLevel && (
-                <p className="mt-1 text-sm text-red-600">{errors.jlptLevel}</p>
-              )}
-              <p className="mt-1 text-sm text-gray-500">
-                Japanese Language Proficiency Test level
-              </p>
-            </div>
-          </div>
-        );
+          <HandleAddVocabularyInLesson
+            vocabularies={vocabularies}
+            lessonId={lessonId}
+          />);
 
       case "grammar":
         return (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-            {errorMessages && (
-              <div className="col-span-2">
-                <p className="text-red-500 text-sm">{errorMessages}</p>
-              </div>
-            )}
-            <div>
-              <label
-                htmlFor="title"
-                className="block text-sm font-medium text-gray-700 mb-1"
-              >
-                Grammar Title (Japanese)
-              </label>
-              <input
-                id="title"
-                type="text"
-                value={formData.titleJp || ""}
-                onChange={(e) =>
-                  setFormData({ ...formData, titleJp: e.target.value })
-                }
-                className={`input border rounded px-3 py-2 w-full ${errors.titleJp
-                  ? "border-red-500 focus:border-red-500 bg-red-50"
-                  : "border-gray-300 focus:border-blue-500 bg-white"
-                  }`}
-              />
-              {errors.titleJp && (
-                <p className="text-red-500 text-xs mt-1">{errors.titleJp}</p>
-              )}
-            </div>
-
-            <div>
-              <label
-                htmlFor="structure"
-                className="block text-sm font-medium text-gray-700 mb-1"
-              >
-                Structure
-              </label>
-              <textarea
-                id="structure"
-                rows={1}
-                value={formData.structure || ""}
-                onChange={(e) =>
-                  setFormData({ ...formData, structure: e.target.value })
-                }
-                className={`w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 
-                focus:outline-none focus:ring-1 focus:ring-primary-500 ${errors.structure
-                    ? "border-red-500 focus:border-red-500 bg-red-50"
-                    : "border-gray-300 focus:border-blue-500 bg-white"
-                  }`}
-              />
-              {errors.structure && (
-                <p className="text-red-500 text-xs mt-1">{errors.structure}</p>
-              )}
-            </div>
-
-            <div>
-              <label
-                htmlFor="meaning"
-                className="block text-sm font-medium text-gray-700 mb-1"
-              >
-                Meaning
-              </label>
-              <textarea
-                id="meaning"
-                rows={2}
-                value={formData.meaning || ""}
-                onChange={(e) =>
-                  setFormData({ ...formData, meaning: e.target.value })
-                }
-                className={`w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 ${errors.meaning
-                  ? "border-red-500 focus:border-red-500 bg-red-50"
-                  : "border-gray-300 focus:border-blue-500 bg-white"
-                  }`}
-              />
-              {errors.meaning && (
-                <p className="text-red-500 text-xs mt-1">{errors.meaning}</p>
-              )}
-            </div>
-
-            <div>
-              <label
-                htmlFor="example"
-                className="block text-sm font-medium text-gray-700 mb-1"
-              >
-                Example
-              </label>
-              <textarea
-                id="example"
-                rows={2}
-                value={formData.example || ""}
-                onChange={(e) =>
-                  setFormData({ ...formData, example: e.target.value })
-                }
-                className={`w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 ${errors.example
-                  ? "border-red-500 focus:border-red-500 bg-red-50"
-                  : "border-gray-300 focus:border-blue-500 bg-white"
-                  }`}
-                placeholder="例えば、これは例文です。"
-              />
-              {errors.example && (
-                <p className="text-red-500 text-xs mt-1">{errors.example}</p>
-              )}
-            </div>
-
-            <div>
-              <label
-                htmlFor="usage"
-                className="block text-sm font-medium text-gray-700 mb-1"
-              >
-                Usage
-              </label>
-              <textarea
-                id="usage"
-                rows={1}
-                value={formData.usage || ""}
-                onChange={(e) =>
-                  setFormData({ ...formData, usage: e.target.value })
-                }
-                className={`w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 ${errors.usage
-                  ? "border-red-500 focus:border-red-500 bg-red-50"
-                  : "border-gray-300 focus:border-blue-500 bg-white"
-                  }`}
-              />
-              {errors.usage && (
-                <p className="text-red-500 text-xs mt-1">{errors.usage}</p>
-              )}
-            </div>
-
-            <div className="">
-              <label
-                htmlFor="jlptLevel"
-                className="block text-sm font-medium text-gray-700 mb-1"
-              >
-                JLPT Level
-              </label>
-              <select
-                id="jlptLevel"
-                value={formData.jlptLevel}
-                onChange={(e) =>
-                  setFormData({ ...formData, jlptLevel: e.target.value })
-                }
-                className={`input border rounded px-3 py-2 w-full ${errors.jlptLevel
-                  ? "border-red-500 focus:border-red-500 bg-red-50"
-                  : "border-gray-300 focus:border-blue-500 bg-white"
-                  }`}
-              >
-                <option value="">Select...</option>
-                {levels.map((level) => (
-                  <option key={level} value={level}>
-                    {level}
-                  </option>
-                ))}
-              </select>
-              {errors.jlptLevel && (
-                <p className="text-red-500 text-xs mt-1">{errors.jlptLevel}</p>
-              )}
-            </div>
-          </div>
+           <HandleAddGrammarInLesson
+            grammars={grammars}
+            lessonId={lessonId}
+          />
         );
 
       case "exercises":
         return (
           <div className="grid grid-cols-1 gap-4 mb-4">
             <div>
-              <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-1">
+              <label
+                htmlFor="title"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
                 Exercise Title
               </label>
               <input
                 id="title"
                 type="text"
                 value={formData.title || ""}
-                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, title: e.target.value })
+                }
                 className="w-full rounded-md border border-gray-300 px-3 py-2"
               />
             </div>
 
             <div className="space-y-2">
-              <label htmlFor="duration" className="block text-sm font-medium text-gray-700">
+              <label
+                htmlFor="duration"
+                className="block text-sm font-medium text-gray-700"
+              >
                 Thời lượng bài tập (phút)
               </label>
 
@@ -1131,7 +699,11 @@ function ContentManagement() {
                     <div className="flex flex-col items-center">
                       <MultiSectionDigitalClock
                         views={["minutes"]}
-                        value={formData.duration ? dayjs().startOf('day').minute(formData.duration) : null}
+                        value={
+                          formData.duration
+                            ? dayjs().startOf("day").minute(formData.duration)
+                            : null
+                        }
                         onChange={(value) => {
                           if (value) {
                             const minutes = value.minute();
@@ -1142,14 +714,14 @@ function ContentManagement() {
                         }}
                         ampm={false}
                         sx={{
-                          '& .MuiMultiSectionDigitalClock-root': {
-                            width: '100%',
+                          "& .MuiMultiSectionDigitalClock-root": {
+                            width: "100%",
                           },
-                          '& .MuiMultiSectionDigitalClock-section': {
-                            margin: '0 auto',
+                          "& .MuiMultiSectionDigitalClock-section": {
+                            margin: "0 auto",
                           },
-                          '& .MuiClockNumber-root': {
-                            fontSize: '1rem',
+                          "& .MuiClockNumber-root": {
+                            fontSize: "1rem",
                             fontWeight: 500,
                           },
                         }}
@@ -1170,18 +742,28 @@ function ContentManagement() {
               {/* List of questions already added */}
               {formData.questions && formData.questions.length > 0 && (
                 <div className="mb-6">
-                  <h4 className="text-sm font-medium text-gray-700 mb-2">Added Questions:</h4>
+                  <h4 className="text-sm font-medium text-gray-700 mb-2">
+                    Added Questions:
+                  </h4>
                   <div className="space-y-3">
                     {formData.questions.map((question, qIndex) => (
-                      <div key={qIndex} className="p-3 border rounded-md bg-gray-50">
+                      <div
+                        key={qIndex}
+                        className="p-3 border rounded-md bg-gray-50"
+                      >
                         <div className="flex justify-between">
-                          <div className="font-medium">{question.questionText}</div>
+                          <div className="font-medium">
+                            {question.questionText}
+                          </div>
                           <button
                             type="button"
                             onClick={() => {
                               const newQuestions = [...formData.questions];
                               newQuestions.splice(qIndex, 1);
-                              setFormData({ ...formData, questions: newQuestions });
+                              setFormData({
+                                ...formData,
+                                questions: newQuestions,
+                              });
                             }}
                             className="text-red-500 hover:text-red-700"
                           >
@@ -1272,9 +854,10 @@ function ContentManagement() {
                       </td>
                       <td className="px-4 py-2">
                         <span
-                          className={`text-xs px-2 py-1 rounded-full font-medium ${jlptLevelClassMap[item.jlptLevel] ||
+                          className={`text-xs px-2 py-1 rounded-full font-medium ${
+                            jlptLevelClassMap[item.jlptLevel] ||
                             "bg-gray-100 text-gray-500"
-                            }`}
+                          }`}
                         >
                           {item.jlptLevel}
                         </span>
@@ -1305,13 +888,6 @@ function ContentManagement() {
                           </div>
                         ) : (
                           <div className="flex justify-center items-center space-x-2">
-                            <button
-                              onClick={() => startEdit(item)}
-                              className="text-primary-600 hover:text-primary-800"
-                              disabled={isAdding || isEditing}
-                            >
-                              <Edit size={16} />
-                            </button>
                             <button
                               onClick={() =>
                                 setShowDeleteConfirm(item.vocabularyId)
@@ -1404,9 +980,10 @@ function ContentManagement() {
                         </td>
                         <td className="px-4 py-2">
                           <span
-                            className={`text-xs px-2 py-1 rounded-full font-medium ${jlptLevelClassMap[item.jlptLevel] ||
+                            className={`text-xs px-2 py-1 rounded-full font-medium ${
+                              jlptLevelClassMap[item.jlptLevel] ||
                               "bg-gray-100 text-gray-500"
-                              }`}
+                            }`}
                           >
                             {item.jlptLevel}
                           </span>
@@ -1432,13 +1009,6 @@ function ContentManagement() {
                             </div>
                           ) : (
                             <div className="flex justify-center items-center space-x-2">
-                              <button
-                                onClick={() => startEdit(item)}
-                                className="text-primary-600 hover:text-primary-800"
-                                disabled={isAdding || isEditing}
-                              >
-                                <Edit size={16} />
-                              </button>
                               <button
                                 onClick={() =>
                                   setShowDeleteConfirm(item.grammarId)
@@ -1587,10 +1157,12 @@ function ContentManagement() {
             <input
               type="text"
               value={currentQuestion.questionText}
-              onChange={(e) => setCurrentQuestion({
-                ...currentQuestion,
-                questionText: e.target.value
-              })}
+              onChange={(e) =>
+                setCurrentQuestion({
+                  ...currentQuestion,
+                  questionText: e.target.value,
+                })
+              }
               className="w-full rounded-md border border-gray-300 p-2"
             />
           </div>
@@ -1608,7 +1180,10 @@ function ContentManagement() {
                   onChange={(e) => {
                     const newAnswers = [...currentQuestion.answers];
                     newAnswers[index].answerText = e.target.value;
-                    setCurrentQuestion({ ...currentQuestion, answers: newAnswers });
+                    setCurrentQuestion({
+                      ...currentQuestion,
+                      answers: newAnswers,
+                    });
                   }}
                   className="flex-1 rounded-md border border-gray-300 p-2"
                   placeholder={`Option ${index + 1}`}
@@ -1618,11 +1193,16 @@ function ContentManagement() {
                     type="radio"
                     checked={answer.correct}
                     onChange={() => {
-                      const newAnswers = currentQuestion.answers.map((a, i) => ({
-                        ...a,
-                        correct: i === index
-                      }));
-                      setCurrentQuestion({ ...currentQuestion, answers: newAnswers });
+                      const newAnswers = currentQuestion.answers.map(
+                        (a, i) => ({
+                          ...a,
+                          correct: i === index,
+                        })
+                      );
+                      setCurrentQuestion({
+                        ...currentQuestion,
+                        answers: newAnswers,
+                      });
                     }}
                     className="mr-2"
                   />
@@ -1635,7 +1215,10 @@ function ContentManagement() {
                     onClick={() => {
                       const newAnswers = [...currentQuestion.answers];
                       newAnswers.splice(index, 1);
-                      setCurrentQuestion({ ...currentQuestion, answers: newAnswers });
+                      setCurrentQuestion({
+                        ...currentQuestion,
+                        answers: newAnswers,
+                      });
                     }}
                     className="text-red-500 hover:text-red-700"
                   >
@@ -1652,8 +1235,8 @@ function ContentManagement() {
                   ...currentQuestion,
                   answers: [
                     ...currentQuestion.answers,
-                    { answerText: "", correct: false }
-                  ]
+                    { answerText: "", correct: false },
+                  ],
                 });
               }}
               className="text-blue-600 hover:text-blue-800 text-sm mt-2"
@@ -1680,24 +1263,27 @@ function ContentManagement() {
                 }
 
                 // Validate answers
-                if (currentQuestion.answers.some(a => !a.answerText.trim())) {
+                if (currentQuestion.answers.some((a) => !a.answerText.trim())) {
                   toast.error("All answer options must have text");
                   return;
                 }
 
                 // Add to questions list, keeping the same structure we send to API
-                const updatedQuestions = [...(formData.questions || []), {
-                  questionText: currentQuestion.questionText,
-                  // We'll leave as answers in formData, and transform before API call
-                  answers: currentQuestion.answers
-                }];
+                const updatedQuestions = [
+                  ...(formData.questions || []),
+                  {
+                    questionText: currentQuestion.questionText,
+                    // We'll leave as answers in formData, and transform before API call
+                    answers: currentQuestion.answers,
+                  },
+                ];
 
                 setFormData({ ...formData, questions: updatedQuestions });
 
                 // Reset and close modal
                 setCurrentQuestion({
                   questionText: "",
-                  answers: [{ answerText: "", correct: true }]
+                  answers: [{ answerText: "", correct: true }],
                 });
                 setShowAddQuestion(false);
               }}
@@ -1810,9 +1396,10 @@ function ContentManagement() {
                   key={tab}
                   onClick={() => setActiveTab(tab)}
                   className={`
-                    flex items-center px-4 py-3 text-sm font-medium border-b-2 ${activeTab === tab
-                      ? "border-primary-600 text-primary-600"
-                      : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                    flex items-center px-4 py-3 text-sm font-medium border-b-2 ${
+                      activeTab === tab
+                        ? "border-primary-600 text-primary-600"
+                        : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
                     }
                   `}
                 >
@@ -1829,10 +1416,12 @@ function ContentManagement() {
           <div className="p-6 border-b border-gray-200 bg-gray-50">
             <h2 className="text-xl font-medium mb-4">
               {isAdding
-                ? `Add New ${activeTab.charAt(0).toUpperCase() + activeTab.slice(1)
-                }`
-                : `Edit ${activeTab.charAt(0).toUpperCase() + activeTab.slice(1)
-                }`}
+                ? `Add New ${
+                    activeTab.charAt(0).toUpperCase() + activeTab.slice(1)
+                  }`
+                : `Edit ${
+                    activeTab.charAt(0).toUpperCase() + activeTab.slice(1)
+                  }`}
             </h2>
             <form onSubmit={isAdding ? handleAddSubmit : handleEditSubmit}>
               {renderForm()}
