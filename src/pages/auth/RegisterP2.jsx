@@ -20,7 +20,7 @@ function RegisterP2() {
     phone: '',
     role: ''
   });
-  const [error, setError] = useState('');
+  const [errors, setErrors] = useState({});
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -30,13 +30,12 @@ function RegisterP2() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!formData.role || !formData.gender) {
-      setError('Please select all required fields');
+      setErrors('Please select all required fields');
       return;
     }
     try {
-      setError('');
-      await register2(
-
+      setErrors('');
+      const error = await register2(
         email,
         formData.fullName,
         formData.dob,
@@ -45,13 +44,18 @@ function RegisterP2() {
         formData.phone,
         formData.role
       );
+
+      if (error) {
+        setErrors(error); // ✅ set lỗi để hiển thị
+        return;
+      }
       if (!email || !email === "undefined") {
         try {
           const provider = 'FACEBOOK'
           const res = await fetch('http://localhost:8080/auth/getOAuthToken', {
             method: 'Post',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email,  provider}),
+            body: JSON.stringify({ email, provider }),
             credentials: 'include'
           });
 
@@ -79,7 +83,10 @@ function RegisterP2() {
             navigate("/");
           }
           else {
-            navigate("/admin");
+            if (!errors || !typeof errors === 'object' || !Object.keys(errors).length > 0) {
+              navigate("/admin");
+            }
+
           }
 
         } catch (error) {
@@ -87,18 +94,14 @@ function RegisterP2() {
           throw error;
 
         }
-
         return;
       }
-      else{
+      else {
         navigate('/login', { state: { successMessage: 'Register Successfully' } });
       }
 
-
-
-
     } catch (err) {
-      setError('Failed to create an account');
+      console.log(err);
     }
   };
 
@@ -117,11 +120,15 @@ function RegisterP2() {
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
         <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
-          {error && (
-            <div className="mb-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
-              {error}
-            </div>
-          )}
+          {errors && typeof errors === 'object' && Object.keys(errors).length > 0 && (
+  <div className="mb-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+    <ul className="list-disc list-inside text-sm">
+      {Object.entries(errors).map(([field, message]) => (
+        <li key={field}>{message}</li>
+      ))}
+    </ul>
+  </div>
+)}
 
           <form className="space-y-6" onSubmit={handleSubmit}>
             <div>

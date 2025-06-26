@@ -53,8 +53,8 @@ const handleCreateContent = async (data) => {
         const response = await axios.post(`/api/content_listening`, formData);
         return response;
     } catch (error) {
+        console.log("Error", error)
         const allErrors = error.response?.data?.data?.map(e => `${e.message}`).join(", ");
-        console.error("All error", allErrors)
         throw new Error(allErrors || "can not create");
     }
 };

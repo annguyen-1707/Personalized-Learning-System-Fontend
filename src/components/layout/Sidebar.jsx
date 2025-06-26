@@ -12,8 +12,9 @@ function Sidebar({ sidebarOpen, setSidebarOpen }) {
   const navigation = [
     { name: 'Home', href: '/', icon: FiHome },
     { name: 'Learn', href: '/learning', icon: FiBook },
-    { name: 'Favorite', href: '/favorites/vocabulary', icon: FiFileText },
+    { name: 'Favorite', href: '/favorites', icon: FiFileText },
     // { name: 'AI Conversation', href: '/ai-conversation', icon: FiMessageCircle },
+    { name: 'Quiz', href: '/quiz', icon: FiHelpCircle },
     { name: 'News', href: '/news', icon: FiGlobe },
     { name: 'Listening', href: '/listening', icon: FiHeadphones },
     { name: 'Speaking', href: '/speaking', icon: FiMic },

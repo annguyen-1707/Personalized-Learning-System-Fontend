@@ -12,6 +12,7 @@ function ListeningDetailPage() {
   const [questions, setQuestions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [currentTime, setCurrentTime] = useState(0);
 
   useEffect(() => {
     if (!contentListeningId) {
@@ -82,7 +83,7 @@ function ListeningDetailPage() {
                     ? exercise.audioFile // Handle data URLs
                     : `http://localhost:8080/audio/content_listening/${exercise.audioFile}`
               }
-              onTimeUpdate={() => {}}
+              onTimeUpdate={(time) => setCurrentTime(time)}
             />
           ) : (
             <div className="text-gray-400">No audio available</div>
@@ -118,7 +119,10 @@ function ListeningDetailPage() {
         {/* Questions */}
         <div className="lg:col-span-2">
           {questions.length > 0 ? (
-            <ListeningQuiz questions={questions} />
+            <ListeningQuiz
+             questions={questions}
+              currentTime={currentTime}
+               contentId={contentListeningId} />
           ) : (
             <div className="bg-white rounded-lg shadow-md p-6 text-gray-400">No questions available</div>
           )}

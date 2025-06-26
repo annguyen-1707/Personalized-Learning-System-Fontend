@@ -3,6 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useEffect, useState } from 'react';
 import axios from '../../services/customixe-axios';
+import TestimonialSection from '../HomePage/components/TestimonialSection';
 
 function ParentPage() {
   const { user } = useAuth();
@@ -142,7 +143,7 @@ function ParentPage() {
           ))}
         </div>
       </div>
-
+        <TestimonialSection></TestimonialSection>
     </div>
   );
 }
