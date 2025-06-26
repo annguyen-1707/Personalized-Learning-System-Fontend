@@ -46,7 +46,7 @@ function ExerciseManagement() {
   const getLessonExercises = async () => {
     try {
       const lessonExercises = await getExerciseDetailsById(
-        lessonId,
+        exerciseId,
         currentPage
       );
 

@@ -16,6 +16,8 @@ import {
   Mic,
   Headphones,
   ChevronDown,
+  Pencil,
+  BookCheck,
 } from "lucide-react";
 
 function Sidebar({ open, setOpen }) {
@@ -52,6 +54,15 @@ function Sidebar({ open, setOpen }) {
               href: "/admin/content_reading",
               icon: Newspaper,
             },
+          ],
+        },
+        {
+          name: "Content Bank",
+          icon: FileText,
+          children: [
+            { name: "Vocabulary", href: "/admin/content-bank/vocabulary", icon:   BookCheck,
+ },
+            { name: "Grammar", href: "/admin/content-bank/grammar", icon: Pencil },
           ],
         },
       ],

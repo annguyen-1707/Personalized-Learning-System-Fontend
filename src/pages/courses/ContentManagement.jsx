@@ -614,12 +614,6 @@ function ContentManagement() {
         return Pencil;
       case "exercises":
         return Dumbbell;
-      case "reading":
-        return BookMarked;
-      case "listening":
-        return Headphones;
-      case "speaking":
-        return Mic;
       default:
         return FileText;
     }
