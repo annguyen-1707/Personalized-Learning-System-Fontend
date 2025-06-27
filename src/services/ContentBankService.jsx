@@ -52,7 +52,7 @@ const deleteVocabulary = async (vocabularyId) => {
 
 const addVocabularyInLesson = async (lessonId, vocabularyId) => {
   try {
-    const response = await axios.post(`/api/vocabulary/${vocabularyId}/add-to-lesson/${lessonId}`);
+    const response = await axios.post(`/api/vocabularies/${vocabularyId}/add-to-lesson/${lessonId}`);
     return response.data;
   } catch (error) {
     console.error("Error adding vocabulary to lesson:", error);
@@ -67,4 +67,4 @@ export {
     addVocabulary,
     deleteVocabulary,
     addVocabularyInLesson
-}
+};

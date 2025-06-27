@@ -63,6 +63,7 @@ function ContentManagement() {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(null);
   const [totalPages, setTotalPages] = useState(0);
   const [currentPage, setCurrentPage] = useState(0);
+  const [totalElements, setTotalElements] = useState(0);
   const [vocabularies, setVocabularies] = useState([]);
   const [levels, setLevels] = useState([]);
   const [partOfSpeech, setPartOfSpeech] = useState([]);
@@ -146,16 +147,22 @@ function ContentManagement() {
   };
 
   const getLessonExercises = async () => {
+    setCurrentPage(0);
     try {
       const lessonExercises = await getLessonExercisesById(
         lessonId,
         currentPage
       );
+      console.log("before exercise:", currentPage);
+      console.log("totalPage exercise:", totalPages);
       if (lessonExercises) {
-        setLessonExercises(lessonExercises.content);
-        setTotalPages(lessonExercises.page.totalPages);
-        setTotalElements(lessonExercises.page.totalElements);
+        setLessonExercises(lessonExercises?.content);
+        setTotalPages(lessonExercises?.page?.totalPages);
+        setTotalElements(lessonExercises?.page?.totalElements);
       }
+      console.log("after exercise:", currentPage);
+      console.log("totalPage exercise:", totalPages);
+      console.log("exercises totalPage:");
     } catch (error) {
       console.error("Error in getLessonExercises:", error);
     }
@@ -179,18 +186,23 @@ function ContentManagement() {
   }
 
   const getVocabulary = async () => {
+    setCurrentPage(0);
     try {
+      console.log("before vocab:", currentPage);
+      console.log("totalPage vocab:", totalPages);
       const vocabularies = await fetchVocabulary(lessonId, currentPage);
+      // console.log("vocabularies:", vocabularies);
       if (vocabularies) {
-        setVocabularies(vocabularies.content);
-        setTotalPages(vocabularies.page.totalPages);
-        setTotalElements(vocabularies.page.totalElements);
+        setVocabularies(vocabularies?.content);
+        setTotalPages(vocabularies?.page?.totalPages);
+        setTotalElements(vocabularies?.page?.totalElements);
       }
+      console.log("after :", currentPage);
+      console.log("totalPage :", totalPages);
     } catch (error) {
       console.error("Error in getVocabulary:", error);
     }
   };
-
 
   const getLevels = async () => {
     try {
@@ -215,13 +227,18 @@ function ContentManagement() {
   };
 
   const getGrammar = async () => {
+    setCurrentPage(0);
     try {
+      console.log("before grammar:", currentPage);
+      console.log("totalPage grammar:", totalPages);
       const grammar = await fetchGrammar(lessonId, currentPage);
       if (grammar) {
         setGrammars(grammar.content);
-        setTotalPages(grammar.page.totalPages);
-        setTotalElements(grammar.page.totalElements);
+        setTotalPages(grammar?.page?.totalPages);
+        setTotalElements(grammar?.page?.totalElements);
       }
+      console.log("after grammar:", currentPage);
+      console.log("totalPage grammar:", totalPages);
     } catch (error) {
       console.error("Error in getGrammar:", error);
     }
@@ -234,16 +251,15 @@ function ContentManagement() {
     setShowDeleteConfirm(null);
     getLessons();
     getSubject();
-    getVocabulary();
     getLevels();
     getPartOfSpeech();
-    getGrammar();
-    getLessonExercises();
+
 
     // Set default form data based on active tab
     switch (activeTab) {
       case "vocabulary":
-        setFormData({
+        {
+          setFormData({
           kanji: "",
           kana: "",
           romaji: "",
@@ -254,9 +270,13 @@ function ContentManagement() {
           jlptLevel: "",
           lessonId: lessonId,
         });
+        getVocabulary();
         break;
-      case "grammar":
-        setFormData({
+
+      }
+      case "grammar":{
+        getGrammar();
+         setFormData({
           titleJp: "",
           structure: "",
           meaning: "",
@@ -266,7 +286,11 @@ function ContentManagement() {
           lessonId: lessonId,
         });
         break;
+      }
+       
       case "exercises":
+        {
+        getLessonExercises();
         setFormData({
           title: "",
           duration: "",
@@ -274,6 +298,8 @@ function ContentManagement() {
           lessonId: lessonId,
         });
         break;
+        }
+        
       default:
         setFormData({});
     }
@@ -654,14 +680,12 @@ function ContentManagement() {
           <HandleAddVocabularyInLesson
             vocabularies={vocabularies}
             lessonId={lessonId}
-          />);
+          />
+        );
 
       case "grammar":
         return (
-           <HandleAddGrammarInLesson
-            grammars={grammars}
-            lessonId={lessonId}
-          />
+          <HandleAddGrammarInLesson grammars={grammars} lessonId={lessonId} />
         );
 
       case "exercises":
@@ -1465,7 +1489,6 @@ function ContentManagement() {
         activeClassName="active"
         renderOnZeroPageCount={null}
       />
-
       {renderQuestionModal()}
     </div>
   );

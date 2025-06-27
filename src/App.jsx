@@ -112,7 +112,7 @@ function App() {
           <Route path="/register1" element={<RegisterP1 />} />
           <Route path="/register2" element={<RegisterP2 />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
-          <Route path="/admin/login" element={<Login />} />
+          <Route path="/login-admin" element={<Login />} />
           <Route path="/await-confirmation" element={<AwaitEmailConfirmation />} />
 
           {/* Làm bài tập */}
