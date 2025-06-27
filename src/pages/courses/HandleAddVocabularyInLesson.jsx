@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
-import { getPageAllVocabulary } from "../../services/ContentBankService";
+import { getPageAllVocabulary, addVocabularyInLesson } from "../../services/ContentBankService";
 import ReactPaginate from "react-paginate";
 import { Plus, Check, X } from "lucide-react"; // hoặc icon của bạn
 import { s } from "framer-motion/client";
+import { toast } from "react-toastify";
 
 const jlptLevelClassMap = {
   N5: "bg-green-100 text-green-600",
@@ -33,11 +34,15 @@ const HandleAddVocabularyInLesson = ({ vocabularies, lessonId }) => {
   }, [currentPage]);
 
   const handleAdd = (vocab) => {
-    const exists = lessonVocabs.find(
-      (v) => v.vocabularyId === vocab.vocabularyId
-    );
-    if (exists) return;
-    setLessonVocabs([...lessonVocabs, vocab]);
+    try {
+       addVocabularyInLesson(lessonId, vocab.vocabularyId);
+       toast.success("Vocabulary added to lesson successfully!");
+       setLessonVocabs([...lessonVocabs, vocab]);
+    } catch (error) {
+      console.error("Error adding vocabulary:", error);
+      toast.error("Failed to add vocabulary." + error?.message);
+      return;
+    }
   };
 
    const handlePageClick = (event) => {
