@@ -601,8 +601,8 @@ function CourseManagement() {
         className="pagination mt-6 justify-center"
         nextLabel="next >"
         onPageChange={handlePageClick}
-        pageRangeDisplayed={3} // giới hạn trang bên trái 1 2 3 .... 99 100
-        marginPagesDisplayed={2} // giới hạn trang bên phải 1 2 3 .... 99 100
+        pageRangeDisplayed={3}
+        marginPagesDisplayed={2}
         pageCount={totalPages}
         previousLabel="< previous"
         pageClassName="page-item"
