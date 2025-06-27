@@ -6,13 +6,13 @@ import { useData } from "../../context/DataContext";
 import { addVocabularyInLesson, getAllVocabWithoutLesson } from '../../services/ContentBankService';
 import { a } from 'framer-motion/client';
 
-function VocabularyManagement({lessonId, onSuccess}) {
+function VocabularyManagement({ lessonId, onSuccess }) {
   const [selectedVocabulary, setSelectedVocabulary] = useState([]);
   const [search, setSearch] = useState('');
   const [size, setSize] = useState(6); // 1trang bn phan tu
   const [pageCount, setPageCount] = useState(0); // so luong trang page
   const [totalElements, setTotalElements] = useState(); // tong phan tu
-  const [currentPage, setCurrentPage] = useState(1); // trang page hien tai
+  const [currentPage, setCurrentPage] = useState(0); // trang page hien tai
   const [allVocabulary, setAllVocabulary] = useState([]); // To store all vocabulary items
   const [levers, setLevers] = useState([]); // To store unique courses
   const jlptLevelClassMap = {
@@ -33,26 +33,25 @@ function VocabularyManagement({lessonId, onSuccess}) {
   });
 
   useEffect(() => {
-    getPageVocabularyAvailable(1);
+    getPageVocabularyAvailable();
     getListLever();
     getListPartOfSpeech();
-  }, [size]);
+  }, [currentPage, size, lessonId]);
 
   const handleAddVocabularyInContentReading = async (vocabularyId) => {
     console.log("Adding vocabulary:", vocabularyId, "to lesson:", lessonId);
     await addVocabularyInLesson(lessonId, vocabularyId);
-     if (onSuccess) onSuccess();
-    await getPageVocabularyAvailable(currentPage);
+    if (onSuccess) onSuccess();
+    await getPageVocabularyAvailable();
   };
 
-  const getPageVocabularyAvailable = async (page) => {
-    let res = await getAllVocabWithoutLesson(page, size);
-    console.log("getPageVocabularyAvailable res", res);
+  const getPageVocabularyAvailable = async () => {
+    let res = await getAllVocabWithoutLesson(lessonId, currentPage, size);
     if (res && res.content) {
       setPageCount(res?.page?.totalPages);
       setTotalElements(res?.page?.totalElements);
       setAllVocabulary(res?.content);
-      setCurrentPage(page);
+      setCurrentPage(currentPage); 
     }
   }
 
@@ -65,7 +64,6 @@ function VocabularyManagement({lessonId, onSuccess}) {
     if (res) {
       setLevers(res);
     }
-    console.log("res", res);
   }
 
   const getListPartOfSpeech = async () => {
@@ -74,8 +72,6 @@ function VocabularyManagement({lessonId, onSuccess}) {
       setPartOfSpeechs(res);
     }
   }
-
-  // Get unique courses and lessons for filters
 
 
   // Filter vocabulary based on search and filters
@@ -95,9 +91,8 @@ function VocabularyManagement({lessonId, onSuccess}) {
   });
 
   const handlePageClick = (event) => {
-    const selectedPage = +event.selected + 1;
+    const selectedPage = event.selected;
     setCurrentPage(selectedPage);
-    getPageVocabularyAvailable(selectedPage);
   }
 
   return (
@@ -128,7 +123,9 @@ function VocabularyManagement({lessonId, onSuccess}) {
               placeholder="Search vocabulary..."
               className="pl-10"
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              onChange={(e) => {
+                setSize(totalElements)
+                setSearch(e.target.value)}}
             />
           </div>
 
@@ -139,7 +136,9 @@ function VocabularyManagement({lessonId, onSuccess}) {
             <select
               className="pl-10 pr-3 rounded-md border border-gray-300 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 w-full"
               value={filters.lever}
-              onChange={(e) => setFilters({ ...filters, lever: e.target.value })}
+              onChange={(e) => {
+                setSize(totalElements)
+                setFilters({ ...filters, lever: e.target.value })}}
             >
               <option value="">All lever</option>
               {levers.map(lever => (

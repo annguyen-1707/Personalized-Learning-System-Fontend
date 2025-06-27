@@ -416,8 +416,8 @@ export function DataProvider({ children }) {
     return data.data;
   };
 
-  const deleteVocabulary = async (id) => {
-    const response = await fetch(`/api/vocabularies/${id}`, {
+  const removeVocabFromLesson = async (id, lessonId) => {
+    const response = await fetch(`/api/vocabularies/${id}/remove-from-lesson/${lessonId}`, {
       method: "DELETE",
     });
     const data = await response.json();
@@ -706,7 +706,7 @@ export function DataProvider({ children }) {
     deleteLesson,
     addVocabulary,
     updateVocabulary,
-    deleteVocabulary,
+    removeVocabFromLesson,
     addGrammar,
     updateGrammar,
     deleteGrammar,

@@ -36,7 +36,7 @@ function ContentManagement() {
   const {
     addVocabulary,
     updateVocabulary,
-    deleteVocabulary,
+    removeVocabFromLesson,
     addGrammar,
     updateGrammar,
     deleteGrammar,
@@ -84,7 +84,6 @@ function ContentManagement() {
   const handlePageClick = (event) => {
     const selectedPage = event.selected;
     setCurrentPage(selectedPage);
-    console.log("Current page:", selectedPage);
   };
 
   const filteredVocabularies = (vocabularies || []).filter((vocabulary) => {
@@ -492,7 +491,7 @@ function ContentManagement() {
 
     switch (activeTab) {
       case "vocabulary":
-        const result = await deleteVocabulary(id);
+        const result = await removeVocabFromLesson(id, lessonId);
         getVocabulary();
         if (result.status === "error") {
           toast.error("Failed to delete vocabulary");
