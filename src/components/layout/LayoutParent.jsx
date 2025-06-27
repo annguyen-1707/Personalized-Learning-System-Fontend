@@ -26,7 +26,6 @@ function LayoutParent({ onNotificationClick })  {
             <Outlet />
           </motion.div>
         </main>
-        <TestimonialSection></TestimonialSection>
         <Footer />
       </div>
     </div>
