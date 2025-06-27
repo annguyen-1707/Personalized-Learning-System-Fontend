@@ -49,13 +49,14 @@ function NewsPage() {
         const res = await getPageContentReading(page, 20)
         console.log("API response:", res.data.content[0]); 
         const mapped = res.data.content.map(item => ({
-          id: item.contentReadingId,  // Sửa từ item.id thành item.contentReadingId
+          id: item.contentReadingId, 
           title: item.title,
           titleJapanese: item.scriptJp,
           excerpt: item.scriptVn?.slice(0, 60) + '...',
           image: item.image,
           date: item.timeNew || item.createdAt,
           category: item.category,
+          audioFile: item.audioFile,
           readingTime: 5,
           content: [
             {

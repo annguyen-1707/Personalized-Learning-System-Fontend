@@ -33,14 +33,14 @@ function CourseManagement() {
     subjectCode: "",
     subjectName: "",
     description: "",
-    status: "ACTIVE",
+    status: "INACTIVE",
     thumbnailFile: null,
     thumbnailPreview: null,
   });
 
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(null);
 
-  const status = ["ACTIVE", "DRAFT"];
+  const status = ["ACTIVE", "DRAFT", "INACTIVE"];
   const loadSubjects = async () => {
     const result = await fetchSubjects(currentPage);
     setSubjects(result.content);
@@ -103,7 +103,7 @@ function CourseManagement() {
         subjectCode: "",
         subjectName: "",
         description: "",
-        status: "ACTIVE",
+        status: "INACTIVE",
         thumbnailFile: null,
         thumbnailPreview: null,
       });
@@ -130,7 +130,7 @@ function CourseManagement() {
         subjectCode: "",
         subjectName: "",
         description: "",
-        status: "ACTIVE",
+        status: "INACTIVE",
         thumbnailFile: null,
         thumbnailPreview: null,
       });
@@ -202,7 +202,7 @@ function CourseManagement() {
     switch (status) {
       case "ACTIVE":
         return "bg-success-50 text-success-700";
-      case "DRAFT":
+      case "INACTIVE":
         return "bg-warning-50 text-warning-700";
       default:
         return "bg-gray-100 text-gray-700";
@@ -442,33 +442,6 @@ function CourseManagement() {
                     )}
                   </div>
                 </div>
-              </div>
-
-              {/* Status */}
-              <div>
-                <label
-                  htmlFor="status"
-                  className="block text-sm font-medium text-gray-700 mb-1"
-                >
-                  Status <span className="text-red-500">*</span>
-                </label>
-                <select
-                  id="status"
-                  value={formData.status}
-                  onChange={(e) =>
-                    setFormData({ ...formData, status: e.target.value })
-                  }
-                  className="block w-full rounded-md border-gray-300 focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
-                >
-                  {status.map((s) => (
-                    <option key={s} value={s}>
-                      {s}
-                    </option>
-                  ))}
-                </select>
-                <p className="mt-1 text-sm text-gray-500">
-                  Set the current status of the subject
-                </p>
               </div>
             </div>
 

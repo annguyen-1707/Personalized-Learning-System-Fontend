@@ -1,9 +1,10 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import ReactPaginate from "react-paginate";
 import ListeningImg from "./components/ListeningImg";
 import { FiSearch } from "react-icons/fi";
+import { useAuth } from "../../context/AuthContext"; // Import useAuth hook
 
 // Function to get listening categories from backend
 const getContentListeningCategories = async () => {
@@ -11,6 +12,8 @@ const getContentListeningCategories = async () => {
 };
 
 function ListeningPage() {
+  const { user } = useAuth(); // Get user from AuthContext
+  const navigate = useNavigate();
   const [listeningContents, setListeningContents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -20,6 +23,19 @@ function ListeningPage() {
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [categories, setCategories] = useState([{ id: "all", name: "All Categories" }]);
   const [searchTerm, setSearchTerm] = useState("");
+
+  // Handle listening content access
+  const handleStartListening = (contentId) => {
+    if (user) {
+      // User is logged in, navigate to the listening detail page
+      navigate(`/listening/detail/${contentId}`);
+    } else {
+      // User is not logged in, redirect to login page
+      // Store the intended destination to redirect after login
+      localStorage.setItem("redirectAfterLogin", `/listening/detail/${contentId}`);
+      navigate("/login");
+    }
+  };
 
   // Fetch categories from backend
   useEffect(() => {
@@ -116,7 +132,7 @@ function ListeningPage() {
         </div>
       </div>
       
-      {/* Content Grid */}
+      {/* Content Grid with modified button */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {filteredContents.map((item, idx) => (
           <div key={item.contentListeningId || idx} className="bg-white rounded-lg shadow-md overflow-hidden flex flex-col">
@@ -142,12 +158,12 @@ function ListeningPage() {
               </div>
               <h2 className="text-lg font-semibold mb-1">{item.title || "No title"}</h2>
               <div className="mt-4">
-                <Link
-                  to={`/listening/detail/${item.contentListeningId || ""}`}
+                <button
+                  onClick={() => handleStartListening(item.contentListeningId || "")}
                   className="block w-full text-center px-4 py-2 rounded font-medium bg-blue-500 text-white hover:bg-blue-600"
                 >
                   Start Listening
-                </Link>
+                </button>
               </div>
             </div>
           </div>

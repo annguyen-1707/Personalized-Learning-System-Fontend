@@ -76,7 +76,7 @@ function ContentManagement() {
   const [showAddQuestion, setShowAddQuestion] = useState(false);
   const [currentQuestion, setCurrentQuestion] = useState({
     questionText: "",
-    answerQuestionRequests: [{ answerText: "", isCorrect: true }],
+    answers: [{ answerText: "", correct: true }],
   });
 
   const handlePageClick = (event) => {
@@ -348,7 +348,7 @@ function ContentManagement() {
               questionText: q.questionText,
               answers: (q.answers || []).map(a => ({
                 answerText: a.answerText,
-                isCorrect: a.isCorrect
+                correct: a.correct
               }))
             }))
           };
@@ -356,7 +356,6 @@ function ContentManagement() {
           console.log("Submitting exercise data:", exerciseData); // Debug logging
 
           response = await addExercise(exerciseData);
-
           if (response && response.status === "error") {
             if (Array.isArray(response.data)) {
               const errorMap = {};
@@ -369,8 +368,7 @@ function ContentManagement() {
             }
             return;
           }
-
-          await getLessonExercises(); // Refresh the exercise list
+          await getLessonExercises();
           toast.success("Exercise added successfully!");
           logAction = "Exercise Added";
           newItem = response;
@@ -542,10 +540,20 @@ function ContentManagement() {
         break;
       case "exercises":
         editData = {
+          // title: item.title,
+          // duration: item.duration,
+          // lessonId: lessonId,
+          // questions: item.questions || [],
           title: item.title,
           duration: item.duration,
-          content: item.content,
-          lessonId: lessonId,
+          lessonId: item.lessonId || lessonId,  // Use item.lessonId if available, otherwise fallback
+          questions: (item.content || item.questions || []).map(q => ({
+            questionText: q.questionText,
+            answers: (q.answers || []).map(a => ({
+              answerText: a.answerText,
+              correct: a.correct
+            }))
+          }))
         };
         break;
       default:
@@ -588,7 +596,7 @@ function ContentManagement() {
         setFormData({
           title: "",
           duration: "",
-          questions: [], // Initialize empty questions array
+          questions: [],
           lessonId: lessonId,
         });
         break;
@@ -614,12 +622,6 @@ function ContentManagement() {
         return Pencil;
       case "exercises":
         return Dumbbell;
-      case "reading":
-        return BookMarked;
-      case "listening":
-        return Headphones;
-      case "speaking":
-        return Mic;
       default:
         return FileText;
     }
@@ -1118,19 +1120,47 @@ function ContentManagement() {
               />
             </div>
 
-            <div>
-              <label htmlFor="duration" className="block text-sm font-medium text-gray-700 mb-1">
-                Set Time
+            <div className="space-y-2">
+              <label htmlFor="duration" className="block text-sm font-medium text-gray-700">
+                Thời lượng bài tập (phút)
               </label>
-              <LocalizationProvider dateAdapter={AdapterDayjs}>
-                <DemoItem label={'"minutes" and "seconds"'}>
-                  <MultiSectionDigitalClock
-                    views={["minutes", "seconds"]}
-                    value={formData.duration ? dayjs(formData.duration, "mm:ss") : null}
-                    onChange={(value) => setFormData({ ...formData, duration: value?.format?.("mm:ss") })}
-                  />
-                </DemoItem>
-              </LocalizationProvider>
+
+              <div className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
+                <LocalizationProvider dateAdapter={AdapterDayjs}>
+                  <DemoItem>
+                    <div className="flex flex-col items-center">
+                      <MultiSectionDigitalClock
+                        views={["minutes"]}
+                        value={formData.duration ? dayjs().startOf('day').minute(formData.duration) : null}
+                        onChange={(value) => {
+                          if (value) {
+                            const minutes = value.minute();
+                            setFormData({ ...formData, duration: minutes });
+                          } else {
+                            setFormData({ ...formData, duration: 0 });
+                          }
+                        }}
+                        ampm={false}
+                        sx={{
+                          '& .MuiMultiSectionDigitalClock-root': {
+                            width: '100%',
+                          },
+                          '& .MuiMultiSectionDigitalClock-section': {
+                            margin: '0 auto',
+                          },
+                          '& .MuiClockNumber-root': {
+                            fontSize: '1rem',
+                            fontWeight: 500,
+                          },
+                        }}
+                      />
+                      <div className="mt-2 text-sm text-gray-500">
+                        Đã chọn: {formData.duration || 0} phút
+                      </div>
+                    </div>
+                  </DemoItem>
+                </LocalizationProvider>
+              </div>
             </div>
 
             {/* Question Builder */}
@@ -1159,7 +1189,7 @@ function ContentManagement() {
                           </button>
                         </div>
                         <div className="mt-1 text-sm text-gray-500">
-                          {question.answerQuestionRequests.length} answer options
+                          {question.answers.length} answer options
                         </div>
                       </div>
                     ))}
@@ -1570,15 +1600,15 @@ function ContentManagement() {
               Answer Questions:
             </label>
 
-            {currentQuestion.answerQuestionRequests.map((answer, index) => (
+            {currentQuestion.answers.map((answer, index) => (
               <div key={index} className="flex items-center mb-2 gap-2">
                 <input
                   type="text"
                   value={answer.answerText}
                   onChange={(e) => {
-                    const newAnswers = [...currentQuestion.answerQuestionRequests];
+                    const newAnswers = [...currentQuestion.answers];
                     newAnswers[index].answerText = e.target.value;
-                    setCurrentQuestion({ ...currentQuestion, answerQuestionRequests: newAnswers });
+                    setCurrentQuestion({ ...currentQuestion, answers: newAnswers });
                   }}
                   className="flex-1 rounded-md border border-gray-300 p-2"
                   placeholder={`Option ${index + 1}`}
@@ -1586,26 +1616,26 @@ function ContentManagement() {
                 <div className="flex items-center">
                   <input
                     type="radio"
-                    checked={answer.isCorrect}
+                    checked={answer.correct}
                     onChange={() => {
-                      const newAnswers = currentQuestion.answerQuestionRequests.map((a, i) => ({
+                      const newAnswers = currentQuestion.answers.map((a, i) => ({
                         ...a,
-                        isCorrect: i === index
+                        correct: i === index
                       }));
-                      setCurrentQuestion({ ...currentQuestion, answerQuestionRequests: newAnswers });
+                      setCurrentQuestion({ ...currentQuestion, answers: newAnswers });
                     }}
                     className="mr-2"
                   />
                   <label className="text-sm text-gray-700">Correct</label>
                 </div>
 
-                {currentQuestion.answerQuestionRequests.length > 1 && (
+                {currentQuestion.answers.length > 1 && (
                   <button
                     type="button"
                     onClick={() => {
-                      const newAnswers = [...currentQuestion.answerQuestionRequests];
+                      const newAnswers = [...currentQuestion.answers];
                       newAnswers.splice(index, 1);
-                      setCurrentQuestion({ ...currentQuestion, answerQuestionRequests: newAnswers });
+                      setCurrentQuestion({ ...currentQuestion, answers: newAnswers });
                     }}
                     className="text-red-500 hover:text-red-700"
                   >
@@ -1620,9 +1650,9 @@ function ContentManagement() {
               onClick={() => {
                 setCurrentQuestion({
                   ...currentQuestion,
-                  answerQuestionRequests: [
-                    ...currentQuestion.answerQuestionRequests,
-                    { answerText: "", isCorrect: false }
+                  answers: [
+                    ...currentQuestion.answers,
+                    { answerText: "", correct: false }
                   ]
                 });
               }}
@@ -1650,7 +1680,7 @@ function ContentManagement() {
                 }
 
                 // Validate answers
-                if (currentQuestion.answerQuestionRequests.some(a => !a.answerText.trim())) {
+                if (currentQuestion.answers.some(a => !a.answerText.trim())) {
                   toast.error("All answer options must have text");
                   return;
                 }
@@ -1658,8 +1688,8 @@ function ContentManagement() {
                 // Add to questions list, keeping the same structure we send to API
                 const updatedQuestions = [...(formData.questions || []), {
                   questionText: currentQuestion.questionText,
-                  // We'll leave as answerQuestionRequests in formData, and transform before API call
-                  answerQuestionRequests: currentQuestion.answerQuestionRequests
+                  // We'll leave as answers in formData, and transform before API call
+                  answers: currentQuestion.answers
                 }];
 
                 setFormData({ ...formData, questions: updatedQuestions });
@@ -1667,7 +1697,7 @@ function ContentManagement() {
                 // Reset and close modal
                 setCurrentQuestion({
                   questionText: "",
-                  answerQuestionRequests: [{ answerText: "", isCorrect: true }]
+                  answers: [{ answerText: "", correct: true }]
                 });
                 setShowAddQuestion(false);
               }}

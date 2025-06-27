@@ -489,9 +489,9 @@ export function DataProvider({ children }) {
 
   // Exercise and Resource CRUD operations
 
-  const getLessonExercisesById = async (lessonId, page = 1) => {
+  const getLessonExercisesById = async (lessonId, page) => {
     try {
-      const response = await fetch(`http://localhost:8080/exercise-questions?lessonId=${lessonId}&page=1`, {
+      const response = await fetch(`http://localhost:8080/exercise-questions?lessonId=${lessonId}&page=${page}`, {
         headers: {
           "Content-Type": "application/json",
           "Authorization": `Bearer ${localStorage.getItem('accessToken')}`
@@ -530,12 +530,19 @@ export function DataProvider({ children }) {
   };
 
   const getExerciseDetailsById = async (exerciseId) => {
-    const res = await fetch(`/api/exercise-questions/exercise-details?exerciseId=${exerciseId}`);
+    const res = await fetch(`/api/exercise-questions/exercise-details?exerciseId=${exerciseId}`, {
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${localStorage.getItem('accessToken')}`
+        }
+      });
+    console.log("Exercise Details Response:", exerciseId);
     if (!res.ok) {
       const data = await res.json();
       return data;
     }
     const data = await res.json();
+    console.log("Exercise Details:", data);
     return data.data;
   };
 
@@ -655,6 +662,27 @@ export function DataProvider({ children }) {
     return newLog;
   };
 
+  // Approve (status change) functions
+  const approveVocabulary = async (id) => {
+    const response = await fetch(`/api/vocabularies/${id}/status`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ status: "approved" }),
+    });
+    const data = await response.json();
+    return data;
+  };
+
+  const approveGrammar = async (id) => {
+    const response = await fetch(`/api/grammars/${id}/status`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ status: "approved" }),
+    });
+    const data = await response.json();
+    return data;
+  };
+
   const value = {
     admins,
     users,
@@ -698,7 +726,9 @@ export function DataProvider({ children }) {
     getSubjectById,
     fetchGrammar,
     getLessonExercisesById,
-    getExerciseDetailsById
+    getExerciseDetailsById,
+    approveVocabulary,
+    approveGrammar
   };
 
   return <DataContext.Provider value={value}>{children}</DataContext.Provider>;
