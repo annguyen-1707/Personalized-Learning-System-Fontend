@@ -363,6 +363,7 @@ export function DataProvider({ children }) {
       const response = await fetch(
         `/api/vocabularies?lessonId=${lessonId}&page=${page}`
       );
+      console.log("Fetching vocabulary for lessonId:", lessonId, "page:", page);
       if (!response.ok) {
         const data = await response.json();
         setErrorMessage(data.message || "failed to fetch vocabulary");

@@ -60,11 +60,22 @@ const addVocabularyInLesson = async (lessonId, vocabularyId) => {
   }
 };
 
+const getAllVocabWithoutLesson = async (lessonId) => {
+  try {
+    const response = await axios.get(`/api/vocabularies/get-all-without-lesson/${lessonId}`);
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching vocabularies without lesson:", error);
+    throw error;
+  }
+}
+
 export {
     fetchAllGrammar,
     getPageAllVocabulary,
     editVocabulary,
     addVocabulary,
     deleteVocabulary,
-    addVocabularyInLesson
+    addVocabularyInLesson,
+    getAllVocabWithoutLesson
 };

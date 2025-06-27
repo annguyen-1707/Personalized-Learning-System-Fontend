@@ -84,6 +84,7 @@ function ContentManagement() {
   const handlePageClick = (event) => {
     const selectedPage = event.selected;
     setCurrentPage(selectedPage);
+    console.log("Current page:", selectedPage);
   };
 
   const filteredVocabularies = (vocabularies || []).filter((vocabulary) => {
@@ -147,22 +148,16 @@ function ContentManagement() {
   };
 
   const getLessonExercises = async () => {
-    setCurrentPage(0);
     try {
       const lessonExercises = await getLessonExercisesById(
         lessonId,
         currentPage
       );
-      console.log("before exercise:", currentPage);
-      console.log("totalPage exercise:", totalPages);
       if (lessonExercises) {
         setLessonExercises(lessonExercises?.content);
         setTotalPages(lessonExercises?.page?.totalPages);
         setTotalElements(lessonExercises?.page?.totalElements);
       }
-      console.log("after exercise:", currentPage);
-      console.log("totalPage exercise:", totalPages);
-      console.log("exercises totalPage:");
     } catch (error) {
       console.error("Error in getLessonExercises:", error);
     }
@@ -186,19 +181,13 @@ function ContentManagement() {
   }
 
   const getVocabulary = async () => {
-    setCurrentPage(0);
     try {
-      console.log("before vocab:", currentPage);
-      console.log("totalPage vocab:", totalPages);
       const vocabularies = await fetchVocabulary(lessonId, currentPage);
-      // console.log("vocabularies:", vocabularies);
       if (vocabularies) {
         setVocabularies(vocabularies?.content);
         setTotalPages(vocabularies?.page?.totalPages);
         setTotalElements(vocabularies?.page?.totalElements);
       }
-      console.log("after :", currentPage);
-      console.log("totalPage :", totalPages);
     } catch (error) {
       console.error("Error in getVocabulary:", error);
     }
@@ -227,22 +216,21 @@ function ContentManagement() {
   };
 
   const getGrammar = async () => {
-    setCurrentPage(0);
     try {
-      console.log("before grammar:", currentPage);
-      console.log("totalPage grammar:", totalPages);
       const grammar = await fetchGrammar(lessonId, currentPage);
       if (grammar) {
         setGrammars(grammar.content);
         setTotalPages(grammar?.page?.totalPages);
         setTotalElements(grammar?.page?.totalElements);
       }
-      console.log("after grammar:", currentPage);
-      console.log("totalPage grammar:", totalPages);
     } catch (error) {
       console.error("Error in getGrammar:", error);
     }
   };
+
+  useEffect(() => {
+  setCurrentPage(0); // Reset page về 0
+}, [activeTab]);
 
   // Reset form when changing tabs
   useEffect(() => {
@@ -253,8 +241,6 @@ function ContentManagement() {
     getSubject();
     getLevels();
     getPartOfSpeech();
-
-
     // Set default form data based on active tab
     switch (activeTab) {
       case "vocabulary":
@@ -680,6 +666,7 @@ function ContentManagement() {
           <HandleAddVocabularyInLesson
             vocabularies={vocabularies}
             lessonId={lessonId}
+             onSuccess={getVocabulary}
           />
         );
 
