@@ -39,7 +39,7 @@ function ContentManagement() {
     removeVocabFromLesson,
     addGrammar,
     updateGrammar,
-    deleteGrammar,
+    removeGrammarFromLesson,
     addExercise,
     updateExercise,
     deleteExercise,
@@ -299,6 +299,7 @@ function ContentManagement() {
     switch (activeTab) {
       case "vocabulary":
         response = await addVocabulary({ ...formData });
+        console.log("Vocabulary response:", response); // Debug logging
         getVocabulary();
         if (response.status === "error") {
           const errorMap = {};
@@ -319,20 +320,17 @@ function ContentManagement() {
         response = await addGrammar({
           ...formData,
         });
+        console.log("Grammar response:", response); // Debug logging
         getGrammar();
         if (response.status === "error") {
-          if (!Array.isArray(response.data)) {
-            setErrorMessages(response.message);
-            return;
-          }
           const errorMap = {};
-          response.data.forEach((err) => {
-            errorMap[err.field] = err.message;
-          });
-          if (Object.keys(errorMap).length > 1) {
-            setErrors(errorMap);
-            return;
+          if (Array.isArray(response.data)) {
+            response.data.forEach((err) => {
+              errorMap[err.field] = err.message;
+            });
           }
+          setErrors(errorMap);
+          return;
         }
         toast.success("Grammar added successfully!");
         logAction = "Grammar Added";
@@ -500,7 +498,7 @@ function ContentManagement() {
         toast.success("Vocabulary deleted successfully!");
         break;
       case "grammar":
-        const res = await deleteGrammar(id);
+        const res = await removeGrammarFromLesson(id, lessonId);
         getGrammar();
         if (res.status === "error") {
           toast.error("Failed to delete grammar");
@@ -663,7 +661,6 @@ function ContentManagement() {
       case "vocabulary":
         return (
           <HandleAddVocabularyInLesson
-            vocabularies={vocabularies}
             lessonId={lessonId}
              onSuccess={getVocabulary}
           />
@@ -671,7 +668,7 @@ function ContentManagement() {
 
       case "grammar":
         return (
-          <HandleAddGrammarInLesson grammars={grammars} lessonId={lessonId} />
+          <HandleAddGrammarInLesson onSuccess={getGrammar} lessonId={lessonId} />
         );
 
       case "exercises":

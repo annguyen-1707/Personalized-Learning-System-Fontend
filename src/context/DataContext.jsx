@@ -477,8 +477,8 @@ export function DataProvider({ children }) {
     return data.data;
   };
 
-  const deleteGrammar = async (id) => {
-    const res = await fetch(`/api/grammars/${id}`, {
+  const removeGrammarFromLesson = async (id, lessonId) => {
+    const res = await fetch(`/api/grammars/${id}/remove-from-lesson/${lessonId}`, {
       method: "DELETE",
     });
     const data = await res.json();
@@ -709,7 +709,7 @@ export function DataProvider({ children }) {
     removeVocabFromLesson,
     addGrammar,
     updateGrammar,
-    deleteGrammar,
+removeGrammarFromLesson,
     addExercise,
     updateExercise,
     deleteExercise,

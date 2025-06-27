@@ -70,6 +70,25 @@ const getAllVocabWithoutLesson = async (lessonId, page, size) => {
   }
 }
 
+const getPageAllGrammar = async (lessonId, page, size) => {
+  try {
+    const response = await axios.get(`/api/grammars/not-in-lesson/${lessonId}?page=${page}&size=${size}`);
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching all grammar:", error);
+    throw error;
+  }
+};
+const handleAddGrammarInLesson = async (lessonId, grammarId) => {
+  try {
+    const response = await axios.post(`/api/grammars/${grammarId}/add-to-lesson/${lessonId}`);
+    return response.data;
+  } catch (error) {
+    console.error("Error adding grammar to lesson:", error);
+    throw error;
+  }
+};
+
 export {
     fetchAllGrammar,
     getPageAllVocabulary,
@@ -77,5 +96,7 @@ export {
     addVocabulary,
     deleteVocabulary,
     addVocabularyInLesson,
-    getAllVocabWithoutLesson
+    getAllVocabWithoutLesson,
+    getPageAllGrammar,
+    handleAddGrammarInLesson,
 };

@@ -39,7 +39,6 @@ function VocabularyManagement({ lessonId, onSuccess }) {
   }, [currentPage, size, lessonId]);
 
   const handleAddVocabularyInContentReading = async (vocabularyId) => {
-    console.log("Adding vocabulary:", vocabularyId, "to lesson:", lessonId);
     await addVocabularyInLesson(lessonId, vocabularyId);
     if (onSuccess) onSuccess();
     await getPageVocabularyAvailable();
