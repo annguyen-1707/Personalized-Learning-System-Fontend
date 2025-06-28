@@ -188,7 +188,14 @@ function FavoriteFoldersPage() {
             ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
                     {folders.map(folder => (
-                        <div key={folder.id} className="bg-white p-4 rounded shadow hover:shadow-md">
+                        <div
+                            key={folder.id}
+                            onClick={() => {
+                                if (editingFolder?.id === folder.id) return
+                                navigate(`/favorites/${folder.id}`)
+                            }}
+                            className="relative bg-white p-4 rounded shadow hover:shadow-md cursor-pointer transition"
+                        >
                             {editingFolder?.id === folder.id ? (
                                 <div>
                                     <input
@@ -211,15 +218,15 @@ function FavoriteFoldersPage() {
                                 </div>
                             ) : (
                                 <div>
-                                    <h3 className="text-lg font-semibold mb-1 flex items-center">
+                                    <h3 className="text-lg font-semibold mb-1 flex items-center truncate">
                                         <FiFolder className="mr-2" /> {folder.name}
                                     </h3>
                                     <p className="text-sm text-gray-600 mb-1"><FiUser className="inline mr-1" /> {folder.ownerName}</p>
                                     <p className="text-sm text-gray-500 mb-1">Added on: {new Date(folder.addedAt).toLocaleDateString()}</p>
-                                    <div className="flex justify-between items-end mt-2">
-                                        <p className="text-sm text-gray-700">
-                                            {folder.numberOfFavorites} item{folder.numberOfFavorites !== 1 ? 's' : ''}
-                                        </p>
+                                    <div className="flex justify-between items-center mt-2">
+                                        <span className="text-sm text-gray-700">
+                                            📘 {folder.numberOfVocabulary || 0} vocab | 🧠 {folder.numberOfGrammar || 0} grammar
+                                        </span>
                                         <span className={`text-xs px-2 py-1 rounded-full ${folder.public ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
                                             {folder.public ? 'Public' : 'Private'}
                                         </span>
@@ -228,7 +235,8 @@ function FavoriteFoldersPage() {
                                         {viewType === 'mine' && (
                                             <>
                                                 <button
-                                                    onClick={() => {
+                                                    onClick={(e) => {
+                                                        e.stopPropagation()
                                                         setEditingFolder(folder)
                                                         setEditName(folder.name)
                                                         setEditIsPublic(!!folder.isPublic)
@@ -238,7 +246,10 @@ function FavoriteFoldersPage() {
                                                     <FiEdit className="mr-1" /> Edit
                                                 </button>
                                                 <button
-                                                    onClick={() => handleDeleteFolder(folder.id)}
+                                                    onClick={(e) => {
+                                                        e.stopPropagation()
+                                                        handleDeleteFolder(folder.id)
+                                                    }}
                                                     className="text-red-600 hover:underline text-sm flex items-center"
                                                 >
                                                     <FiTrash2 className="mr-1" /> Delete
@@ -248,7 +259,10 @@ function FavoriteFoldersPage() {
 
                                         {viewType === 'public' && (
                                             <button
-                                                onClick={() => handleCopyFolder(folder.id)}
+                                                onClick={(e) => {
+                                                    e.stopPropagation()
+                                                    handleCopyFolder(folder.id)
+                                                }}
                                                 className="text-green-600 hover:underline text-sm flex items-center"
                                             >
                                                 <FiPlus className="mr-1" /> Copy to My Folder

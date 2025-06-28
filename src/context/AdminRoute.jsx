@@ -6,7 +6,7 @@ export default function AdminRoute({ children, allowedRoles = [] }) {
 
     if (loading) return <div>Loading...</div>;
 
-    if (!user && !user?.roleName  === 'CONTENT_MANAGER') return <Navigate to="/admin/login" replace />;
+    if (!user) return <Navigate to="/admin/login" replace />;
 
     if (
         allowedRoles.length > 0 && !user?.roleName  === 'CONTENT_MANAGER' &&

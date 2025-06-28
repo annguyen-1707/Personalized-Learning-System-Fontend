@@ -363,6 +363,7 @@ export function DataProvider({ children }) {
       const response = await fetch(
         `/api/vocabularies?lessonId=${lessonId}&page=${page}`
       );
+      console.log("Fetching vocabulary for lessonId:", lessonId, "page:", page);
       if (!response.ok) {
         const data = await response.json();
         setErrorMessage(data.message || "failed to fetch vocabulary");
@@ -415,8 +416,8 @@ export function DataProvider({ children }) {
     return data.data;
   };
 
-  const deleteVocabulary = async (id) => {
-    const response = await fetch(`/api/vocabularies/${id}`, {
+  const removeVocabFromLesson = async (id, lessonId) => {
+    const response = await fetch(`/api/vocabularies/${id}/remove-from-lesson/${lessonId}`, {
       method: "DELETE",
     });
     const data = await response.json();
@@ -476,8 +477,8 @@ export function DataProvider({ children }) {
     return data.data;
   };
 
-  const deleteGrammar = async (id) => {
-    const res = await fetch(`/api/grammars/${id}`, {
+  const removeGrammarFromLesson = async (id, lessonId) => {
+    const res = await fetch(`/api/grammars/${id}/remove-from-lesson/${lessonId}`, {
       method: "DELETE",
     });
     const data = await res.json();
@@ -705,10 +706,10 @@ export function DataProvider({ children }) {
     deleteLesson,
     addVocabulary,
     updateVocabulary,
-    deleteVocabulary,
+    removeVocabFromLesson,
     addGrammar,
     updateGrammar,
-    deleteGrammar,
+removeGrammarFromLesson,
     addExercise,
     updateExercise,
     deleteExercise,
