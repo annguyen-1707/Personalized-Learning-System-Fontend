@@ -52,10 +52,39 @@ const deleteVocabulary = async (vocabularyId) => {
 
 const addVocabularyInLesson = async (lessonId, vocabularyId) => {
   try {
-    const response = await axios.post(`/api/vocabulary/${vocabularyId}/add-to-lesson/${lessonId}`);
+    const response = await axios.post(`/api/vocabularies/${vocabularyId}/add-to-lesson/${lessonId}`);
     return response.data;
   } catch (error) {
     console.error("Error adding vocabulary to lesson:", error);
+    throw error;
+  }
+};
+
+const getAllVocabWithoutLesson = async (lessonId, page, size) => {
+  try {
+    const response = await axios.get(`/api/vocabularies/get-all-without-lesson/${lessonId}?page=${page}&size=${size}`);
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching vocabularies without lesson:", error);
+    throw error;
+  }
+}
+
+const getPageAllGrammar = async (lessonId, page, size) => {
+  try {
+    const response = await axios.get(`/api/grammars/not-in-lesson/${lessonId}?page=${page}&size=${size}`);
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching all grammar:", error);
+    throw error;
+  }
+};
+const handleAddGrammarInLesson = async (lessonId, grammarId) => {
+  try {
+    const response = await axios.post(`/api/grammars/${grammarId}/add-to-lesson/${lessonId}`);
+    return response.data;
+  } catch (error) {
+    console.error("Error adding grammar to lesson:", error);
     throw error;
   }
 };
@@ -66,5 +95,8 @@ export {
     editVocabulary,
     addVocabulary,
     deleteVocabulary,
-    addVocabularyInLesson
-}
+    addVocabularyInLesson,
+    getAllVocabWithoutLesson,
+    getPageAllGrammar,
+    handleAddGrammarInLesson,
+};
