@@ -11,11 +11,26 @@ import {
 } from "react-icons/fi";
 import { CircularProgressbar, buildStyles } from "react-circular-progressbar";
 import "react-circular-progressbar/dist/styles.css";
-import axios from "axios";
-import { useSearchParams } from "react-router-dom";
+import axios from "../../services/customixe-axios";
 
 // Flashcard Component
 function Flashcard({ card, flipped, setFlipped, isKnown, isSaved, playAudio }) {
+  const getJLPTBadgeColor = (level) => {
+    switch (level) {
+      case "N5":
+        return "bg-green-100 text-green-800";
+      case "N4":
+        return "bg-yellow-100 text-yellow-800";
+      case "N3":
+        return "bg-blue-100 text-blue-800";
+      case "N2":
+        return "bg-purple-100 text-purple-800";
+      case "N1":
+        return "bg-red-100 text-red-800";
+      default:
+        return "bg-gray-100 text-gray-700";
+    }
+  };
   return (
     <div
       className={`relative h-full w-full perspective-1000 cursor-pointer ${
@@ -31,32 +46,35 @@ function Flashcard({ card, flipped, setFlipped, isKnown, isSaved, playAudio }) {
       >
         {/* Front */}
         <div
-          className={`absolute w-full h-full rounded-xl shadow-lg bg-white border-2 ${
-            isSaved ? "border-accent-500" : "border-gray-200"
-          } flex flex-col items-center justify-center p-6`}
+          className="absolute w-full h-full rounded-xl shadow-lg bg-white border-2  border-gray-200
+           flex flex-col items-center justify-center p-6"
           style={{ backfaceVisibility: "hidden" }}
         >
           <div className="text-4xl font-bold mb-2 text-primary-700">
-            {card.frontText}
+            {card.kanji}
           </div>
-          {card.romaji && (
+          {card?.kana && (
             <div className="text-base italic text-gray-600 mb-2">
-              {card.romaji}
+              {card.kana}
             </div>
           )}
-          {card.subText && (
-            <div className="text-lg text-gray-600 mb-4">{card.subText}</div>
+          {card?.romaji && (
+            <div className="text-lg text-gray-600 mb-4">{card.romaji}</div>
           )}
           <button
             onClick={(e) => {
               e.stopPropagation();
-              playAudio(card.frontText);
+              playAudio(card.kana);
             }}
             className="mt-2 p-2 rounded-full bg-primary-50 text-primary-600 hover:bg-primary-100 transition-colors"
           >
             <FiVolume2 className="h-6 w-6" />
           </button>
-          <div className="absolute top-2 right-2 text-xs font-medium px-2 py-1 bg-gray-100 text-gray-600 rounded-full">
+          <div
+            className={`absolute top-2 right-2 text-xs font-medium px-2 py-1 ${getJLPTBadgeColor(
+              card.jlptLevel
+            )} rounded-full`}
+          >
             JLPT: {card.jlptLevel}
           </div>
           {card.partOfSpeech && (
@@ -73,36 +91,55 @@ function Flashcard({ card, flipped, setFlipped, isKnown, isSaved, playAudio }) {
 
         {/* Back */}
         <div
-          className={`absolute w-full h-full rounded-xl shadow-lg bg-white border-2 ${
-            isSaved ? "border-accent-500" : "border-gray-200"
-          } flex flex-col items-start justify-start p-6`}
+          className="relative w-full h-full rounded-2xl shadow-xl bg-white border border-gray-200 p-6 flex flex-col justify-between transition-transform duration-500"
           style={{ backfaceVisibility: "hidden", transform: "rotateY(180deg)" }}
         >
-          <div className="text-2xl font-medium mb-2 text-gray-800">
-            {card.translation}
-          </div>
-          {card.notes && (
-            <div className="mt-2 text-sm p-2 bg-gray-50 rounded text-gray-600 w-full">
-              <span className="font-medium">Notes:</span> {card.notes}
-            </div>
-          )}
-          {card.example && (
-            <div className="mt-4 text-sm w-full">
-              <div className="font-medium">Example:</div>
-              <div className="italic text-gray-700">
-                {card.example.japanese}
-              </div>
-              <div className="text-gray-600">{card.example.english}</div>
-            </div>
-          )}
-          <div className="absolute top-2 right-2 text-xs font-medium px-2 py-1 bg-gray-100 text-gray-600 rounded-full">
+          {/* JLPT Badge */}
+          <div
+            className={`absolute top-2 right-2 text-xs font-medium px-2 py-1 ${getJLPTBadgeColor(
+              card.jlptLevel
+            )} rounded-full`}
+          >
             JLPT: {card.jlptLevel}
           </div>
+
+          {/* Known Badge */}
           {isKnown && (
             <div className="absolute top-2 left-2 text-xs font-medium px-2 py-1 bg-success-100 text-success-600 rounded-full">
               Known
             </div>
           )}
+
+          {/* Main content */}
+          <div className="mt-12">
+            {" "}
+            {/* create space below badges */}
+            {/* Meaning */}
+            <div className="text-3xl font-bold text-gray-900 mb-6 text-center">
+              {card.meaning}
+            </div>
+            {/* Example */}
+            {card.example && (
+              <div className="space-y-2">
+                <div className="flex justify-center items-center gap-2 text-sm font-semibold text-gray-600">
+                  Example:
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      playAudio(card.example);
+                    }}
+                    className="text-blue-600 hover:text-blue-800 transition"
+                    aria-label="Phát âm ví dụ"
+                  >
+                    <FiVolume2 className="h-6 w-6" />
+                  </button>
+                </div>
+                <div className="text-lg italic text-gray-800 text-center">
+                  {card.example}
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       </motion.div>
     </div>
@@ -192,121 +229,72 @@ function FlashcardStats({ currentIndex, totalCards, knownCards }) {
 }
 
 // Main Page Component
-export default function FlashcardsPage(words) {
-  const [searchParams] = useSearchParams();
-  const type = searchParams.get("type") || "vocabulary";
-  const favoriteListId = searchParams.get("favoriteListId");
-  const [inProgress, setInProgress] = useState([]);
-  const [cards, setCards] = useState([]);
+export default function FlashcardsPage(words = []) {
   const [idx, setIdx] = useState(0);
   const [flipped, setFlipped] = useState(false);
   const [known, setKnown] = useState([]);
-  const [saved, setSaved] = useState([]);
+  const current = words?.words[idx] || {};
 
-  const playAudio = (text) => {
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = "ja-JP";
-    window.speechSynthesis.speak(utterance);
+  const playAudio = (text, lang = "ja-JP") => {
+    if ("speechSynthesis" in window) {
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = lang;
+      window.speechSynthesis.speak(utterance);
+    } else {
+      alert("Your browser does not support speech synthesis.");
+    }
   };
 
-  const markInProgressIfNotTouched = async (cardId) => {
-    // Chỉ gọi API nếu flashcard chưa từng học (không thuộc known hoặc inProgress)
-    if (!known.includes(cardId) && !inProgress.includes(cardId)) {
-      try {
-        await axios.patch("http://localhost:8080/flashcards/status", null, {
-          params: {
-            type,
-            favoriteListId,
-            flashcardId: cardId,
-            status: "IN_PROGRESS",
-          },
-        });
-        setInProgress((prev) => [...prev, cardId]); // cập nhật state sau khi gọi API
-      } catch (err) {
-        console.error("Failed to mark IN_PROGRESS", err);
-      }
+  const next = () => {
+    setFlipped(false);
+    setIdx((i) => (i < words?.words?.length - 1 ? i + 1 : 0));
+  };
+
+  const prev = () => {
+    setFlipped(false);
+    setIdx((i) => (i > 0 ? i - 1 : words?.words?.length - 1));
+  };
+
+  const getKnownWords = async () => {
+    try {
+      const response = await axios.get(
+        `/api/progress-vocabularies/known?lessonId=${words?.lessonId}`
+      );
+      setKnown(response.data.map((item) => item.vocabularyId));
+    } catch (error) {
+      console.error("Failed to fetch known words", error);
     }
   };
 
   useEffect(() => {
-    if (!favoriteListId) return;
-    axios
-      .get("http://localhost:8080/flashcards", {
-        params: { type, favoriteListId },
-      })
-      .then((res) => {
-        const data = res.data.data || [];
-        setCards(data);
-        setIdx(0);
-        setFlipped(false);
-        setKnown(
-          data
-            .filter((card) => card.status === "MASTERED")
-            .map((card) => card.id)
-        );
-        setInProgress(
-          data
-            .filter((card) => card.status === "IN_PROGRESS")
-            .map((card) => card.id)
-        );
-        setSaved([]); // nếu có saved thì xử lý sau
-      })
-      .catch(console.error);
-  }, [type, favoriteListId]);
+    getKnownWords();
+  }, []);
 
-  const current = cards[idx] || {};
-  const next = async () => {
-    if (current && current.id) {
-      await markInProgressIfNotTouched(current.id);
-    }
-    setFlipped(false);
-    setIdx((i) => (i < cards.length - 1 ? i + 1 : 0));
-  };
-
-  const prev = async () => {
-    if (current && current.id) {
-      await markInProgressIfNotTouched(current.id);
-    }
-    setFlipped(false);
-    setIdx((i) => (i > 0 ? i - 1 : cards.length - 1));
-  };
-
+  // Khi Mark Known, gọi API cập nhật progress của lesson
   const toggleKnown = async () => {
-    const id = current.id;
+    const id = current.id || current.vocabularyId;
     const isMastered = known.includes(id);
-    const newStatus = isMastered ? "IN_PROGRESS" : "MASTERED";
-
-    setKnown((k) => (isMastered ? k.filter((x) => x !== id) : [...k, id]));
-
     try {
-      await axios.patch("http://localhost:8080/flashcards/status", null, {
-        params: { type, favoriteListId, flashcardId: id, status: newStatus },
+      await axios.patch(`/api/progress-vocabularies/${id}/complete`, {
+        status: isMastered ? "IN_PROGRESS" : "MASTERED",
       });
-
-      // 👉 Chỉ chuyển sang thẻ tiếp theo nếu là mới đánh dấu MASTERED
-      if (!isMastered) {
-        next();
-      }
+      await getKnownWords();
+      if (!isMastered) next();
     } catch (err) {
       setKnown((k) => (isMastered ? [...k, id] : k.filter((x) => x !== id)));
-      console.error("Failed to toggle status", err);
+      console.error("Failed to update progress", err);
     }
-  };
-
-  const toggleSaved = () => {
-    const id = current.id;
-    setSaved((s) => (s.includes(id) ? s.filter((x) => x !== id) : [...s, id]));
   };
 
   const handleDownloadDeck = () => {
-    if (!cards || cards.length === 0) return;
-    const json = JSON.stringify(cards, null, 2);
+    if (!words || words.length === 0) return;
+    const json = JSON.stringify(words, null, 2);
     const blob = new Blob([json], { type: "application/json" });
     const url = URL.createObjectURL(blob);
 
     const link = document.createElement("a");
     link.href = url;
-    link.download = `flashcards-${type}.json`;
+    link.download = `flashcards-lesson.json`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -332,7 +320,6 @@ export default function FlashcardsPage(words) {
                   flipped={flipped}
                   setFlipped={setFlipped}
                   isKnown={known.includes(current.id)}
-                  isSaved={saved.includes(current.id)}
                   playAudio={playAudio}
                 />
               </motion.div>
@@ -340,7 +327,7 @@ export default function FlashcardsPage(words) {
           </div>
           <FlashcardStats
             currentIndex={idx}
-            totalCards={cards.length}
+            totalCards={words?.words?.length}
             knownCards={known.length}
           />
           <FlashcardControls
@@ -348,10 +335,8 @@ export default function FlashcardsPage(words) {
             onNext={next}
             onFlip={() => setFlipped((f) => !f)}
             onKnown={toggleKnown}
-            onSave={toggleSaved}
             flipped={flipped}
             isKnown={known.includes(current.id)}
-            isSaved={saved.includes(current.id)}
           />
         </section>
       </div>
