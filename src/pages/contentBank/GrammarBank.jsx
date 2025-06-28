@@ -3,14 +3,34 @@ import { useData } from "../../context/DataContext";
 import { toast } from "react-toastify";
 import ReactPaginate from "react-paginate";
 import { Plus, Edit, Trash2, Check, X, BookOpen, Search } from "lucide-react";
-
+import {
+  fetchGrammar,
+  updateGrammar,
+  addGrammar,
+  deleteGrammar,
+} from "../../services/ContentBankService";
 export default function GrammarBank() {
-  const { fetchGrammar, addGrammar, updateGrammar } = useData();
-
+  const { fetchLevels } = useData();
   const [grammars, setGrammars] = useState([]);
-  const [loading, setLoading] = useState(false);
   const [isAdding, setIsAdding] = useState(false);
   const [isEditing, setIsEditing] = useState(null);
+  const [search, setSearch] = useState("");
+  const [filter, setFilter] = useState("all"); // filter by JLPT level
+  const [size, setSize] = useState(6); // 1trang bn phan tu
+  const [totalPages, setTotalPages] = useState(0); // so luong trang page
+  const [totalElements, setTotalElements] = useState(0); // tong phan tu
+  const [currentPage, setCurrentPage] = useState(0); // trang page hien tai
+  const [levels, setLevels] = useState([]); // To store unique levels
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(null);
+  const [errors, setErrors] = useState({});
+  const [errorMessages, setErrorMessages] = useState("");
+  const jlptLevelClassMap = {
+    N5: "bg-success-50 text-success-700",
+    N4: "bg-primary-50 text-primary-700",
+    N3: "bg-warning-50 text-warning-700",
+    N2: "bg-orange-50 text-orange-700",
+    N1: "bg-error-50 text-error-700",
+  };
   const [formData, setFormData] = useState({
     titleJp: "",
     structure: "",
@@ -19,16 +39,24 @@ export default function GrammarBank() {
     example: "",
     jlptLevel: "",
   });
-  const [search, setSearch] = useState("");
+
+  function formatDate(dateString) {
+    if (!dateString) return null;
+    const date = new Date(dateString);
+    return new Intl.DateTimeFormat("en-GB", {
+      dateStyle: "medium",
+      timeStyle: "short",
+    }).format(date);
+  }
 
   // Fetch all grammar items
   const getGrammars = async () => {
     try {
-      const grammar = await fetchGrammar(lessonId, currentPage);
+      const grammar = await fetchGrammar(currentPage, size);
       if (grammar) {
-        setGrammars(grammar.content);
-        setTotalPages(grammar.page.totalPages);
-        setTotalElements(grammar.page.totalElements);
+        setGrammars(grammar?.content);
+        setTotalPages(grammar?.page?.totalPages);
+        setTotalElements(grammar?.page?.totalElements);
       }
     } catch (error) {
       console.error("Error in getGrammar:", error);
@@ -38,15 +66,7 @@ export default function GrammarBank() {
   useEffect(() => {
     getGrammars();
     getLevels();
-  }, []);
-
-  const jlptLevelClassMap = {
-    N5: "bg-success-50 text-success-700",
-    N4: "bg-primary-50 text-primary-700",
-    N3: "bg-warning-50 text-warning-700",
-    N2: "bg-orange-50 text-orange-700",
-    N1: "bg-error-50 text-error-700",
-  };
+  }, [currentPage, size]);
 
   const getLevels = async () => {
     try {
@@ -57,6 +77,10 @@ export default function GrammarBank() {
     } catch (error) {
       console.error("Error in getLevels:", error);
     }
+  };
+
+  const handleChangeSize = async (newSize) => {
+    setSize(newSize);
   };
 
   // Add new grammar
@@ -123,14 +147,14 @@ export default function GrammarBank() {
   // Start editing
   const startEdit = (item) => {
     let editData;
-        editData = {
-          titleJp: item.titleJp,
-          structure: item.structure,
-          meaning: item.meaning,
-          usage: item.usage,
-          example: item.example,
-          jlptLevel: item.jlptLevel,
-        };
+    editData = {
+      titleJp: item.titleJp,
+      structure: item.structure,
+      meaning: item.meaning,
+      usage: item.usage,
+      example: item.example,
+      jlptLevel: item.jlptLevel,
+    };
 
     setFormData(editData);
     setIsEditing(item.grammarId);
@@ -177,177 +201,190 @@ export default function GrammarBank() {
     return searchMatch && levelMatch;
   });
 
-  const renderForm = () => {
-    const DemoItem = ({ label, children }) => (
-      <div className="mb-2">
-        <p className="text-xs text-gray-500 mb-1">{label}</p>
-        {children}
-      </div>
-    );
+  const FormInput = ({
+    id,
+    label,
+    value,
+    onChange,
+    error,
+    placeholder,
+    required,
+  }) => (
+    <div>
+      <label
+        htmlFor={id}
+        className="block text-sm font-medium text-gray-700 mb-1"
+      >
+        {label} {required && <span className="text-red-500">*</span>}
+      </label>
+      <input
+        id={id}
+        type="text"
+        value={value || ""}
+        onChange={onChange}
+        placeholder={placeholder}
+        className={`block w-full rounded-md border-gray-300 focus:border-primary-500 focus:ring-primary-500 sm:text-sm ${
+          error ? "border-red-500 bg-red-50 focus:border-red-500" : ""
+        }`}
+      />
+      {error && <p className="mt-1 text-sm text-red-600">{error}</p>}
+    </div>
+  );
 
+  const FormTextarea = ({
+    id,
+    label,
+    rows,
+    value,
+    onChange,
+    error,
+    placeholder,
+  }) => (
+    <div>
+      <label
+        htmlFor={id}
+        className="block text-sm font-medium text-gray-700 mb-1"
+      >
+        {label}
+      </label>
+      <textarea
+        id={id}
+        rows={rows}
+        value={value || ""}
+        onChange={onChange}
+        placeholder={placeholder}
+        className={`block w-full rounded-md border-gray-300 focus:border-primary-500 focus:ring-primary-500 sm:text-sm ${
+          error ? "border-red-500 bg-red-50 focus:border-red-500" : ""
+        }`}
+      />
+      {error && <p className="mt-1 text-sm text-red-600">{error}</p>}
+    </div>
+  );
+
+  const renderForm = () => {
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-        {errorMessages && (
-          <div className="col-span-2">
-            <p className="text-red-500 text-sm">{errorMessages}</p>
-          </div>
-        )}
-        <div>
-          <label
-            htmlFor="title"
-            className="block text-sm font-medium text-gray-700 mb-1"
-          >
-            Grammar Title (Japanese)
-          </label>
-          <input
+      <div className="card p-6 mb-6 border border-gray-200 rounded-lg shadow-sm bg-white">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {errorMessages && (
+            <div className="col-span-2">
+              <div className="p-4 rounded-lg bg-red-50 border border-red-200 mb-4">
+                <div className="flex">
+                  <button
+                    type="button"
+                    onClick={() => setErrorMessages("")}
+                    className="flex-shrink-0 text-red-400 hover:text-red-600"
+                  >
+                    <X className="h-5 w-5" />
+                  </button>
+                  <div className="ml-3">
+                    <h3 className="text-sm font-medium text-red-800">
+                      Error occurred
+                    </h3>
+                    <div className="mt-2 text-sm text-red-700">
+                      <p>{errorMessages}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Grammar Title */}
+          <FormInput
             id="title"
-            type="text"
-            value={formData.titleJp || ""}
+            label="Grammar Title (Japanese)"
+            required
+            value={formData.titleJp}
             onChange={(e) =>
               setFormData({ ...formData, titleJp: e.target.value })
             }
-            className={`input border rounded px-3 py-2 w-full ${
-              errors.titleJp
-                ? "border-red-500 focus:border-red-500 bg-red-50"
-                : "border-gray-300 focus:border-blue-500 bg-white"
-            }`}
+            error={errors.titleJp}
+            placeholder="例: 〜ながら"
           />
-          {errors.titleJp && (
-            <p className="text-red-500 text-xs mt-1">{errors.titleJp}</p>
-          )}
-        </div>
 
-        <div>
-          <label
-            htmlFor="structure"
-            className="block text-sm font-medium text-gray-700 mb-1"
-          >
-            Structure
-          </label>
-          <textarea
+          {/* Structure */}
+          <FormTextarea
             id="structure"
+            label="Structure"
             rows={1}
-            value={formData.structure || ""}
+            value={formData.structure}
             onChange={(e) =>
               setFormData({ ...formData, structure: e.target.value })
             }
-            className={`w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 
-                focus:outline-none focus:ring-1 focus:ring-primary-500 ${
-                  errors.structure
-                    ? "border-red-500 focus:border-red-500 bg-red-50"
-                    : "border-gray-300 focus:border-blue-500 bg-white"
-                }`}
+            error={errors.structure}
+            placeholder="例: 動詞＋ながら"
           />
-          {errors.structure && (
-            <p className="text-red-500 text-xs mt-1">{errors.structure}</p>
-          )}
-        </div>
 
-        <div>
-          <label
-            htmlFor="meaning"
-            className="block text-sm font-medium text-gray-700 mb-1"
-          >
-            Meaning
-          </label>
-          <textarea
+          {/* Meaning */}
+          <FormTextarea
             id="meaning"
+            label="Meaning"
             rows={2}
-            value={formData.meaning || ""}
+            value={formData.meaning}
             onChange={(e) =>
               setFormData({ ...formData, meaning: e.target.value })
             }
-            className={`w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 ${
-              errors.meaning
-                ? "border-red-500 focus:border-red-500 bg-red-50"
-                : "border-gray-300 focus:border-blue-500 bg-white"
-            }`}
+            error={errors.meaning}
+            placeholder="While doing something..."
           />
-          {errors.meaning && (
-            <p className="text-red-500 text-xs mt-1">{errors.meaning}</p>
-          )}
-        </div>
 
-        <div>
-          <label
-            htmlFor="example"
-            className="block text-sm font-medium text-gray-700 mb-1"
-          >
-            Example
-          </label>
-          <textarea
+          {/* Example */}
+          <FormTextarea
             id="example"
+            label="Example"
             rows={2}
-            value={formData.example || ""}
+            value={formData.example}
             onChange={(e) =>
               setFormData({ ...formData, example: e.target.value })
             }
-            className={`w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 ${
-              errors.example
-                ? "border-red-500 focus:border-red-500 bg-red-50"
-                : "border-gray-300 focus:border-blue-500 bg-white"
-            }`}
-            placeholder="例えば、これは例文です。"
+            error={errors.example}
+            placeholder="例えば、音楽を聞きながら勉強します。"
           />
-          {errors.example && (
-            <p className="text-red-500 text-xs mt-1">{errors.example}</p>
-          )}
-        </div>
 
-        <div>
-          <label
-            htmlFor="usage"
-            className="block text-sm font-medium text-gray-700 mb-1"
-          >
-            Usage
-          </label>
-          <textarea
+          {/* Usage */}
+          <FormTextarea
             id="usage"
+            label="Usage"
             rows={1}
-            value={formData.usage || ""}
+            value={formData.usage}
             onChange={(e) =>
               setFormData({ ...formData, usage: e.target.value })
             }
-            className={`w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 ${
-              errors.usage
-                ? "border-red-500 focus:border-red-500 bg-red-50"
-                : "border-gray-300 focus:border-blue-500 bg-white"
-            }`}
+            error={errors.usage}
+            placeholder="Dùng khi hai hành động xảy ra đồng thời"
           />
-          {errors.usage && (
-            <p className="text-red-500 text-xs mt-1">{errors.usage}</p>
-          )}
-        </div>
 
-        <div className="">
-          <label
-            htmlFor="jlptLevel"
-            className="block text-sm font-medium text-gray-700 mb-1"
-          >
-            JLPT Level
-          </label>
-          <select
-            id="jlptLevel"
-            value={formData.jlptLevel}
-            onChange={(e) =>
-              setFormData({ ...formData, jlptLevel: e.target.value })
-            }
-            className={`input border rounded px-3 py-2 w-full ${
-              errors.jlptLevel
-                ? "border-red-500 focus:border-red-500 bg-red-50"
-                : "border-gray-300 focus:border-blue-500 bg-white"
-            }`}
-          >
-            <option value="">Select...</option>
-            {levels.map((level) => (
-              <option key={level} value={level}>
-                {level}
-              </option>
-            ))}
-          </select>
-          {errors.jlptLevel && (
-            <p className="text-red-500 text-xs mt-1">{errors.jlptLevel}</p>
-          )}
+          {/* JLPT Level */}
+          <div>
+            <label
+              htmlFor="jlptLevel"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
+              JLPT Level <span className="text-red-500">*</span>
+            </label>
+            <select
+              id="jlptLevel"
+              value={formData.jlptLevel}
+              onChange={(e) =>
+                setFormData({ ...formData, jlptLevel: e.target.value })
+              }
+              className={`block w-full rounded-md border-gray-300 focus:border-primary-500 focus:ring-primary-500 sm:text-sm ${
+                errors.jlptLevel
+                  ? "border-red-500 bg-red-50 focus:border-red-500"
+                  : ""
+              }`}
+            >
+              <option value="">Select JLPT level...</option>
+              {levels.map((level) => (
+                <option key={level} value={level}>
+                  {level}
+                </option>
+              ))}
+            </select>
+            {errors.jlptLevel && (
+              <p className="mt-1 text-sm text-red-600">{errors.jlptLevel}</p>
+            )}
+          </div>
         </div>
       </div>
     );
@@ -497,31 +534,49 @@ export default function GrammarBank() {
             disabled={isAdding || isEditing}
           >
             <Plus size={16} className="mr-1" />
-            Add {activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}
+            Add Grammar
           </button>
         </div>
       </div>
 
       {/* filter */}
       <div className="card p-4 mb-6">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="md:col-span-2">
+        <div className="flex flex-wrap items-center gap-4">
+          {/* Select size */}
+          <div className="w-32">
+            <select
+              className="w-full border border-gray-300 rounded-md py-2 px-2"
+              value={size}
+              onChange={(e) => handleChangeSize(e.target.value)}
+            >
+              <option value="6">6</option>
+              <option value="12">12</option>
+              <option value="24">24</option>
+              <option value="60">60</option>
+              <option value={totalElements}>All</option>
+            </select>
+          </div>
+
+          {/* Search box */}
+          <div className="flex-1 min-w-[200px]">
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                 <Search size={18} className="text-gray-400" />
               </div>
               <input
                 type="text"
-                placeholder="Search content..."
-                className="pl-10"
+                placeholder=".     Search content..."
+                className="pl-10 w-full border border-gray-300 rounded-md py-2 px-3"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
               />
             </div>
           </div>
-          <div>
+
+          {/* Filter select */}
+          <div className="w-40">
             <select
-              className="rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 w-full"
+              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
               value={filter}
               onChange={(e) => setFilter(e.target.value)}
             >
@@ -538,30 +593,6 @@ export default function GrammarBank() {
 
       {/* Content Management Tabs */}
       <div className="card overflow-hidden">
-        <div className="border-b border-gray-200">
-          <nav className="flex">
-            {["grammar"].map((tab) => {
-              const TabIcon = getTabIcon(tab);
-              return (
-                <button
-                  key={tab}
-                  onClick={() => setActiveTab(tab)}
-                  className={`
-              flex items-center px-4 py-3 text-sm font-medium border-b-2 ${
-                activeTab === tab
-                  ? "border-primary-600 text-primary-600"
-                  : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-              }
-            `}
-                >
-                  <TabIcon size={16} className="mr-2" />
-                  {tab.charAt(0).toUpperCase() + tab.slice(1)}
-                </button>
-              );
-            })}
-          </nav>
-        </div>
-
         {/* Add/Edit Form */}
         {(isAdding || isEditing) && (
           <div className="p-6 border-b border-gray-200 bg-gray-50">

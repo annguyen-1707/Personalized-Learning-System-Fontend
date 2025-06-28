@@ -18,7 +18,7 @@ import {
   getPageAllVocabulary,
   editVocabulary,
   addVocabulary,
-  deleteVocabulary
+  deleteVocabulary,
 } from "../../services/ContentBankService";
 
 export default function VocabularyBank() {
@@ -140,51 +140,55 @@ export default function VocabularyBank() {
       cancelAction();
     } catch (error) {
       debugger;
-    const responseData = error.response?.data;
+      const responseData = error.response?.data;
 
-    if (!Array.isArray(responseData?.data)) {
-      setErrorMessages(responseData?.message || "An unexpected error occurred");
-      return;
-    }
-    const errorMap = {};
-    responseData.data.forEach((err) => {
-      errorMap[err.field] = err.message;
-    });
+      if (!Array.isArray(responseData?.data)) {
+        setErrorMessages(
+          responseData?.message || "An unexpected error occurred"
+        );
+        return;
+      }
+      const errorMap = {};
+      responseData.data.forEach((err) => {
+        errorMap[err.field] = err.message;
+      });
 
-    if (Object.keys(errorMap).length > 0) {
-      setErrors(errorMap);
-    }  
+      if (Object.keys(errorMap).length > 0) {
+        setErrors(errorMap);
+      }
     }
   };
 
   const handleEditSubmit = async (e) => {
-  e.preventDefault();
-  try {
-    await editVocabulary(isEditing, formData);
-    await getPageVocabularyAvailable(currentPage, size);
-    toast.success("Vocabulary updated successfully");
-    resetForm();
-    setIsEditing(null);
-  } catch (error) {
-    const responseData = error.response?.data;
+    e.preventDefault();
+    try {
+      await editVocabulary(isEditing, formData);
+      await getPageVocabularyAvailable(currentPage, size);
+      toast.success("Vocabulary updated successfully");
+      resetForm();
+      setIsEditing(null);
+    } catch (error) {
+      const responseData = error.response?.data;
 
-    if (!Array.isArray(responseData?.data)) {
-      // Lỗi không phải danh sách field -> chỉ hiển thị message chung
-      setErrorMessages(responseData?.message || "An unexpected error occurred");
-      return;
+      if (!Array.isArray(responseData?.data)) {
+        // Lỗi không phải danh sách field -> chỉ hiển thị message chung
+        setErrorMessages(
+          responseData?.message || "An unexpected error occurred"
+        );
+        return;
+      }
+
+      // Xử lý lỗi theo từng trường
+      const errorMap = {};
+      responseData.data.forEach((err) => {
+        errorMap[err.field] = err.message;
+      });
+
+      if (Object.keys(errorMap).length > 0) {
+        setErrors(errorMap);
+      }
     }
-
-    // Xử lý lỗi theo từng trường
-    const errorMap = {};
-    responseData.data.forEach((err) => {
-      errorMap[err.field] = err.message;
-    });
-
-    if (Object.keys(errorMap).length > 0) {
-      setErrors(errorMap);
-    }
-  }
-};
+  };
 
   const handleDelete = async (vocabularyId) => {
     try {
@@ -196,7 +200,9 @@ export default function VocabularyBank() {
       const responseData = error.response?.data;
 
       if (!Array.isArray(responseData?.data)) {
-        setErrorMessages(responseData?.message || "An unexpected error occurred");
+        setErrorMessages(
+          responseData?.message || "An unexpected error occurred"
+        );
         return;
       }
 
@@ -210,7 +216,6 @@ export default function VocabularyBank() {
       }
     }
   };
-
 
   // Filter vocabulary based on search and filters
   const filteredVocabulary = allVocabulary.filter((vocab) => {
@@ -350,7 +355,10 @@ export default function VocabularyBank() {
                 {errorMessages && (
                   <div className="p-4 rounded-lg bg-red-50 border border-red-200 mb-4">
                     <div className="flex">
-                      <button className="flex-shrink-0" onClick={() => setErrorMessages("")}>
+                      <button
+                        className="flex-shrink-0"
+                        onClick={() => setErrorMessages("")}
+                      >
                         <X className="h-5 w-5 text-red-400" />
                       </button>
                       <div className="ml-3">
