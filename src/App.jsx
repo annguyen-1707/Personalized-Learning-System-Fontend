@@ -51,7 +51,7 @@ import AdminRoute from "./context/AdminRoute.jsx";
 import DenyAdmin from "././pages/auth/DenyAdmin.jsx"
 import FlashcardsPage from './pages/FlashcardsPage/FlashcardsPage.jsx'
 import QuizPage from "./QuizPage/QuizPage.jsx";
-import { QuizProvider } from "./context/QuizContext.jsx";
+
 import QuestionManagement from "./pages/content/QuestionManagement.jsx";
 import VocabularyBank from "./pages/contentBank/VocabularyBank.jsx";
 import GrammarBank from "./pages/contentBank/GrammarBank.jsx";
@@ -62,7 +62,6 @@ function App() {
   return (
     <AuthProvider>
       <DataProvider>
-        <QuizProvider> 
         <FeedbackWidget />
         <Routes>
           <Route path="/" element={<Layout onNotificationClick={() => setNotificationOpen(true)} />}>
@@ -272,7 +271,6 @@ function App() {
           pauseOnHover
           theme="light"
         />
-        </QuizProvider> 
       </DataProvider>
     </AuthProvider >
   );

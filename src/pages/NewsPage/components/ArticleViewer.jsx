@@ -32,7 +32,7 @@ function ArticleViewer({ article }) {
   const [showGrammar, setShowGrammar] = useState(false)
   const [vocabData, setVocabData] = useState([])
   const [grammarData, setGrammarData] = useState([])
-  const [isDone, setIsDone] = useState(false)
+  const [isDone, setIsDone] = useState(true)
   const [audioUrl, setAudioUrl] = useState(null)
   const [isMarking, setIsMarking] = useState(false)
 
@@ -100,15 +100,15 @@ function ArticleViewer({ article }) {
       })
       .then(res => {
         // Fix response checking method
-        if (res.data?.data === true) {
+        if (res.data?.data.progressStatus === "Completed") {
           setIsDone(true);
         } else {
-          setIsDone(false);
+          // setIsDone(false);
         }
       })
       .catch(err => {
         console.error('Error checking reading progress:', err);
-        setIsDone(false);
+        // setIsDone(false);
       });
     }
   }, [article?.id, user]);
@@ -158,10 +158,10 @@ function ArticleViewer({ article }) {
         params: { userId, contentReadingId: article.id }
       });
       
-      setIsDone(response.data?.data === true);
+      setIsDone(response.data?.data.progressStatus === "Completed");
     } catch (error) {
       console.error('Error checking status:', error);
-      setIsDone(false);
+      // setIsDone(false);
     }
   }, [user, article?.id]);
 

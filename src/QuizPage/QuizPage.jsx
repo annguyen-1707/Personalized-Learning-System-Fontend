@@ -1,6 +1,5 @@
 import { useEffect, useState, useMemo } from 'react';
 import axios from '../services/customixe-axios';
-import { useQuiz } from '../context/QuizContext';
 import { FiCheckCircle, FiXCircle } from 'react-icons/fi';
 import { useNavigate } from 'react-router-dom';
 
@@ -8,7 +7,8 @@ function QuizPage() {
   const [answers, setAnswers] = useState({});
   const [currentIndex, setCurrentIndex] = useState(0);
   const [forceRerender, setForceRerender] = useState(false);
-  const { quizDatas, setQuizDatas, loading, setLoading } = useQuiz();
+  const [quizDatas, setQuizDatas] = useState(null);
+  const [loading, setLoading] = useState(false);
   const [quizFinished, setQuizFinished] = useState(false);
   const navigate = useNavigate();
   const listId = 1;
@@ -16,8 +16,9 @@ function QuizPage() {
   useEffect(() => {
     const fetchQuiz = async () => {
       try {
-        const response = await axios.get(`/api/quiz?id=${listId}`);
+        const response = await axios.get(`/api/quiz/list?id=${listId}`);
         setQuizDatas(response);
+        console.log('Quiz data fetched:', response);
       } catch (error) {
         console.error('Lỗi khi gọi API:', error);
       } finally {
@@ -26,6 +27,12 @@ function QuizPage() {
     };
     fetchQuiz();
   }, []);
+  const tips = [
+    "🧠 Tip: Learning through examples improves memorization!",
+    "💡 Hint: Practice speaking along with vocabulary for better retention!",
+    "📌 Reminder: Don’t forget to review both Kana and Kanji!",
+  ];
+
 
   const shuffle = (arr) => [...arr].sort(() => Math.random() - 0.5);
 
@@ -94,11 +101,11 @@ function QuizPage() {
 
   return (
     <div className="max-w-9xl mx-auto px-4 py-8">
-      <div className="bg-white rounded-xl shadow-lg p-6 mb-8 flex justify-between items-center">
+      <div className="bg-white rounded-xl shadow-lg p-6 mb-8 flex justify-center items-center text-center">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">{currentQuiz.title}</h1>
+          <h1 className="text-3xl font-bold text-gray-900">{currentQuiz.title}</h1>
           <p className="text-base text-gray-600">
-            Câu: {currentIndex + 1}/{currentQuiz.questions.length}
+            Question: {currentIndex + 1}/{currentQuiz.questions.length}
           </p>
         </div>
       </div>
@@ -131,18 +138,18 @@ function QuizPage() {
             className={`bg-white p-6 rounded-2xl shadow-lg space-y-6 text-lg transition-transform duration-150 ${selectedAnswer && !isCorrect ? 'animate-shake' : ''
               }`}
           >
-            <h2 className="text-2xl font-bold mb-6 text-gray-900">
+            <h2 className="text-3xl font-bold mb-10 text-gray-900 min-h-[100px]">
               {currentIndex + 1}. {currentQuestion.questionText}
             </h2>
 
-            <div className={`grid gap-4 ${getGridColsClass(currentQuestion.allChoices.length)}`}>
+            <div className={`grid gap-5 ${getGridColsClass(currentQuestion.allChoices.length)}`}>
 
               {currentQuestion.allChoices.map((choice, i) => {
                 const wasSelected = selectedAnswer === choice;
                 const isAnswerCorrect = choice === currentQuestion.correctAnswer;
 
                 let choiceClass =
-                  'border-2 rounded-xl px-6 py-6 text-lg min-h-[64px] cursor-pointer flex items-center justify-between transition-all duration-200 shadow-sm';
+                  'border-2 rounded-xl px-6 py-6 text-lg min-h-[90px] cursor-pointer flex items-center justify-between transition-all duration-200 shadow-sm';
 
 
                 if (selectedAnswer) {
@@ -177,9 +184,18 @@ function QuizPage() {
             </div>
 
             {!isCorrect && selectedAnswer && (
-              <p className="text-red-600 font-medium mt-4">
-                ❌ Sai rồi! Hãy chọn lại đáp án đúng để tiếp tục.
-              </p>
+              <>
+                <p className="text-red-600 font-medium mt-4">
+                  Wrong answer! Please pick the correct one to proceed.
+                </p>
+                <div className="mt-4 p-4 bg-yellow-50 border border-yellow-300 rounded-lg text-gray-800">
+                  <p><strong>Romaji:</strong> {currentQuestion.romaji}</p>
+                  <p><strong>Meaning:</strong> {currentQuestion.meaning}</p>
+                  <p><strong>Description:</strong> {currentQuestion.description}</p>
+                  <p><strong>Example:</strong> {currentQuestion.example}</p>
+                  <p><strong>Part of Speech:</strong> {currentQuestion.partOfSpeech}</p>
+                </div>
+              </>
             )}
           </div>
         )
@@ -198,6 +214,17 @@ function QuizPage() {
           }
         `}
       </style>
+
+      <div
+        className="fixed left-[calc(50%+120px)] bottom-36 transform -translate-x-1/2 w-[95%] sm:w-[800px] 
+             bg-white border border-gray-300 rounded-2xl shadow-lg px-8 py-6 
+             text-gray-800 text-lg z-50"
+      >        <ul className="space-y-1 text-center">
+          {tips.map((tip, index) => (
+            <li key={index}>{tip}</li>
+          ))}
+        </ul>
+      </div>
     </div>
   );
 }

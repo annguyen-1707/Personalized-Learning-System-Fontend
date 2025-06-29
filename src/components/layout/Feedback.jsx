@@ -13,7 +13,7 @@ const FeedbackWidget = () => {
             return;
         }
 
-        if (!content || content.trim().length < 5 || rating === 0) {
+        if (!content || content.trim().length < 2 || rating === 0) {
             alert("Please enter content (at least 5 characters) and select a star rating.");
             return;
         }
