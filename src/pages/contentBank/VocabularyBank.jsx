@@ -242,7 +242,7 @@ export default function VocabularyBank() {
     <div className="animate-fade-in">
       <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between">
         <h1 className="text-2xl font-bold text-gray-900 mb-2 sm:mb-0">
-          Subject Vocabulary
+          Vocabulary Bank
         </h1>
         <button
           onClick={() => {
@@ -815,7 +815,7 @@ export default function VocabularyBank() {
       </div>
 
       {/* Phan trang */}
-      <div className="mt-4">
+      <div className="mt-4 align-items-center flex justify-center">
         <ReactPaginate
           nextLabel="next >"
           onPageChange={handlePageClick}

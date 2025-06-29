@@ -3,14 +3,9 @@ import { useData } from "../../context/DataContext";
 import { toast } from "react-toastify";
 import ReactPaginate from "react-paginate";
 import { Plus, Edit, Trash2, Check, X, BookOpen, Search } from "lucide-react";
-import {
-  fetchGrammar,
-  updateGrammar,
-  addGrammar,
-  deleteGrammar,
-} from "../../services/ContentBankService";
+import { fetchGrammar } from "../../services/ContentBankService";
 export default function GrammarBank() {
-  const { fetchLevels } = useData();
+  const { fetchLevels, addGrammar, updateGrammar, deleteGrammar } = useData();
   const [grammars, setGrammars] = useState([]);
   const [isAdding, setIsAdding] = useState(false);
   const [isEditing, setIsEditing] = useState(null);
@@ -90,7 +85,6 @@ export default function GrammarBank() {
     response = await addGrammar({
       ...formData,
     });
-    getGrammars();
     if (response.status === "error") {
       if (!Array.isArray(response.data)) {
         setErrorMessages(response.message);
@@ -106,6 +100,15 @@ export default function GrammarBank() {
       }
     }
     toast.success("Grammar added successfully!");
+    setIsAdding(false);
+    resetForm();
+    setErrors({});
+    setErrorMessages("");
+    setIsEditing(null);
+    resetForm();
+    setShowDeleteConfirm(null);
+    getGrammars();
+    return;
   };
 
   // Edit grammar
@@ -201,66 +204,6 @@ export default function GrammarBank() {
     return searchMatch && levelMatch;
   });
 
-  const FormInput = ({
-    id,
-    label,
-    value,
-    onChange,
-    error,
-    placeholder,
-    required,
-  }) => (
-    <div>
-      <label
-        htmlFor={id}
-        className="block text-sm font-medium text-gray-700 mb-1"
-      >
-        {label} {required && <span className="text-red-500">*</span>}
-      </label>
-      <input
-        id={id}
-        type="text"
-        value={value || ""}
-        onChange={onChange}
-        placeholder={placeholder}
-        className={`block w-full rounded-md border-gray-300 focus:border-primary-500 focus:ring-primary-500 sm:text-sm ${
-          error ? "border-red-500 bg-red-50 focus:border-red-500" : ""
-        }`}
-      />
-      {error && <p className="mt-1 text-sm text-red-600">{error}</p>}
-    </div>
-  );
-
-  const FormTextarea = ({
-    id,
-    label,
-    rows,
-    value,
-    onChange,
-    error,
-    placeholder,
-  }) => (
-    <div>
-      <label
-        htmlFor={id}
-        className="block text-sm font-medium text-gray-700 mb-1"
-      >
-        {label}
-      </label>
-      <textarea
-        id={id}
-        rows={rows}
-        value={value || ""}
-        onChange={onChange}
-        placeholder={placeholder}
-        className={`block w-full rounded-md border-gray-300 focus:border-primary-500 focus:ring-primary-500 sm:text-sm ${
-          error ? "border-red-500 bg-red-50 focus:border-red-500" : ""
-        }`}
-      />
-      {error && <p className="mt-1 text-sm text-red-600">{error}</p>}
-    </div>
-  );
-
   const renderForm = () => {
     return (
       <div className="card p-6 mb-6 border border-gray-200 rounded-lg shadow-sm bg-white">
@@ -290,69 +233,132 @@ export default function GrammarBank() {
           )}
 
           {/* Grammar Title */}
-          <FormInput
-            id="title"
-            label="Grammar Title (Japanese)"
-            required
-            value={formData.titleJp}
-            onChange={(e) =>
-              setFormData({ ...formData, titleJp: e.target.value })
-            }
-            error={errors.titleJp}
-            placeholder="例: 〜ながら"
-          />
+          <div>
+            <label
+              htmlFor="title"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
+              Grammar Title <span className="text-red-500">*</span>
+            </label>
+            <div className="relative rounded-md shadow-sm">
+              <input
+                type="text"
+                id="title"
+                label="Grammar Title (Japanese)"
+                required
+                value={formData.titleJp}
+                onChange={(e) =>
+                  setFormData({ ...formData, titleJp: e.target.value })
+                }
+                className={`block w-full rounded-md border-gray-300 pr-10 focus:border-primary-500 focus:ring-primary-500 sm:text-sm ${
+                  errors.titleJp
+                    ? "border-red-500 focus:border-red-500 bg-red-50"
+                    : ""
+                }`}
+                placeholder="例: 〜ながら"
+              />
+            </div>
+          </div>
 
           {/* Structure */}
-          <FormTextarea
-            id="structure"
-            label="Structure"
-            rows={1}
-            value={formData.structure}
-            onChange={(e) =>
-              setFormData({ ...formData, structure: e.target.value })
-            }
-            error={errors.structure}
-            placeholder="例: 動詞＋ながら"
-          />
+          <div>
+            <label
+              htmlFor="structure"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
+              Structure <span className="text-red-500">*</span>
+            </label>
+            <div className="text-xs text-gray-500 mb-1">
+              <textarea
+                id="structure"
+                rows={1}
+                value={formData.structure}
+                onChange={(e) =>
+                  setFormData({ ...formData, structure: e.target.value })
+                }
+                className={`block w-full rounded-md border-gray-300 pr-10 focus:border-primary-500 focus:ring-primary-500 sm:text-sm ${
+                  errors.structure
+                    ? "border-red-500 focus:border-red-500 bg-red-50"
+                    : ""
+                }`}
+                placeholder="例: 動詞＋ながら"
+              />
+            </div>
+          </div>
 
           {/* Meaning */}
-          <FormTextarea
-            id="meaning"
-            label="Meaning"
-            rows={2}
-            value={formData.meaning}
-            onChange={(e) =>
-              setFormData({ ...formData, meaning: e.target.value })
-            }
-            error={errors.meaning}
-            placeholder="While doing something..."
-          />
+          <div>
+            <label
+              htmlFor="meaning"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
+              Meaning <span className="text-red-500">*</span>
+            </label>
+            <textarea
+              id="meaning"
+              rows={2}
+              value={formData.meaning}
+              onChange={(e) =>
+                setFormData({ ...formData, meaning: e.target.value })
+              }
+              className={`block w-full rounded-md border-gray-300 pr-10 focus:border-primary-500 focus:ring-primary-500 sm:text-sm ${
+                errors.meaning
+                  ? "border-red-500 focus:border-red-500 bg-red-50"
+                  : ""
+              }`}
+              placeholder="While doing something..."
+            />
+          </div>
 
           {/* Example */}
-          <FormTextarea
-            id="example"
-            label="Example"
-            rows={2}
-            value={formData.example}
-            onChange={(e) =>
-              setFormData({ ...formData, example: e.target.value })
-            }
-            error={errors.example}
-            placeholder="例えば、音楽を聞きながら勉強します。"
-          />
+          <div>
+            <label
+              htmlFor="example"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
+              Example <span className="text-red-500">*</span>
+            </label>
+            <textarea
+              id="example"
+              label="Example"
+              rows={2}
+              value={formData.example}
+              onChange={(e) =>
+                setFormData({ ...formData, example: e.target.value })
+              }
+              className={`block w-full rounded-md border-gray-300 pr-10 focus:border-primary-500 focus:ring-primary-500 sm:text-sm ${
+                errors.example
+                  ? "border-red-500 focus:border-red-500 bg-red-50"
+                  : ""
+              }`}
+              placeholder="例えば、音楽を聞きながら勉強します。"
+            />
+          </div>
 
           {/* Usage */}
-          <FormTextarea
-            id="usage"
-            label="Usage"
-            rows={1}
-            value={formData.usage}
-            onChange={(e) =>
-              setFormData({ ...formData, usage: e.target.value })
-            }
-            error={errors.usage}
-            placeholder="Dùng khi hai hành động xảy ra đồng thời"
-          />
+          <div>
+            <label
+              htmlFor="usage"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
+              Usage <span className="text-red-500">*</span>
+            </label>
+            <textarea
+              id="usage"
+              label="Usage"
+              rows={1}
+              value={formData.usage}
+              onChange={(e) =>
+                setFormData({ ...formData, usage: e.target.value })
+              }
+              className={`block w-full rounded-md border-gray-300 pr-10 focus:border-primary-500 focus:ring-primary-500 sm:text-sm ${
+                errors.usage
+                  ? "border-red-500 focus:border-red-500 bg-red-50"
+                  : ""
+              }`}
+              placeholder="Dùng khi hai hành động xảy ra đồng thời"
+            />
+          </div>
 
           {/* JLPT Level */}
           <div>

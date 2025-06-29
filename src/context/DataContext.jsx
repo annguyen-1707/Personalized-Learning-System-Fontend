@@ -493,6 +493,17 @@ export function DataProvider({ children }) {
     return data.data;
   };
 
+  const deleteGrammar = async (id) => {
+    const res = await fetch(`/api/grammars/${id}`, {
+      method: "DELETE",
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      return data;
+    }
+    return data;
+  };
+
   const removeGrammarFromLesson = async (id, lessonId) => {
     const res = await fetch(
       `/api/grammars/${id}/remove-from-lesson/${lessonId}`,
@@ -765,6 +776,7 @@ export function DataProvider({ children }) {
     getExerciseDetailsById,
     approveVocabulary,
     approveGrammar,
+    deleteGrammar,
   };
 
   return <DataContext.Provider value={value}>{children}</DataContext.Provider>;
