@@ -4,7 +4,7 @@ import { FiClock, FiBookmark, FiShare2, FiExternalLink, FiCheck } from 'react-ic
 import NewsImg from './NewsImg';
 import axios from 'axios';
 import NewsAudio from './NewsAudio';
-import { useAuth } from '../../../context/AuthContext'; 
+import { useAuth } from '../../../context/AuthContext';
 import { toast } from 'react-toastify';
 
 // Create axios instance
@@ -26,13 +26,13 @@ api.interceptors.request.use(config => {
 function ArticleViewer({ article }) {
   // Add user from auth context
   const { user } = useAuth();
-  
+
   const [showTranslation, setShowTranslation] = useState(false)
   const [showVocab, setShowVocab] = useState(false)
   const [showGrammar, setShowGrammar] = useState(false)
   const [vocabData, setVocabData] = useState([])
   const [grammarData, setGrammarData] = useState([])
-  const [isDone, setIsDone] = useState(false)
+  const [isDone, setIsDone] = useState(true)
   const [audioUrl, setAudioUrl] = useState(null)
   const [isMarking, setIsMarking] = useState(false)
 
@@ -40,7 +40,7 @@ function ArticleViewer({ article }) {
     if (article) {
       console.log('Article selected:', article);
       console.log('Article properties:', Object.keys(article));
-      
+
       // Check and build audio URL
       if (article.audioFile) {
         const fullAudioUrl = `http://localhost:8080/audio/content_reading/${article.audioFile}`;
@@ -56,7 +56,7 @@ function ArticleViewer({ article }) {
   useEffect(() => {
     if (showVocab && article?.id) {
       setVocabData([]); // loading
-      api.get(`/content_reading/${article.id}/vocabularies`) 
+      api.get(`/content_reading/${article.id}/vocabularies`)
         .then(res => {
           console.log('Vocab response:', res.data);
           // Display received JSON data for debugging
@@ -73,7 +73,7 @@ function ArticleViewer({ article }) {
   useEffect(() => {
     if (showGrammar && article?.id) {
       setGrammarData([]); // loading
-      api.get(`/content_reading/${article.id}/grammars`) 
+      api.get(`/content_reading/${article.id}/grammars`)
         .then(res => {
           console.log('Grammar response:', res.data);
           // Display received JSON data for debugging
@@ -89,8 +89,8 @@ function ArticleViewer({ article }) {
   // Check initial completion status when article changes
   useEffect(() => {
     const userId = user?.id || user?.userId || user?._id;
-    
-    if (userId && article?.id) {    
+
+    if (userId && article?.id) {
       // Fix to call API correctly
       api.get('/api/progressReading/checkStatus', {
         params: {
@@ -98,54 +98,54 @@ function ArticleViewer({ article }) {
           contentReadingId: article.id
         }
       })
-      .then(res => {
-        // Fix response checking method
-        if (res.data?.data === true) {
-          setIsDone(true);
-        } else {
+        .then(res => {
+          // Fix response checking method
+          if (res.data?.data.progressStatus === "Completed") {
+            setIsDone(true);
+          } else {
+            setIsDone(false);
+          }
+        })
+        .catch(err => {
+          console.error('Error checking reading progress:', err);
           setIsDone(false);
-        }
-      })
-      .catch(err => {
-        console.error('Error checking reading progress:', err);
-        setIsDone(false);
-      });
+        });
     }
   }, [article?.id, user]);
 
   // Updated handleMarkAsDone function to call your API
   const handleMarkAsDone = () => {
     const userId = user?.id || user?.userId || user?._id;
-    
+
     if (!userId) {
       toast.error('User ID not found. Please log in again.');
       return;
     }
-    
+
     setIsMarking(true); // Set loading state
-    
+
     api.post('/api/progressReading/markAsDone', null, {
       params: {
         userId: userId,
         contentReadingId: article.id
       }
     })
-    .then(res => {
-      // Check response more simply
-      if (res.data?.status === "success" || res.status === 200) {
-        setIsDone(true);
-        toast.success('Progress saved successfully!');
-      } else {
-        toast.error('Failed to save progress.');
-      }
-    })
-    .catch(err => {
-      console.error('Error marking as done:', err);
-      toast.error('Failed to save progress. Please try again.');
-    })
-    .finally(() => {
-      setIsMarking(false); // Clear loading state
-    });
+      .then(res => {
+        // Check response more simply
+        if (res.data?.status === "success" || res.status === 200) {
+          setIsDone(true);
+          toast.success('Progress saved successfully!');
+        } else {
+          toast.error('Failed to save progress.');
+        }
+      })
+      .catch(err => {
+        console.error('Error marking as done:', err);
+        toast.error('Failed to save progress. Please try again.');
+      })
+      .finally(() => {
+        setIsMarking(false); // Clear loading state
+      });
   };
 
   // Enhanced version with useCallback (if you want to use it)
@@ -153,12 +153,12 @@ function ArticleViewer({ article }) {
     try {
       const userId = user?.id || user?.userId || user?._id;
       if (!userId || !article?.id) return;
-      
+
       const response = await api.get('/api/progressReading/checkStatus', {
         params: { userId, contentReadingId: article.id }
       });
-      
-      setIsDone(response.data?.data === true);
+
+      setIsDone(response.data?.data.progressStatus === "Completed");
     } catch (error) {
       console.error('Error checking status:', error);
       setIsDone(false);
@@ -174,7 +174,7 @@ function ArticleViewer({ article }) {
         </button>
       );
     }
-    
+
     if (isDone) {
       return (
         <button className="btn btn-success flex items-center" disabled>
@@ -183,9 +183,9 @@ function ArticleViewer({ article }) {
         </button>
       );
     }
-    
+
     return (
-      <button 
+      <button
         className={`btn btn-primary flex items-center ${isMarking ? 'loading' : ''}`}
         onClick={handleMarkAsDone}
         disabled={isMarking}
@@ -198,7 +198,6 @@ function ArticleViewer({ article }) {
   useEffect(() => {
     console.log('User auth state:', user);
   }, [user]);
-
   if (!article) {
     return (
       <div className="h-full flex items-center justify-center text-gray-500">
@@ -221,7 +220,7 @@ function ArticleViewer({ article }) {
       {/* Audio Player Section */}
       {audioUrl ? (
         <div className="mt-4">
-          <NewsAudio 
+          <NewsAudio
             audioUrl={audioUrl}
             onTimeUpdate={(time) => console.log('Current audio time:', time)}
           />
@@ -299,7 +298,7 @@ function ArticleViewer({ article }) {
         {renderActionButton()}
       </div>
 
-      {/* Translation section */} 
+      {/* Translation section */}
       {showTranslation && (
         <div className="mt-6 space-y-6">
           {article.content.map((section, index) => (
