@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { FiCheck, FiX } from 'react-icons/fi';
-import axios from 'axios';
 import { useAuth } from '../../../context/AuthContext'; // Import useAuth
+import axios from '../../../services/customixe-axios';
 
-function ListeningQuiz({ questions = [], currentTime, contentId }) {
+function ListeningQuiz({ questions = [], currentTime, contentListeningId }) {
   const { user } = useAuth(); // Get user from AuthContext
   const userId = user?.userId; // Adjust this if your user object uses a different key
-  
+
   const [answers, setAnswers] = useState({});
   const [showResults, setShowResults] = useState(false);
   const [quizQuestions, setQuizQuestions] = useState([]);
@@ -22,26 +22,28 @@ function ListeningQuiz({ questions = [], currentTime, contentId }) {
       [exerciseQuestionId]: { answerText }
     }));
   };
+
   const handleSubmit = async () => {
+    console.log("Submitting answers for answer:", answers.questionId || answers.exerciseQuestionId);
     const userAnswers = Object.entries(answers).map(([exerciseQuestionId, { answerText }]) => {
       const question = quizQuestions.find(q => q.exerciseQuestionId === Number(exerciseQuestionId));
       const selectedOption = question?.answerQuestions.find(opt => opt.answerText === answerText);
       return {
-        answerId: selectedOption?.answerId,
+        exerciseQuestionId: selectedOption?.exerciseQuestionId,
         answerText
       };
     });
-
-    const payload = { userAnswers, userId, contentId };
-    console.log('payload:', payload);
-    const response = await axios.post('http://localhost:8080/user/contents_listening/check-answer', payload);
+    console.log("User answers and contentid:", contentListeningId, userAnswers);
+    const contentId = contentListeningId;
+    const response = await axios.post(`http://localhost:8080/content-listening/submit-answers?contentListeningId=${contentId}`, userAnswers);
     const result = response.data;
 
     setAnswers(prev =>
       result.reduce((acc, curr) => {
         const question = quizQuestions.find(q =>
-          q.answerQuestions.some(opt => opt.answerId === curr.answerId)
+          q.answerQuestions.some(opt => opt.exerciseQuestionId === curr.exerciseQuestionId)
         );
+          console.log("Updated answers:", acc || curr.exerciseQuestionId, curr.answerText, curr.isCorrect);
         if (!question) return acc;
         return {
           ...acc,
@@ -52,6 +54,8 @@ function ListeningQuiz({ questions = [], currentTime, contentId }) {
         };
       }, prev)
     );
+    console.log("Updated answers:", acc || curr.exerciseQuestionId, curr.answerText, curr.isCorrect);
+
     setShowResults(true);
   };
 
@@ -78,7 +82,7 @@ function ListeningQuiz({ questions = [], currentTime, contentId }) {
 
               return (
                 <button
-                  key={option.answerId}
+                  key={option.exerciseQuestionId}
                   onClick={() => handleAnswer(question.exerciseQuestionId, option.answerText)}
                   className={`w-full p-3 rounded-lg text-left transition-colors border flex items-center justify-between
         ${selected && !showResults
