@@ -73,6 +73,7 @@ function Dashboard() {
     getCouseraRate();
   }, [year], [selectedSubjectIds])
 
+  
   const [userProgressData, setUserProgressData] = useState({
     labels: [],
     datasets: [
@@ -248,6 +249,7 @@ function Dashboard() {
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
       </div>
+
 
       {/* Stats Overview */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">

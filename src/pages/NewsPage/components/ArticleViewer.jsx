@@ -98,18 +98,18 @@ function ArticleViewer({ article }) {
           contentReadingId: article.id
         }
       })
-        .then(res => {
-          // Fix response checking method
-          if (res.data?.data.progressStatus === "Completed") {
-            setIsDone(true);
-          } else {
-            setIsDone(false);
-          }
-        })
-        .catch(err => {
-          console.error('Error checking reading progress:', err);
-          setIsDone(false);
-        });
+      .then(res => {
+        // Fix response checking method
+        if (res.data?.data.progressStatus === "Completed") {
+          setIsDone(true);
+        } else {
+          // setIsDone(false);
+        }
+      })
+      .catch(err => {
+        console.error('Error checking reading progress:', err);
+        // setIsDone(false);
+      });
     }
   }, [article?.id, user]);
 
@@ -156,12 +156,11 @@ function ArticleViewer({ article }) {
 
       const response = await api.get('/api/progressReading/checkStatus', {
         params: { userId, contentReadingId: article.id }
-      });
-
+      });   
       setIsDone(response.data?.data.progressStatus === "Completed");
     } catch (error) {
       console.error('Error checking status:', error);
-      setIsDone(false);
+      // setIsDone(false);
     }
   }, [user, article?.id]);
 
