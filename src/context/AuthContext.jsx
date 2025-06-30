@@ -17,6 +17,10 @@ export function AuthProvider({ children }) {
   const navigate = useNavigate(); // ✅ thêm dòng này
 
   useEffect(() => {
+    console.log("AuthProvider mounted", localStorage.getItem("accessToken") + user);
+    if(!localStorage.getItem("accessToken")){
+            localStorage.removeItem("isAdmin");
+    }
     setLoading(true);
     if (!isAdmin) {
       const checkLogin = async () => {
@@ -86,7 +90,7 @@ export function AuthProvider({ children }) {
 
         } catch (err) {
           console.error(err);
-        }finally {
+        } finally {
           setLoading(false);
         }
       };
@@ -100,9 +104,9 @@ export function AuthProvider({ children }) {
         method: "POST",
         credentials: "include",
       });
-
+      localStorage.removeItem("isAdmin");
       localStorage.removeItem("accessToken");
-      navigate("/login"); // ✅ điều hướng về login
+      navigate("/"); // ✅ điều hướng về login
     } catch (error) {
       console.error("Logout failed:", error);
     }
@@ -164,8 +168,8 @@ export function AuthProvider({ children }) {
         throw new Error(userData.message || 'Failed to fetch user data');
       }
       setUser(userData.data);
+      console.log("User data:", user);
       const role = userData.data.roleName;
-      console.log("ádasddasd", userData.data.parents)
       if (role === "PARENT") {
         navigate("/parentpage");
       } else if (role === "USER") {

@@ -39,7 +39,7 @@ api.interceptors.response.use(
       isRefreshing = true;
 
       try {
-        const res = await axios.post('/auth/refresh', {}, { withCredentials: true });
+        const res = await axios.post('/api/auth/check-login', {}, { withCredentials: true });
         const newAccessToken = res.data.accessToken;
 
         api.defaults.headers.common['Authorization'] = `Bearer ${newAccessToken}`;
