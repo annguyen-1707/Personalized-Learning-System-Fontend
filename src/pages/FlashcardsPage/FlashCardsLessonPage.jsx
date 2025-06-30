@@ -247,11 +247,13 @@ export default function FlashcardsPage(words = []) {
 
   const next = () => {
     setFlipped(false);
+    getKnownWords();
     setIdx((i) => (i < words?.words?.length - 1 ? i + 1 : 0));
   };
 
   const prev = () => {
     setFlipped(false);
+    getKnownWords();
     setIdx((i) => (i > 0 ? i - 1 : words?.words?.length - 1));
   };
 
@@ -272,8 +274,8 @@ export default function FlashcardsPage(words = []) {
 
   // Khi Mark Known, gọi API cập nhật progress của lesson
   const toggleKnown = async () => {
-    const id = current.id || current.vocabularyId;
-    const isMastered = known.includes(id);
+    const id = current?.vocabularyId;
+    const isMastered = known.includes(Number(current?.vocabularyId));
     try {
       await axios.patch(`/api/progress-vocabularies/${id}/complete`, {
         status: isMastered ? "IN_PROGRESS" : "MASTERED",
@@ -319,7 +321,7 @@ export default function FlashcardsPage(words = []) {
                   card={current}
                   flipped={flipped}
                   setFlipped={setFlipped}
-                  isKnown={known.includes(current.id)}
+                  isKnown={known.includes(Number(current?.vocabularyId))}
                   playAudio={playAudio}
                 />
               </motion.div>
