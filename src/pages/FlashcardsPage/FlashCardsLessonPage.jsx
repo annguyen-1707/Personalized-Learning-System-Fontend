@@ -247,13 +247,11 @@ export default function FlashcardsPage(words = []) {
 
   const next = () => {
     setFlipped(false);
-    getKnownWords();
     setIdx((i) => (i < words?.words?.length - 1 ? i + 1 : 0));
   };
 
   const prev = () => {
     setFlipped(false);
-    getKnownWords();
     setIdx((i) => (i > 0 ? i - 1 : words?.words?.length - 1));
   };
 
@@ -330,7 +328,7 @@ export default function FlashcardsPage(words = []) {
           <FlashcardStats
             currentIndex={idx}
             totalCards={words?.words?.length}
-            knownCards={known.length}
+            knownCards={words?.words?.length === 0 ? 0 : known.length}
           />
           <FlashcardControls
             onPrev={prev}

@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { CourseContentService } from "../../services/CourseContentService";
-
+import Swal from 'sweetalert2';
 
 import {
   FiArrowLeft,
@@ -30,6 +30,8 @@ function LessonPage() {
   const { getProgressByLessonId, handleStartLesson } = CourseContentService;
   const [completedLessons, setCompletedLessons] = useState([]);
   const [lessons, setLessons] = useState([]);
+  const [courseCompleted, setCourseCompleted] = useState(false);
+
   useEffect(() => {
     // Find the course and lesson based on the URL parameters
     const getLesson = async () => {
@@ -76,36 +78,50 @@ function LessonPage() {
     getLesson();
   }, [subjectId, lessonId]);
 
-    const startLesson =  async (lessonId) => {
-        // Navigate to the lesson content page
-        const res = await handleStartLesson(lessonId);
-        if (res?.status === 200) {
-          console.log("Lesson started successfully:", lessonId);
-      } else {
-        console.error("Failed to start lesson:", res?.message || "Unknown error");
-      }
-    };
+  const startLesson = async (lessonId) => {
+    // Navigate to the lesson content page
+    const res = await handleStartLesson(lessonId);
+    if (res?.status === 200) {
+      console.log("Lesson started successfully:", lessonId);
+    } else {
+      console.error("Failed to start lesson:", res?.message || "Unknown error");
+    }
+  };
 
   const isLessonCompleted = (lessonId) => {
     return completedLessons.includes(lessonId);
   };
 
   const markLessonComplete = async () => {
-    try {
-      await CourseContentService.markLessonComplete(lessonId);
-      setCompletedLessons((prev) => [...prev, lessonId]);
-    } catch (error) {
-      console.error("Error marking lesson complete:", error);
-    }
-  };
-
-const extractYouTubeVideoId = (url) => {
-  if (!url) return null;
-  const regExp =
-    /^.*(?:youtu\.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]{11}).*/;
-  const match = url.match(regExp);
-  return match ? match[1] : null;
+  try {
+    await CourseContentService.markCourseComplete(subjectId);
+    setCourseCompleted(true);
+    
+    // Hiển thị alert
+    Swal.fire({
+      title: '🎉 Congratulations!',
+      text: 'You have successfully completed the course.',
+      icon: 'success',
+      confirmButtonText: 'Cotninue learning',
+      confirmButtonColor: '#10B981',
+    });
+  } catch (error) {
+    console.error("Error marking course complete:", error);
+    Swal.fire({
+      title: 'Oops!',
+      text: 'Something went wrong when completing the course.',
+      icon: 'error',
+    });
+  }
 };
+
+  const extractYouTubeVideoId = (url) => {
+    if (!url) return null;
+    const regExp =
+      /^.*(?:youtu\.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]{11}).*/;
+    const match = url.match(regExp);
+    return match ? match[1] : null;
+  };
 
   if (loading) {
     return (
@@ -132,6 +148,7 @@ const extractYouTubeVideoId = (url) => {
       </div>
     );
   }
+
 
   return (
     <div className="min-h-screen bg-gray-50">
