@@ -36,10 +36,10 @@ function ContentManagement() {
   const {
     addVocabulary,
     updateVocabulary,
-    deleteVocabulary,
+    removeVocabFromLesson,
     addGrammar,
     updateGrammar,
-    deleteGrammar,
+    removeGrammarFromLesson,
     addExercise,
     updateExercise,
     deleteExercise,
@@ -63,6 +63,7 @@ function ContentManagement() {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(null);
   const [totalPages, setTotalPages] = useState(0);
   const [currentPage, setCurrentPage] = useState(0);
+  const [totalElements, setTotalElements] = useState(0);
   const [vocabularies, setVocabularies] = useState([]);
   const [levels, setLevels] = useState([]);
   const [partOfSpeech, setPartOfSpeech] = useState([]);
@@ -152,9 +153,9 @@ function ContentManagement() {
         currentPage
       );
       if (lessonExercises) {
-        setLessonExercises(lessonExercises.content);
-        setTotalPages(lessonExercises.page.totalPages);
-        setTotalElements(lessonExercises.page.totalElements);
+        setLessonExercises(lessonExercises?.content);
+        setTotalPages(lessonExercises?.page?.totalPages);
+        setTotalElements(lessonExercises?.page?.totalElements);
       }
     } catch (error) {
       console.error("Error in getLessonExercises:", error);
@@ -182,15 +183,14 @@ function ContentManagement() {
     try {
       const vocabularies = await fetchVocabulary(lessonId, currentPage);
       if (vocabularies) {
-        setVocabularies(vocabularies.content);
-        setTotalPages(vocabularies.page.totalPages);
-        setTotalElements(vocabularies.page.totalElements);
+        setVocabularies(vocabularies?.content);
+        setTotalPages(vocabularies?.page?.totalPages);
+        setTotalElements(vocabularies?.page?.totalElements);
       }
     } catch (error) {
       console.error("Error in getVocabulary:", error);
     }
   };
-
 
   const getLevels = async () => {
     try {
@@ -219,13 +219,17 @@ function ContentManagement() {
       const grammar = await fetchGrammar(lessonId, currentPage);
       if (grammar) {
         setGrammars(grammar.content);
-        setTotalPages(grammar.page.totalPages);
-        setTotalElements(grammar.page.totalElements);
+        setTotalPages(grammar?.page?.totalPages);
+        setTotalElements(grammar?.page?.totalElements);
       }
     } catch (error) {
       console.error("Error in getGrammar:", error);
     }
   };
+
+  useEffect(() => {
+  setCurrentPage(0); // Reset page về 0
+}, [activeTab]);
 
   // Reset form when changing tabs
   useEffect(() => {
@@ -234,16 +238,13 @@ function ContentManagement() {
     setShowDeleteConfirm(null);
     getLessons();
     getSubject();
-    getVocabulary();
     getLevels();
     getPartOfSpeech();
-    getGrammar();
-    getLessonExercises();
-
     // Set default form data based on active tab
     switch (activeTab) {
       case "vocabulary":
-        setFormData({
+        {
+          setFormData({
           kanji: "",
           kana: "",
           romaji: "",
@@ -254,9 +255,13 @@ function ContentManagement() {
           jlptLevel: "",
           lessonId: lessonId,
         });
+        getVocabulary();
         break;
-      case "grammar":
-        setFormData({
+
+      }
+      case "grammar":{
+        getGrammar();
+         setFormData({
           titleJp: "",
           structure: "",
           meaning: "",
@@ -266,7 +271,11 @@ function ContentManagement() {
           lessonId: lessonId,
         });
         break;
+      }
+       
       case "exercises":
+        {
+        getLessonExercises();
         setFormData({
           title: "",
           duration: "",
@@ -274,6 +283,8 @@ function ContentManagement() {
           lessonId: lessonId,
         });
         break;
+        }
+        
       default:
         setFormData({});
     }
@@ -288,6 +299,7 @@ function ContentManagement() {
     switch (activeTab) {
       case "vocabulary":
         response = await addVocabulary({ ...formData });
+        console.log("Vocabulary response:", response); // Debug logging
         getVocabulary();
         if (response.status === "error") {
           const errorMap = {};
@@ -308,20 +320,17 @@ function ContentManagement() {
         response = await addGrammar({
           ...formData,
         });
+        console.log("Grammar response:", response); // Debug logging
         getGrammar();
         if (response.status === "error") {
-          if (!Array.isArray(response.data)) {
-            setErrorMessages(response.message);
-            return;
-          }
           const errorMap = {};
-          response.data.forEach((err) => {
-            errorMap[err.field] = err.message;
-          });
-          if (Object.keys(errorMap).length > 1) {
-            setErrors(errorMap);
-            return;
+          if (Array.isArray(response.data)) {
+            response.data.forEach((err) => {
+              errorMap[err.field] = err.message;
+            });
           }
+          setErrors(errorMap);
+          return;
         }
         toast.success("Grammar added successfully!");
         logAction = "Grammar Added";
@@ -480,7 +489,7 @@ function ContentManagement() {
 
     switch (activeTab) {
       case "vocabulary":
-        const result = await deleteVocabulary(id);
+        const result = await removeVocabFromLesson(id, lessonId);
         getVocabulary();
         if (result.status === "error") {
           toast.error("Failed to delete vocabulary");
@@ -489,7 +498,7 @@ function ContentManagement() {
         toast.success("Vocabulary deleted successfully!");
         break;
       case "grammar":
-        const res = await deleteGrammar(id);
+        const res = await removeGrammarFromLesson(id, lessonId);
         getGrammar();
         if (res.status === "error") {
           toast.error("Failed to delete grammar");
@@ -652,16 +661,14 @@ function ContentManagement() {
       case "vocabulary":
         return (
           <HandleAddVocabularyInLesson
-            vocabularies={vocabularies}
             lessonId={lessonId}
-          />);
+             onSuccess={getVocabulary}
+          />
+        );
 
       case "grammar":
         return (
-           <HandleAddGrammarInLesson
-            grammars={grammars}
-            lessonId={lessonId}
-          />
+          <HandleAddGrammarInLesson onSuccess={getGrammar} lessonId={lessonId} />
         );
 
       case "exercises":
@@ -1465,7 +1472,6 @@ function ContentManagement() {
         activeClassName="active"
         renderOnZeroPageCount={null}
       />
-
       {renderQuestionModal()}
     </div>
   );

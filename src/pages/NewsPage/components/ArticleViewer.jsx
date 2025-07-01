@@ -220,7 +220,7 @@ function ArticleViewer({ article }) {
       setIsDone(response.data.data === true);
     } catch (error) {
       console.error('Error checking status:', error);
-      setIsDone(false);
+      // setIsDone(false);
     }
   }, [user, article?.id]);
 
