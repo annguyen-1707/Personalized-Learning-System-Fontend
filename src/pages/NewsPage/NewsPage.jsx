@@ -86,18 +86,6 @@ function NewsPage() {
     return matchesSearch && matchesCategory
   })
 
-  // // Sau đó là useEffect sử dụng filteredArticles
-  // useEffect(() => {
-  //   if (!loading && !error) {
-  //     if (filteredArticles.length > 0) {
-  //       if (!selectedArticle || !filteredArticles.find(article => article.id === selectedArticle.id)) {
-  //         // Tự động chọn bài viết đầu tiên
-  //         setSelectedArticle(filteredArticles[0]);
-  //       }
-  //     }
-  //   }
-  // }, [filteredArticles, loading, error, selectedArticle]);
-
   const handlePageClick = (event) => {
     setPage(event.selected + 1);
   };
