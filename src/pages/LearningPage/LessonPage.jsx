@@ -102,7 +102,7 @@ function LessonPage() {
       title: '🎉 Congratulations!',
       text: 'You have successfully completed the course.',
       icon: 'success',
-      confirmButtonText: 'Cotninue learning',
+      confirmButtonText: 'Continue learning',
       confirmButtonColor: '#10B981',
     });
   } catch (error) {
