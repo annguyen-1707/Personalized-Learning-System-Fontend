@@ -16,7 +16,7 @@ function QuizPage() {
   useEffect(() => {
     const fetchQuiz = async () => {
       try {
-        const response = await axios.get(`/api/quiz/list?id=${listId}`);
+        const response = await axios.get(`/api/quiz/vocabulary-list?id=${listId}`);
         setQuizDatas(response);
         console.log('Quiz data fetched:', response);
       } catch (error) {
