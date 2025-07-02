@@ -12,20 +12,28 @@ const api = axios.create({
   baseURL: 'http://localhost:8080'
 });
 
-// Add this interceptor code right after creating the axios instance
-api.interceptors.request.use(config => {
-  const token = localStorage.getItem('token'); // or from context/auth
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
-}, error => {
-  return Promise.reject(error);
-});
-
 function ArticleViewer({ article }) {
-  // Add user from auth context
   const { user } = useAuth();
+
+  // Set up interceptor after component mounts and auth is available
+  useEffect(() => {
+
+    const interceptor = api.interceptors.request.use(
+      config => {
+        // Try to get token from auth context first, then localStorage
+        const token = user?.token || localStorage.getItem('accessToken') || localStorage.getItem('token');
+        console.log('Token from context or storage:', !!token);
+        if (token) {
+          config.headers.Authorization = `Bearer ${token}`;
+        }
+        return config;
+      },
+      error => Promise.reject(error)
+    );
+
+    // Clean up interceptor when component unmounts
+    return () => api.interceptors.request.eject(interceptor);
+  }, [user]);
 
   const [showTranslation, setShowTranslation] = useState(false)
   const [showVocab, setShowVocab] = useState(false)
@@ -89,7 +97,7 @@ function ArticleViewer({ article }) {
   // Check initial completion status when article changes
   useEffect(() => {
     const userId = user?.id || user?.userId || user?._id;
-
+    console.log('Checking completion status for user:', userId, 'and article:', article?.id);
     if (userId && article?.id) {
       // Fix to call API correctly
       api.get('/api/progressReading/checkStatus', {
@@ -98,55 +106,102 @@ function ArticleViewer({ article }) {
           contentReadingId: article.id
         }
       })
-      .then(res => {
-        // Fix response checking method
-        if (res.data?.data.progressStatus === "Completed") {
-          setIsDone(true);
-        } else {
-          // setIsDone(false);
+        .then(res => {
+          console.log("res", res)
+          if (res.data) {
+            setIsDone(true);
+          } else {
+            setIsDone(false);
+          }
         }
-      })
-      .catch(err => {
-        console.error('Error checking reading progress:', err);
-        // setIsDone(false);
-      });
+      )
+      
+        .catch(err => {
+          console.error('Error checking reading progress:', err);
+          setIsDone(false);
+        });
     }
   }, [article?.id, user]);
 
   // Updated handleMarkAsDone function to call your API
-  const handleMarkAsDone = () => {
-    const userId = user?.id || user?.userId || user?._id;
+  // const handleMarkAsDone = async () => {
+  //   setIsMarking(true);
+  //   try {
+  //     // Get userId from user context
+  //     const userId = user?.id || user?.userId || user?._id;
+  //     if (!userId || !article?.id) {
+  //       toast.error('User or article information missing.');
+  //       setIsMarking(false);
+  //       return;
+  //     }
+  //     // 1. Gọi API mark as done
+  //     const markResponse = await api.post('/api/progressReading/markAsDone', null, {
+  //       params: { userId, contentReadingId: article.id }
+  //     });
+  //     console.log('Mark response:', markResponse.data);
 
+  //     // 2. Gọi check status
+  //     const statusResponse = await api.get('/api/progressReading/checkStatus', {
+  //       params: { userId, contentReadingId: article.id }
+  //     });
+  //     console.log('Status response:', statusResponse.data);
+
+  //     // 3. Cập nhật state
+  //     const newStatus = statusResponse.data?.data?.progressStatus === "Completed";
+  //     console.log('Should update isDone to:', newStatus);
+  //     setIsDone(newStatus);
+
+  //   } catch (error) {
+  //     console.error('Full error:', error.response?.data || error.message);
+  //   } finally {
+  //     setIsMarking(false);
+  //   }
+  // };
+  const handleMarkAsDone = async () => {
+    const userId = user?.id || user?.userId || user?._id;
     if (!userId) {
-      toast.error('User ID not found. Please log in again.');
+      toast.error('Please login again');
       return;
     }
 
-    setIsMarking(true); // Set loading state
-
-    api.post('/api/progressReading/markAsDone', null, {
-      params: {
-        userId: userId,
-        contentReadingId: article.id
-      }
-    })
-      .then(res => {
-        // Check response more simply
-        if (res.data?.status === "success" || res.status === 200) {
-          setIsDone(true);
-          toast.success('Progress saved successfully!');
-        } else {
-          toast.error('Failed to save progress.');
+    setIsMarking(true);
+    try {
+      // 1. Gọi API mark as done
+      const markResponse = await api.post('/api/progressReading/markAsDone', null, {
+        params: {
+          userId: userId,
+          contentReadingId: article.id
         }
-      })
-      .catch(err => {
-        console.error('Error marking as done:', err);
-        toast.error('Failed to save progress. Please try again.');
-      })
-      .finally(() => {
-        setIsMarking(false); // Clear loading state
       });
+      console.log('Mark response:', markResponse.data);
+
+      // 2. Optimistic UI update
+      setIsDone(true);
+
+      // 3. Verify với backend (optional)
+      const statusResponse = await api.get('/api/progressReading/checkStatus', {
+        params: {
+          userId: userId,
+          contentReadingId: article.id
+        }
+      });
+      console.log('Status verification:', statusResponse.data);
+
+      if (!statusResponse.data.data) {
+        setIsDone(false);
+        throw new Error('Verification failed');
+      }
+
+      toast.success('Progress saved successfully!');
+    } catch (error) {
+      console.error('Error:', error.response?.data || error.message);
+      setIsDone(false);
+      toast.error(error.response?.data?.message || 'Failed to save progress');
+    } finally {
+      setIsMarking(false);
+    }
   };
+
 
   // Enhanced version with useCallback (if you want to use it)
   const checkCompletionStatus = useCallback(async () => {
@@ -154,10 +209,15 @@ function ArticleViewer({ article }) {
       const userId = user?.id || user?.userId || user?._id;
       if (!userId || !article?.id) return;
 
-      const response = await api.get('/api/progressReading/checkStatus', {
-        params: { userId, contentReadingId: article.id }
-      });   
-      setIsDone(response.data?.data.progressStatus === "Completed");
+      const response = await api.get('/api/progressReading/isDoneReading', {
+        params: {
+          userId: userId,
+          contentReadingId: article.id
+        }
+      });
+
+      console.log('Check status response:', response.data);
+      setIsDone(response.data.data === true);
     } catch (error) {
       console.error('Error checking status:', error);
       // setIsDone(false);

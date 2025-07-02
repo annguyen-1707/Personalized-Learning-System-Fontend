@@ -272,8 +272,8 @@ export default function FlashcardsPage(words = []) {
 
   // Khi Mark Known, gọi API cập nhật progress của lesson
   const toggleKnown = async () => {
-    const id = current.id || current.vocabularyId;
-    const isMastered = known.includes(id);
+    const id = current?.vocabularyId;
+    const isMastered = known.includes(Number(current?.vocabularyId));
     try {
       await axios.patch(`/api/progress-vocabularies/${id}/complete`, {
         status: isMastered ? "IN_PROGRESS" : "MASTERED",
@@ -319,7 +319,7 @@ export default function FlashcardsPage(words = []) {
                   card={current}
                   flipped={flipped}
                   setFlipped={setFlipped}
-                  isKnown={known.includes(current.id)}
+                  isKnown={known.includes(Number(current?.vocabularyId))}
                   playAudio={playAudio}
                 />
               </motion.div>
@@ -328,7 +328,7 @@ export default function FlashcardsPage(words = []) {
           <FlashcardStats
             currentIndex={idx}
             totalCards={words?.words?.length}
-            knownCards={known.length}
+            knownCards={words?.words?.length === 0 ? 0 : known.length}
           />
           <FlashcardControls
             onPrev={prev}

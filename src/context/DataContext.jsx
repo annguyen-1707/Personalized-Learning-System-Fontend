@@ -520,15 +520,12 @@ export function DataProvider({ children }) {
 
   // Exercise and Resource CRUD operations
 
-  const getLessonExercisesById = async (lessonId, page) => {
+  const getLessonExercisesById = async (lessonId, page = 1) => {
     try {
-      const response = await fetch(
-        `http://localhost:8080/exercise-questions?lessonId=${lessonId}&page=${page}`,
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
-          },
+      const response = await fetch(`http://localhost:8080/exercise-questions?lessonId=${lessonId}&page=${page = 1}`, {
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${localStorage.getItem('accessToken')}`
         }
       );
 
@@ -597,7 +594,6 @@ export function DataProvider({ children }) {
         throw new Error("lessonId is required for creating an exercise");
       }
 
-      // Không thêm answerQuestionRequests ở đây nữa
 
       console.log("Exercise Data to Send:", exerciseData);
       console.log("Stringified:", JSON.stringify(exerciseData));
