@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Plus, Search, Edit, Trash2, Check, X, Image, Clock, Book, FileText, LayoutPanelTop, WholeWord } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { getPageContentReading, handleUpdateContent, fetchAllContentCategoryReading, handleCreateContent, handleDeleteContent, acceptContent } from '../../services/ContentReadingService';
+import { getPageContentReading, handleUpdateContent, fetchAllContentCategoryReading, handleCreateContent, 
+  handleDeleteContent, acceptContent,rejectContent } from '../../services/ContentReadingService';
 import ReactPaginate from 'react-paginate';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { toast } from "react-toastify";
@@ -223,6 +224,11 @@ function ReadingContentManagement() {
 
   }
 
+  const handleReject = async (id) => {
+    await rejectContent(id);
+    await getContentPage(currentPage);
+  }
+
   return (
     <div className="animate-fade-in">
       <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between">
@@ -266,17 +272,23 @@ function ReadingContentManagement() {
             </div>
             <input
               type="text"
-              placeholder="Search listening content..."
+              placeholder="Search reading content..."
               className="pl-10"
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              onChange={(e) => {
+                setSearch(e.target.value);
+                setSize(totalElements);
+              }}
             />
           </div>
           <div className='w-1/5' >
             <select
               className="rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 w-full"
               value={filters.category}
-              onChange={(e) => setFilters({ ...filters, category: e.target.value })}
+              onChange={(e) => {
+                setFilters({ ...filters, category: e.target.value })
+                setSize(totalElements);
+              }}
             >
               <option value="">All Category</option>
               {listContentCategory.map((category) => (
@@ -290,7 +302,10 @@ function ReadingContentManagement() {
             <select
               className="rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 w-full"
               value={filters.status}
-              onChange={(e) => setFilters({ ...filters, status: e.target.value })}
+              onChange={(e) => {
+                setFilters({ ...filters, status: e.target.value });
+                setSize(totalElements);
+              }}
             >
               <option value="">All Status</option>
               {listStatus.map((status) => (
@@ -302,7 +317,10 @@ function ReadingContentManagement() {
             <select
               className="rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 w-full"
               value={filters.jlptLevel}
-              onChange={(e) => setFilters({ ...filters, jlptLevel: e.target.value })}
+              onChange={(e) => {
+                setFilters({ ...filters, jlptLevel: e.target.value });
+                setSize(totalElements);
+              }}
             >
               <option value="">All Lever</option>
               {listLever.map((level) => (
@@ -433,21 +451,6 @@ function ReadingContentManagement() {
                   </select>
                 </div>
 
-                {/* Status */}
-                <div>
-                  <label className="block mb-1 text-sm font-medium text-gray-700">Trạng thái</label>
-                  <select
-                    value={formData.status}
-                    onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-                    className="w-full border rounded p-2"
-                  >
-                    <option disabled value="">-- Chọn trạng thái --</option>
-                    {listStatus.map((status) => (
-                      <option key={status} value={status}>{status}</option>
-                    ))}
-                  </select>
-                </div>
-
                 {/* Category */}
                 <div>
                   <label className="block mb-1 text-sm font-medium text-gray-700">Chủ đề</label>
@@ -531,18 +534,19 @@ function ReadingContentManagement() {
                   <td className="px-4 py-2 text-gray-700 line-clamp ">{content.scriptVn}</td>
                   <td className="px-4 py-2">{content.category}</td>
                   <td className="px-4 py-2">{content.jlptLevel || "N/A"}</td>
-                  <td className="px-4 py-2">
-                    <span
-                      className={`text-xs px-2 py-1 rounded font-medium ${content.status === "PUBLIC"
-                        ? "bg-green-100 text-green-700"
-                        : content.status === "PRIVATE"
-                          ? "bg-yellow-100 text-yellow-700"
-                          : "bg-gray-100 text-gray-700"
-                        }`}
-                    >
-                      {content.status}
-                    </span>
-                  </td>
+                   {/* Status */}
+                    <td className="px-4 py-2">
+                      <span
+                        className={`text-xs px-2 py-1 rounded font-medium ${content.status === "PUBLIC"
+                          ? "bg-green-100 text-green-700"
+                          : content.status === "REJECT"
+                            ? "bg-red-100 text-red-700"
+                            : "bg-gray-100 text-gray-700"
+                          }`}
+                      >
+                        {content.status}
+                      </span>
+                    </td>
                   <td className="px-4 py-2">{new Date(content.timeNew).toLocaleDateString()}</td>
                   <td className="px-4 py-2 space-y-1">
                     <Link
@@ -559,14 +563,15 @@ function ReadingContentManagement() {
                       <LayoutPanelTop size={14} className="mr-1" />
                       Grammar
                     </Link>
-                    {isContentManagerment && (
-                      <div className="flex space-x-2 mt-2">
-                        <button
-                          onClick={() => startUpdate(content)}
-                          className="text-primary-600 hover:text-primary-800"
-                        >
-                          <Edit size={16} />
-                        </button>
+                    <div className="flex space-x-2">
+                        {isStaff && (
+                          <button
+                            onClick={() => startUpdate(content)}
+                            className="text-primary-600 hover:text-primary-800"
+                          >
+                            <Edit size={16} />
+                          </button>
+                        )}
 
                         {showDeleteConfirm === content.contentReadingId ? (
                           <>
@@ -586,7 +591,7 @@ function ReadingContentManagement() {
                               <X size={16} />
                             </button>
                           </>
-                        ) : (
+                        ) : isContentManagerment && (
                           <button
                             onClick={() => setShowDeleteConfirm(content.contentReadingId)}
                             className="text-error-500 hover:text-error-700"
@@ -595,16 +600,36 @@ function ReadingContentManagement() {
                           </button>
                         )}
                       </div>
-                    )}
-                    {isContentManagerment && content.status === "DRAFT" && (
-                      <button
-                        onClick={() => handleAccept(content.contentReadingId)}
-                        className="text-green-600 hover:text-green-800 flex items-center mt-2"
-                      >
-                        <Check size={16} className="mr-1" />
-                        Accept
-                      </button>
-                    )}
+                      {isContentManagerment && content.status === "DRAFT" && (
+                        <div className="flex gap-3 mt-2">
+                          <button
+                            onClick={() => handleAccept(content.contentReadingId)}
+                            className="flex items-center bg-green-600 hover:bg-green-700 text-white px-1 py-1 rounded"
+                          >
+                            <Check size={16} className="mr-1" />
+                            Accept
+                          </button>
+
+                          <button
+                            onClick={() => handleReject(content.contentReadingId)}
+                            className="flex items-center bg-red-600 hover:bg-red-700 text-white px-1 py-1 rounded"
+                          >
+                            <X size={16} className="mr-1" />
+                            Reject
+                          </button>
+                        </div>
+                      )}
+                      {isContentManagerment && content.status === "PUBLIC" && (
+                        <div className="flex gap-4 mt-2">
+                          <button
+                            onClick={() => handleReject(content.contentReadingId)}
+                            className="flex items-center bg-red-600 hover:bg-red-700 text-white px-1 py-1 rounded"
+                          >
+                            <X size={16} className="mr-1" />
+                            Reject
+                          </button>
+                        </div>
+                      )}
                   </td>
                   <td className="px-4 py-2">{new Date(content.createdAt).toLocaleDateString()}</td>
                   <td className="px-4 py-2">

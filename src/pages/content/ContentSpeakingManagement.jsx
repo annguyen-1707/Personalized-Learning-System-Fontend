@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Plus, Search, Edit, Trash2, Check, X, MessageSquare } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { getPageContentSpeaking, handleUpdateContent, fetchAllContentCategorySpeaking, handleCreateContent, handleDeleteContent, acceptContent } from '../../services/ContentSpeakingService';
+import { getPageContentSpeaking, handleUpdateContent, fetchAllContentCategorySpeaking, handleCreateContent, 
+  handleDeleteContent, acceptContent ,rejectContent} from '../../services/ContentSpeakingService';
 import ReactPaginate from 'react-paginate';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { toast } from "react-toastify";
@@ -193,6 +194,11 @@ function SpeakingContentManagement() {
     await getContentPage(currentPage);
 
   }
+
+  const handleReject = async (id) => {
+    await rejectContent(id);
+    await getContentPage(currentPage);
+  }
   return (
     <div className="animate-fade-in">
       {/* Header */}
@@ -234,17 +240,23 @@ function SpeakingContentManagement() {
             </div>
             <input
               type="text"
-              placeholder="Search listening content..."
+              placeholder="Search speaking content..."
               className="pl-10"
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              onChange={(e) => {
+                setSearch(e.target.value);
+                setSize(totalElements);
+              }}
             />
           </div>
           <div className='w-1/5' >
             <select
               className="rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 w-full"
               value={filters.category}
-              onChange={(e) => setFilters({ ...filters, category: e.target.value })}
+              onChange={(e) => {
+                setFilters({ ...filters, category: e.target.value })
+                setSize(totalElements);
+              }}
             >
               <option value="">All Category</option>
               {listContentCategory.map((category) => (
@@ -258,7 +270,10 @@ function SpeakingContentManagement() {
             <select
               className="rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 w-full"
               value={filters.status}
-              onChange={(e) => setFilters({ ...filters, status: e.target.value })}
+              onChange={(e) => {
+                setFilters({ ...filters, status: e.target.value });
+                setSize(totalElements);
+              }}
             >
               <option value="">All Status</option>
               {listStatus.map((status) => (
@@ -270,7 +285,10 @@ function SpeakingContentManagement() {
             <select
               className="rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 w-full"
               value={filters.jlptLevel}
-              onChange={(e) => setFilters({ ...filters, jlptLevel: e.target.value })}
+              onChange={(e) => {
+                setFilters({ ...filters, jlptLevel: e.target.value });
+                setSize(totalElements);
+              }}
             >
               <option value="">All Lever</option>
               {listLever.map((level) => (
@@ -328,24 +346,36 @@ function SpeakingContentManagement() {
                 )}
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Content category
-                </label>
-              </div>
-              <div>
-                <select
-                  value={formData.category}
-                  onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                  className="w-full"
-                >
-                  <option value="" disabled selected>All Category</option>
-                  {listContentCategory?.length > 0 && listContentCategory.map((category) => (
-                    <option key={category} value={category}>
-                      {category}
-                    </option>
-                  ))}
-                </select>
+               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* JLPT Level */}
+                <div>
+                  <label className="block mb-1 text-sm font-medium text-gray-700">JLPT Level</label>
+                  <select
+                    value={formData.jlptLevel}
+                    onChange={(e) => setFormData({ ...formData, jlptLevel: e.target.value })}
+                    className="w-full border rounded p-2"
+                  >
+                    <option disabled value="">-- Chọn JLPT --</option>
+                    {listLever.map((level) => (
+                      <option key={level} value={level}>{level}</option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Category */}
+                <div>
+                  <label className="block mb-1 text-sm font-medium text-gray-700">Chủ đề</label>
+                  <select
+                    value={formData.category}
+                    onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                    className="w-full border rounded p-2"
+                  >
+                    <option disabled value="">-- Chọn chủ đề --</option>
+                    {listContentCategory?.map((category) => (
+                      <option key={category} value={category}>{category}</option>
+                    ))}
+                  </select>
+                </div>
               </div>
 
             </div>
@@ -386,73 +416,76 @@ function SpeakingContentManagement() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
-              {filteredContents.map((contentSpeaking) => (
-                <tr key={contentSpeaking.contentSpeakingId} className="hover:bg-gray-50">
+              {filteredContents.map((content) => (
+                <tr key={content.contentSpeakingId} className="hover:bg-gray-50">
                   <td className="px-4 py-2 font-medium text-gray-900 w-[300px]">
                     <div className="flex items-center">
-                      {contentSpeaking.title}
+                      {content.title}
                       <span className="ml-2 badge bg-primary-50 text-primary-700">
-                        {contentSpeaking?.content?.contentType}
+                        {content?.content?.contentType}
                       </span>
                     </div>
                   </td>
 
                   <td className="px-4 py-2">
                     <img
-                      src={`http://localhost:8080/images/content_speaking/${contentSpeaking.image}`}
+                      src={`http://localhost:8080/images/content_speaking/${content.image}`}
                       alt="Thumbnail"
                       className="w-16 h-16 object-cover rounded"
                     />
                   </td>
 
-                  <td className="px-4 py-2">{contentSpeaking.category}</td>
-                  <td className="px-4 py-2">{contentSpeaking.jlptLevel || "N/A"}</td>
+                  <td className="px-4 py-2">{content.category}</td>
+                  <td className="px-4 py-2">{content.jlptLevel || "N/A"}</td>
+
+                  
+                    {/* Status */}
+                    <td className="px-4 py-2">
+                      <span
+                        className={`text-xs px-2 py-1 rounded font-medium ${content.status === "PUBLIC"
+                          ? "bg-green-100 text-green-700"
+                          : content.status === "REJECT"
+                            ? "bg-red-100 text-red-700"
+                            : "bg-gray-100 text-gray-700"
+                          }`}
+                      >
+                        {content.status}
+                      </span>
+                    </td>
 
                   <td className="px-4 py-2">
-                    <span
-                      className={`text-xs px-2 py-1 rounded font-medium ${contentSpeaking.status === "PUBLIC"
-                        ? "bg-green-100 text-green-700"
-                        : contentSpeaking.status === "PRIVATE"
-                          ? "bg-yellow-100 text-yellow-700"
-                          : "bg-gray-100 text-gray-700"
-                        }`}
-                    >
-                      {contentSpeaking.status}
-                    </span>
+                    {new Date(content.createdAt).toLocaleDateString()}
                   </td>
 
                   <td className="px-4 py-2">
-                    {new Date(contentSpeaking.createdAt).toLocaleDateString()}
-                  </td>
-
-                  <td className="px-4 py-2">
-                    {contentSpeaking.updatedAt
-                      ? new Date(contentSpeaking.updatedAt).toLocaleDateString()
+                    {content.updatedAt
+                      ? new Date(content.updatedAt).toLocaleDateString()
                       : "Never update"}
                   </td>
 
                   <td className="px-4 py-2 space-y-1">
                     <Link
-                      to={`/admin/content_speaking/${contentSpeaking.contentSpeakingId}/dialogue`}
+                      to={`/admin/content_speaking/${content.contentSpeakingId}/dialogue`}
                       className="flex items-center text-blue-600 hover:underline mb-1"
                     >
                       <MessageSquare size={14} className="mr-1" />
                       Dialogue
                     </Link>
-                    {isContentManagerment && (
-                      <div className="flex space-x-2">
-                        <button
-                          onClick={() => startUpdate(contentSpeaking)}
-                          className="text-primary-600 hover:text-primary-800"
-                        >
-                          <Edit size={16} />
-                        </button>
+                        <div className="flex space-x-2">
+                        {isStaff && (
+                          <button
+                            onClick={() => startUpdate(content)}
+                            className="text-primary-600 hover:text-primary-800"
+                          >
+                            <Edit size={16} />
+                          </button>
+                        )}
 
-                        {showDeleteConfirm === contentSpeaking.contentSpeakingId ? (
+                        {showDeleteConfirm === content.contentSpeakingId ? (
                           <>
                             <button
                               onClick={() => {
-                                handeDelete(contentSpeaking.contentSpeakingId);
+                                handleDelete(content.contentSpeakingId);
                                 setShowDeleteConfirm(null);
                               }}
                               className="text-error-500 hover:text-error-700"
@@ -466,25 +499,45 @@ function SpeakingContentManagement() {
                               <X size={16} />
                             </button>
                           </>
-                        ) : (
+                        ) : isContentManagerment && (
                           <button
-                            onClick={() => setShowDeleteConfirm(contentSpeaking.contentSpeakingId)}
+                            onClick={() => setShowDeleteConfirm(content.contentSpeakingId)}
                             className="text-error-500 hover:text-error-700"
                           >
                             <Trash2 size={16} />
                           </button>
                         )}
                       </div>
-                    )}
-                    {isContentManagerment && contentSpeaking.status === "DRAFT" && (
-                      <button
-                        onClick={() => handleAccept(contentSpeaking.contentReadingId)}
-                        className="text-green-600 hover:text-green-800 flex items-center mt-2"
-                      >
-                        <Check size={16} className="mr-1" />
-                        Accept
-                      </button>
-                    )}
+                      {isContentManagerment && content.status === "DRAFT" && (
+                        <div className="flex gap-3 mt-2">
+                          <button
+                            onClick={() => handleAccept(content.contentSpeakingId)}
+                            className="flex items-center bg-green-600 hover:bg-green-700 text-white px-1 py-1 rounded"
+                          >
+                            <Check size={16} className="mr-1" />
+                            Accept
+                          </button>
+
+                          <button
+                            onClick={() => handleReject(content.contentSpeakingId)}
+                            className="flex items-center bg-red-600 hover:bg-red-700 text-white px-1 py-1 rounded"
+                          >
+                            <X size={16} className="mr-1" />
+                            Reject
+                          </button>
+                        </div>
+                      )}
+                      {isContentManagerment && content.status === "PUBLIC" && (
+                        <div className="flex gap-4 mt-2">
+                          <button
+                            onClick={() => handleReject(content.contentSpeakingId)}
+                            className="flex items-center bg-red-600 hover:bg-red-700 text-white px-1 py-1 rounded"
+                          >
+                            <X size={16} className="mr-1" />
+                            Reject
+                          </button>
+                        </div>
+                      )}
                   </td>
                 </tr>
               ))}

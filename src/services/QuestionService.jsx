@@ -66,11 +66,16 @@ const getQuestionPageByContentListeningId = async (page, id, size) => {
     return axios.get(`/api/question/content_listening/${id}?page=${page}&size=${size}`);
 }
 
+const getQuestionPage = async(page, size) => {
+    return axios.get(`/api/question?page=${page}&size=${size}`);
+}
+
 export {
     getQuestionPageByContentListeningId,
     handleCreateQuestion,
     handleDeleteQuestion,
     handleUpdateQuestion,
-    handleCreateManyQuestion
+    handleCreateManyQuestion,
+    getQuestionPage
 };
 

@@ -522,22 +522,21 @@ export function DataProvider({ children }) {
 
   const getLessonExercisesById = async (lessonId, page = 1) => {
     try {
-      const response = await fetch(`http://localhost:8080/exercise-questions?lessonId=${lessonId}&page=${page = 1}`, {
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${localStorage.getItem('accessToken')}`
-        }
-      );
-
-      if (!response.ok) {
-        const data = await response.json();
-        setErrorMessage(
-          data.message || `Failed to fetch exercises for lesson ${lessonId}`
-        );
-        throw new Error(
-          data.message || `Failed to fetch exercises for lesson ${lessonId}`
-        );
+    const response = await fetch(`http://localhost:8080/exercise-questions?lessonId=${lessonId}&page=${page}`, {
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${localStorage.getItem('accessToken')}`
       }
+    });
+    if (!response.ok) {
+      const data = await response.json();
+      setErrorMessage(
+        data.message || `Failed to fetch exercises for lesson ${lessonId}`
+      );
+      throw new Error(
+        data.message || `Failed to fetch exercises for lesson ${lessonId}`
+      );
+    }         
 
       const data = await response.json();
 
