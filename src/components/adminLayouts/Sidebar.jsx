@@ -18,6 +18,8 @@ import {
   ChevronDown,
   Pencil,
   BookCheck,
+  MessageCircleQuestion,
+  MessageSquare
 } from "lucide-react";
 
 function Sidebar({ open, setOpen }) {
@@ -60,10 +62,21 @@ function Sidebar({ open, setOpen }) {
           name: "Content Bank",
           icon: FileText,
           children: [
-            { name: "Vocabulary", href: "/admin/content-bank/vocabulary", icon:   BookCheck,
- },
+            {
+              name: "Vocabulary", href: "/admin/content-bank/vocabulary", icon: BookCheck,
+            },
             { name: "Grammar", href: "/admin/content-bank/grammar", icon: Pencil },
           ],
+        },
+        {
+          name: "Exercise Bank",
+          href: "/admin/exercise-bank",
+          icon: MessageCircleQuestion,
+        },
+        {
+          name: "Dialogue Bank",
+          href: "/admin/dialogue-bank",
+          icon: MessageSquare,
         },
       ],
     },
@@ -132,7 +145,7 @@ function Sidebar({ open, setOpen }) {
             <span className="text-lg font-bold text-gray-900">LearnSys</span>
           </Link>
         </div>
-
+        1
         {/* content managementent */}
         <div className="mt-5 px-4 h-[calc(100vh-64px)] overflow-y-auto">
           <nav className="space-y-1">
