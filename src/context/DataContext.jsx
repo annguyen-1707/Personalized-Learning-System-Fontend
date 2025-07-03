@@ -536,7 +536,7 @@ export function DataProvider({ children }) {
       throw new Error(
         data.message || `Failed to fetch exercises for lesson ${lessonId}`
       );
-    }
+    }         
 
       const data = await response.json();
 

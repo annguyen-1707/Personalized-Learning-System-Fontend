@@ -1,7 +1,10 @@
 import { useState, useEffect } from 'react';
 import { Plus, Search, Edit, Trash2, Check, X, MessageCircleQuestion } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { getPageContentListening, handleUpdateContent, fetchAllContentCategoryListening, handleCreateContent, handleDeleteContent, getJlptLevel, getStatus, acceptContent } from '../../services/ContentListeningService';
+import {
+  getPageContentListening, handleUpdateContent, fetchAllContentCategoryListening, handleCreateContent,
+  handleDeleteContent, getJlptLevel, getStatus, acceptContent, rejectContent
+} from '../../services/ContentListeningService';
 import ReactPaginate from 'react-paginate';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { toast } from "react-toastify";
@@ -16,7 +19,7 @@ function ListeningContentManagement() {
   const [listContentCategory, setlistContentCategory] = useState([]);
   const [pageCount, setPageCount] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
-  const [size, setSize] = useState(6); // 1trang bn phan tu
+  const [size, setSize] = useState(6); // 1trang bn phan tuf
   const [totalElements, setTotalElements] = useState(); // tong phan tu
   const [errorMessage, setErrorMessage] = useState("");
   const [previewImage, setPreviewImage] = useState(null);
@@ -213,7 +216,11 @@ function ListeningContentManagement() {
   const handleAccept = async (id) => {
     await acceptContent(id);
     await getContentPage(currentPage);
+  }
 
+  const handleReject = async (id) => {
+    await rejectContent(id);
+    await getContentPage(currentPage);
   }
 
   return (
@@ -259,14 +266,20 @@ function ListeningContentManagement() {
               placeholder="Search listening content..."
               className="pl-10"
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              onChange={(e) => {
+                setSearch(e.target.value);
+                setSize(totalElements);
+              }}
             />
           </div>
           <div className='w-1/5' >
             <select
               className="rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 w-full"
               value={filters.category}
-              onChange={(e) => setFilters({ ...filters, category: e.target.value })}
+              onChange={(e) => {
+                setFilters({ ...filters, category: e.target.value })
+                setSize(totalElements);
+              }}
             >
               <option value="">All Category</option>
               {listContentCategory.map((category) => (
@@ -280,7 +293,10 @@ function ListeningContentManagement() {
             <select
               className="rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 w-full"
               value={filters.status}
-              onChange={(e) => setFilters({ ...filters, status: e.target.value })}
+              onChange={(e) => {
+                setFilters({ ...filters, status: e.target.value });
+                setSize(totalElements);
+              }}
             >
               <option value="">All Status</option>
               {listStatus.map((status) => (
@@ -292,7 +308,10 @@ function ListeningContentManagement() {
             <select
               className="rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 w-full"
               value={filters.jlptLevel}
-              onChange={(e) => setFilters({ ...filters, jlptLevel: e.target.value })}
+              onChange={(e) => {
+                setFilters({ ...filters, jlptLevel: e.target.value });
+                setSize(totalElements);
+              }}
             >
               <option value="">All Lever</option>
               {listLever.map((level) => (
@@ -392,7 +411,7 @@ function ListeningContentManagement() {
                 />
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {/* JLPT Level */}
                 <div>
                   <label className="block mb-1 text-sm font-medium text-gray-700">JLPT Level</label>
@@ -404,21 +423,6 @@ function ListeningContentManagement() {
                     <option disabled value="">-- Chọn JLPT --</option>
                     {listLever.map((level) => (
                       <option key={level} value={level}>{level}</option>
-                    ))}
-                  </select>
-                </div>
-
-                {/* Status */}
-                <div>
-                  <label className="block mb-1 text-sm font-medium text-gray-700">Trạng thái</label>
-                  <select
-                    value={formData.status}
-                    onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-                    className="w-full border rounded p-2"
-                  >
-                    <option disabled value="">-- Chọn trạng thái --</option>
-                    {listStatus.map((status) => (
-                      <option key={status} value={status}>{status}</option>
                     ))}
                   </select>
                 </div>
@@ -514,8 +518,8 @@ function ListeningContentManagement() {
                       <span
                         className={`text-xs px-2 py-1 rounded font-medium ${content.status === "PUBLIC"
                           ? "bg-green-100 text-green-700"
-                          : content.status === "PRIVATE"
-                            ? "bg-yellow-100 text-yellow-700"
+                          : content.status === "REJECT"
+                            ? "bg-red-100 text-red-700"
                             : "bg-gray-100 text-gray-700"
                           }`}
                       >
@@ -523,57 +527,80 @@ function ListeningContentManagement() {
                       </span>
                     </td>
                     <td className="px-4 py-2 space-y-1">
-                      <Link
-                        to={`/admin/content_listening/${content.contentListeningId}/question`}
-                        className="flex items-center text-blue-600 hover:underline mb-1"
-                      >
-                        <MessageCircleQuestion size={14} className="mr-1" />
-                        Question
-                      </Link>
-                      {isContentManagerment && (
-                        <div className="flex space-x-2">
+                      {isContentManagerment&& (
+                        <Link
+                          to={`/admin/content_listening/${content.contentListeningId}/question`}
+                          className="flex items-center text-blue-600 hover:underline mb-1"
+                        >
+                          <MessageCircleQuestion size={14} className="mr-1" />
+                          Question
+                        </Link>
+                     )}
+                      <div className="flex space-x-2">
+                        {isStaff && content.status != 'PUBLIC' && (
                           <button
                             onClick={() => startUpdate(content)}
                             className="text-primary-600 hover:text-primary-800"
                           >
                             <Edit size={16} />
                           </button>
-                          {showDeleteConfirm === content.contentListeningId ? (
-                            <>
-                              <button
-                                onClick={() => {
-                                  handleDelete(content.contentListeningId);
-                                  setShowDeleteConfirm(null);
-                                }}
-                                className="text-error-500 hover:text-error-700"
-                              >
-                                <Check size={16} />
-                              </button>
-                              <button
-                                onClick={() => setShowDeleteConfirm(null)}
-                                className="text-gray-500 hover:text-gray-700"
-                              >
-                                <X size={16} />
-                              </button>
-                            </>
-                          ) : (
+                        )}
+                        {showDeleteConfirm === content.contentListeningId ? (
+                          <>
                             <button
-                              onClick={() => setShowDeleteConfirm(content.contentListeningId)}
+                              onClick={() => {
+                                handleDelete(content.contentListeningId);
+                                setShowDeleteConfirm(null);
+                              }}
                               className="text-error-500 hover:text-error-700"
                             >
-                              <Trash2 size={16} />
+                              <Check size={16} />
                             </button>
-                          )}
+                            <button
+                              onClick={() => setShowDeleteConfirm(null)}
+                              className="text-gray-500 hover:text-gray-700"
+                            >
+                              <X size={16} />
+                            </button>
+                          </>
+                        ) : isContentManagerment && (
+                          <button
+                            onClick={() => setShowDeleteConfirm(content.contentListeningId)}
+                            className="text-error-500 hover:text-error-700"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        )}
+                      </div>
+                      {isContentManagerment && content.status === "DRAFT" && (
+                        <div className="flex gap-3 mt-2">
+                          <button
+                            onClick={() => handleAccept(content.contentListeningId)}
+                            className="flex items-center bg-green-600 hover:bg-green-700 text-white px-1 py-1 rounded"
+                          >
+                            <Check size={16} className="mr-1" />
+                            Accept
+                          </button>
+
+                          <button
+                            onClick={() => handleReject(content.contentListeningId)}
+                            className="flex items-center bg-red-600 hover:bg-red-700 text-white px-1 py-1 rounded"
+                          >
+                            <X size={16} className="mr-1" />
+                            Reject
+                          </button>
                         </div>
                       )}
-                      {isContentManagerment && content.status === "DRAFT" && (
-                        <button
-                          onClick={() => handleAccept(content.contentListeningId)}
-                          className="text-green-600 hover:text-green-800 flex items-center mt-2"
-                        >
-                          <Check size={16} className="mr-1" />
-                          Accept
-                        </button>
+                      {isContentManagerment && content.status === "PUBLIC" && (
+                        <div className="flex gap-4 mt-2">
+                          <button
+                            onClick={() => handleReject(content.contentListeningId)}
+                            className="flex items-center bg-red-600 hover:bg-red-700 text-white px-1 py-1 rounded"
+                          >
+                            <X size={16} className="mr-1" />
+                            Reject
+                          </button>
+                        </div>
                       )}
                     </td>
                     <td className="px-4 py-2">

@@ -10,6 +10,8 @@ function RegisterP2() {
   const navigate = useNavigate();
   const location = useLocation();
   const email = location.state?.email || localStorage.getItem("email");
+  const accessToken = localStorage.getItem("accessToken");
+
 
   const [formData, setFormData] = useState({
     fullName: '',
@@ -18,7 +20,7 @@ function RegisterP2() {
     // avatar: '',
     gender: '',
     phone: '',
-    role: ''
+    role: accessToken ? 'USER' : ''
   });
   const [errors, setErrors] = useState({});
 
@@ -121,14 +123,14 @@ function RegisterP2() {
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
         <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
           {errors && typeof errors === 'object' && Object.keys(errors).length > 0 && (
-  <div className="mb-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
-    <ul className="list-disc list-inside text-sm">
-      {Object.entries(errors).map(([field, message]) => (
-        <li key={field}>{message}</li>
-      ))}
-    </ul>
-  </div>
-)}
+            <div className="mb-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+              <ul className="list-disc list-inside text-sm">
+                {Object.entries(errors).map(([field, message]) => (
+                  <li key={field}>{message}</li>
+                ))}
+              </ul>
+            </div>
+          )}
 
           <form className="space-y-6" onSubmit={handleSubmit}>
             <div>
@@ -256,6 +258,7 @@ function RegisterP2() {
                     value="PARENT"
                     checked={formData.role === 'PARENT'}
                     onChange={handleChange}
+                    disabled={!!accessToken}
                   />
                   <span>Parent</span>
                 </label>
@@ -266,6 +269,7 @@ function RegisterP2() {
                     value="USER"
                     checked={formData.role === 'USER'}
                     onChange={handleChange}
+                    disabled={!!accessToken}
                   />
                   <span>Student</span>
                 </label>

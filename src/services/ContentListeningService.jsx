@@ -19,9 +19,6 @@ const handleCreateContent = async (data) => {
     if (data.category === "") {
         throw new Error("choose category")
     }
-    if (data.status === "") {
-        throw new Error("choose status")
-    }
     if (data.jlptLevel === "") {
         throw new Error("choose jlptLevel")
     }
@@ -119,7 +116,11 @@ const acceptContent = (id) => {
     return axios.patch(`/api/content_listening/accept/${id}`)
 }
 
+const rejectContent = (id) => {
+    return axios.patch(`/api/content_listening/reject/${id}`)
+}
+
 export {
     getPageContentListening, handleUpdateContent, fetchAllContentListening, fetchAllContentCategoryListening,
-    handleCreateContent, handleDeleteContent, getStatus, getJlptLevel, acceptContent
+    handleCreateContent, handleDeleteContent, getStatus, getJlptLevel, acceptContent,rejectContent
 }
