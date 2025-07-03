@@ -1,98 +1,53 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { ArrowLeft, Plus, Edit, Trash2, Check, X, Search } from 'lucide-react';
-import { getQuestionPage, handleCreateQuestion, handleDeleteQuestion, handleUpdateQuestion } from '../../services/QuestionService';
+import {
+  getQuestionPageFromAPI, handleCreateQuestion, handleDeleteQuestion, handleUpdateQuestion, acceptQuestion,
+  rejectQuestion,
+  getLessonBySubjectIdFromAPI,
+  getListAllSubjectFromAPI,
+  getExerciseByLessonIdFromAPI,
+  getContentListeningByLeverFromAPI
+} from '../../services/QuestionService';
 import ReactPaginate from 'react-paginate';
 import { toast } from "react-toastify";
+import { getJlptLevel, getStatus } from '../../services/ContentListeningService';
 
 function QuestionManagement() {
-  const { contentListeningId } = useParams();
   const [questions, setQuestions] = useState([]);
   const [isAdding, setIsAdding] = useState(false);
   const [isEditing, setIsEditing] = useState(null);
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(null);
   const [search, setSearch] = useState('');
   const [pageCount, setPageCount] = useState(0); // so luong trang page
   const [currentPage, setCurrentPage] = useState(1); // trang page hien tai
   const [size, setSize] = useState(6); // 1trang bn phan tu
   const [totalElements, setTotalElements] = useState(); // tong phan tu
   const [errorMessage, setErrorMessage] = useState("");
+  const [formChoose, setFormChoose] = useState({
+    type: '',
+    subjectId: '',
+    lessonId: '',
+    exerciseId: '',
+    jlptLevel: '',
+    contentListeningId: ''
+  })
+  const [listLever, setListLever] = useState([]);
+  const [listContentListening, setListContentListening] = useState([]);
+  const [listStatus, setListStatus] = useState([]);
+  const [listSubject, setListSubject] = useState([]);
+  const [listLesson, setListLesson] = useState([]);
+  const [listExercise, setListExercise] = useState([]);
   const [formData, setFormData] = useState({
     questionText: '',
     answerQuestions: [{ answerText: '', correct: false }],
-    content_listening_id: '',
-    exercise_id: ''
+    contentListeningId: '',
+    exerciseId: ''
   });
 
   useEffect(() => {
     getQuestionPage(1);
+    getListStatus();
   }, [size]);
-
-  const getQuestionPage = async (page) => {
-    let res = await getQuestionPage(page, size);
-    console.log("Data page", res)
-    if (res && res.data && res.data.content) {
-      setQuestions(res.data.content);
-      setPageCount(res.data.page.totalPages);
-      setTotalElements(res.data.page.totalElements)
-    } else {
-      console.error("Failed to fetch questions");
-    }
-  }
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (isAdding) {
-      try {
-        await handleCreateQuestion(formData);
-        await getQuestionPage(currentPage);
-        // Reset form
-        setFormData({
-          questionText: '',
-          answerQuestions: [{ answerText: '', correct: false }],
-          content_listening_id: contentListeningId
-        });
-        setIsAdding(false);
-        setErrorMessage("");
-        toast.success("Tạo question thành công!");
-      } catch (error) {
-        toast.error("Tạo question thất bại!");
-        setErrorMessage(error.message || "Failed to add question Speaking.");
-      }
-    } else if (isEditing) {
-      try {
-        await handleUpdateQuestion(isEditing, formData);
-        await getQuestionPage(currentPage);
-        // Reset form
-        setFormData({
-          questionText: '',
-          answerQuestions: [{ answerText: '', correct: false }],
-          content_listening_id: contentListeningId
-        });
-        setIsEditing(null);
-        setErrorMessage("");
-        toast.success("Cập nhật question thành công!");
-      } catch (error) {
-        console.error("Error updating question:", error);
-        setErrorMessage(error.message || "Failed to update question Speaking.");
-        toast.error("Cập nhật question thất bại!");
-      }
-    }
-
-  };
-
-  const handleDelete = async (id) => {
-    await handleDeleteQuestion(id);
-    await getQuestionPage(currentPage);
-  };
-
-  const startUpdate = (question) => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-    setFormData(question);
-    setIsEditing(question.exerciseQuestionId);
-    setIsAdding(false);
-    setErrorMessage("");
-  }
 
   const filteredQuestions = questions.filter((question) => {
     // Search filter(case insensitive)
@@ -104,10 +59,106 @@ function QuestionManagement() {
     return searchText === '' || matchQuestionText || matchAnyAnswer;
   });
 
+  const getQuestionPage = async (page) => {
+    let res = await getQuestionPageFromAPI(page, size);
+    if (res && res.data && res.data.content) {
+      setQuestions(res.data.content);
+      setPageCount(res.data.page.totalPages);
+      setTotalElements(res.data.page.totalElements)
+    } else {
+      console.error("Failed to fetch questions");
+    }
+  }
+
+  const getListLever = async () => {
+    let res = await getJlptLevel();
+    if (res && res.data) {
+      setListLever(res.data)
+    }
+  }
+
+  const getListSubject = async () => {
+    const res = await getListAllSubjectFromAPI();
+    if (res && res.data) {
+      setListSubject(res.data)
+    }
+  }
+
+  const getListStatus = async () => {
+    let res = await getStatus();
+    if (res && res.data) {
+      setListStatus(res.data)
+    }
+  }
+
+  const getListContentListening = async (newLever) => {
+    let res = await getContentListeningByLeverFromAPI(newLever);
+    if (res && res.data) {
+      setListContentListening(res.data)
+    }
+  }
+
+  const getLessonBySubjet = async (newSubject) => {
+    let res = await getLessonBySubjectIdFromAPI(newSubject);
+    if (res && res.data.content) {
+      setListLesson(res.data.content);
+    }
+  }
+
+  const getExerciseByLesson = async (newLesson) => {
+    let res = await getExerciseByLessonIdFromAPI(newLesson);
+    if (res && res.data.content) {
+      setListExercise(res.data.content);
+    }
+  }
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const updatedFormData = {
+      ...formData,
+      contentListeningId: formChoose.contentListeningId,
+      exerciseId: formChoose.exerciseId
+    };
+    if (isAdding) {
+      setFormData(updatedFormData);
+      try {
+        await handleCreateQuestion(updatedFormData);
+        await getQuestionPage(currentPage);
+        // Reset form
+        handleSetNullAll();
+        setIsAdding(false);
+        toast.success("Tạo question thành công!");
+      } catch (error) {
+        toast.error("Tạo question thất bại!");
+        setErrorMessage(error.message || "Failed to add question Speaking.");
+      }
+    } else if (isEditing) {
+      try {
+        await handleUpdateQuestion(isEditing, updatedFormData);
+        await getQuestionPage(currentPage);
+        // Reset form
+        handleSetNullAll();
+        setIsEditing(null);
+        toast.success("Cập nhật question thành công!");
+      } catch (error) {
+        console.error("Error updating question:", error);
+        setErrorMessage(error.message || "Failed to update question Speaking.");
+        toast.error("Cập nhật question thất bại!");
+      }
+    }
+  };
+
+  const startUpdate = (question) => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    setFormData(question);
+    setIsEditing(question.exerciseQuestionId);
+    setIsAdding(false);
+    setErrorMessage("");
+  }
+
   const handleChangeSize = async (newSize) => {
     setSize(newSize)
   }
-
 
   const handlePageClick = (event) => {
     const selectedPage = +event.selected + 1;
@@ -115,14 +166,98 @@ function QuestionManagement() {
     getQuestionPage(selectedPage);
   }
 
+  const handleSetNullAll = () => {
+    setFormChoose({
+      type: '',
+      subjectId: '',
+      lessonId: '',
+      exerciseId: '',
+      jlptLevel: '',
+      conetntListening: ''
+    });
+    setFormData({
+      questionText: '',
+      answerQuestions: [{ answerText: '', correct: false }],
+      content_listening_id: '',
+      exercise_id: ''
+    })
+    setErrorMessage("");
+  }
+
+  const handleWhenChooseType = async (newType) => {
+    setFormChoose({
+      type: newType,
+      contentListeningId: '',
+      jlptLevel: '',
+      exerciseId: '',
+      subjectId: '',
+      lessonId: ''
+    });
+
+    if (newType === 'content') {
+      await getListLever();     // ví dụ lấy danh sách level JLPT
+    } else if (newType === 'exercise') {
+      await getListSubject();   // ví dụ lấy danh sách môn học
+    }
+  }
+
+  const handleWhenChooseLever = async (newLever) => {
+    setFormChoose(prev => ({
+      ...prev,
+      contentListeningId: '',
+      jlptLevel: newLever,
+      exerciseId: '',
+      subjectId: '',
+      lessonId: ''
+    }));
+    await getListContentListening(newLever);
+  }
+
+  const handleWhenChooseContentListening = async (newContent) => {
+    setFormChoose(prev => ({
+      ...prev,
+      contentListeningId: newContent,
+      exerciseId: '',
+      subjectId: '',
+      lessonId: ''
+    }));
+  }
+
+  const handleWhenChooseSubject = async (newSubject) => {
+    setFormChoose(prev => ({
+      ...prev,
+      contentListeningId: '',
+      jlptLevel: '',
+      exerciseId: '',
+      subjectId: newSubject,
+      lessonId: ''
+    }));
+    await getLessonBySubjet(newSubject);
+  }
+
+  const handleWhenChooseLesson = async (newLesson) => {
+    setFormChoose(prev => ({
+      ...prev,
+      contentListeningId: '',
+      jlptLevel: '',
+      exerciseId: '',
+      lessonId: newLesson
+    }));
+    await getExerciseByLesson(newLesson);
+  }
+
+  const handleWhenChooseExercise = async (newExercise) => {
+    setFormChoose(prev => ({
+      ...prev,
+      contentListeningId: '',
+      jlptLevel: '',
+      exerciseId: newExercise,
+    }));
+  }
+
   return (
     <div className="animate-fade-in">
       <div className="mb-6">
-        <Link to="/admin/content_listening" className="inline-flex items-center text-primary-600 hover:text-primary-800 mb-4">
-          <ArrowLeft size={16} className="mr-1" />
-          Back to Content Listening
-        </Link>
-
         <div className="flex justify-between items-center">
           <div>
             <h1 className="text-2xl font-bold text-gray-900">Question Management</h1>
@@ -263,18 +398,116 @@ function QuestionManagement() {
                 </div>
               </div>
             </div>
+            <div className="space-y-4">
 
+              {/* Chọn Type */}
+              <div>
+                <label>Type:</label>
+                <select
+                  value={formChoose.type}
+                  onChange={(e) => handleWhenChooseType(e.target.value)}
+                  className="border p-2 ml-2"
+                >
+                  <option value="">-- Select Type --</option>
+                  <option value="content">Content Listening</option>
+                  <option value="exercise">Exercise</option>
+                </select>
+              </div>
+
+              {/* Nếu type = content => chọn JLPT Level */}
+              {formChoose.type === 'content' && (
+                <>
+                  <div>
+                    <label>JLPT Level:</label>
+                    <select
+                      value={formChoose.jlptLevel}
+                      onChange={(e) => handleWhenChooseLever(e.target.value)}
+                      className="border p-2 ml-2"
+                    >
+                      <option value="">-- Select Level --</option>
+                      {listLever.map((level) => (
+                        <option key={level} value={level}>{level}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Nếu đã chọn level thì hiển thị chọn content */}
+                  {formChoose.jlptLevel && (
+                    <div>
+                      <label>Content Listening:</label>
+                      <select
+                        value={formChoose.contentListeningId}
+                        onChange={(e) => handleWhenChooseContentListening(e.target.value)}
+                        className="border p-2 ml-2"
+                      >
+                        <option value="">-- Select Content --</option>
+                        {listContentListening.map((content) => (
+                          <option key={content.contentListeningId} value={content.contentListeningId}>{content.title}</option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
+                </>
+              )}
+
+              {/* Nếu type = exercise => chọn Subject, Lesson, Exercise */}
+              {formChoose.type === 'exercise' && (
+                <>
+                  <div>
+                    <label>Subject:</label>
+                    <select
+                      value={formChoose.subjectId}
+                      onChange={(e) => handleWhenChooseSubject(e.target.value)}
+                      className="border p-2 ml-2"
+                    >
+                      <option value="">-- Select Subject --</option>
+                      {listSubject.map((sub) => (
+                        <option key={sub.subjectId} value={sub.subjectId}>{sub.subjectName}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {formChoose.subjectId && (
+                    <div>
+                      <label>Lesson:</label>
+                      <select
+                        value={formChoose.lessonId}
+                        onChange={(e) => handleWhenChooseLesson(e.target.value)}
+                        className="border p-2 ml-2"
+                      >
+                        <option value="">-- Select Lesson --</option>
+                        {listLesson.map((lesson) => (
+                          <option key={lesson.lessonId} value={lesson.lessonId}>{lesson.name}</option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
+
+                  {formChoose.lessonId && (
+                    <div>
+                      <label>Exercise:</label>
+                      <select
+                        value={formChoose.exerciseId}
+                        onChange={(e) => handleWhenChooseExercise(e.target.value)}
+                        className="border p-2 ml-2"
+                      >
+                        <option value="">-- Select Exercise --</option>
+                        {listExercise.map((ex) => (
+                          <option key={ex.id} value={ex.id}>{ex.title}</option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
             <div className="mt-6 flex justify-end space-x-3">
               <button
                 type="button"
                 onClick={() => {
                   setIsAdding(false);
                   setIsEditing(null);
-                  setFormData({
-                    questionText: '',
-                    answerQuestions: [{ answerText: '', correct: false }],
-                    content_listening_id: contentListeningId
-                  });
+                  handleSetNullAll();
                 }}
                 className="btn-outline"
               >
@@ -294,59 +527,65 @@ function QuestionManagement() {
       {/* Questions List */}
       <div className="card">
         {filteredQuestions?.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="space-y-4">
             {filteredQuestions.map((question) => (
-              <div key={question.exerciseQuestionId} className="p-6 border rounded-lg shadow hover:bg-gray-50 flex flex-col justify-between">
-                <div className="flex-1">
-                  <p className="font-medium text-gray-900 mb-2">{question.questionText}</p>
-                  <ul className="space-y-1">
-                    {question.answerQuestions.map((answer, index) => (
-                      <li
-                        key={index}
-                        className={`text-sm ${answer.correct
-                          ? 'text-success-600 font-medium'
-                          : 'text-gray-600'
-                          }`}
-                      >
-                        {answer.answerText}
-                        {answer.correct && ' ✓'}
-                      </li>
-                    ))}
-                  </ul>
+              <div
+                key={question.exerciseQuestionId}
+                className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm hover:shadow-md transition"
+              >
+                {/* Question + Status */}
+                <div className="flex items-center justify-between mb-3">
+                  <p className="text-sm font-semibold text-gray-900">
+                    {question.questionText}
+                  </p>
+                  <span
+                    className={`
+                text-xs font-semibold px-2 py-1 rounded-full
+                ${question.status === 'DRAFT'
+                        ? 'bg-gray-200 text-gray-700'
+                        : question.status === 'REJECT'
+                          ? 'bg-red-200 text-red-700'
+                          : question.status === 'PUBLIC'
+                            ? 'bg-green-200 text-green-700'
+                            : 'bg-gray-100 text-gray-500'}
+              `}
+                  >
+                    {question.status}
+                  </span>
                 </div>
 
-                <div className="mt-4 flex justify-end items-center">
-                  {showDeleteConfirm === question.exerciseQuestionId ? (
-                    <div className="flex items-center space-x-2">
-                      <span className="text-xs text-gray-500">Delete?</span>
-                      <button
-                        onClick={() => handleDelete(question.exerciseQuestionId)}
-                        className="text-error-500 hover:text-error-700"
-                      >
-                        <Check size={16} />
-                      </button>
-                      <button
-                        onClick={() => setShowDeleteConfirm(null)}
-                        className="text-gray-500 hover:text-gray-700"
-                      >
-                        <X size={16} />
-                      </button>
+                {/* Answer list */}
+                <div className="space-y-2">
+                  {question.answerQuestions.map((answer, aIndex) => (
+                    <div
+                      key={aIndex}
+                      className={`
+                  flex items-center space-x-2 text-sm px-3 py-2 rounded-md border
+                  ${answer.correct
+                          ? 'bg-green-50 text-green-800 border-green-200'
+                          : 'bg-gray-50 text-gray-700 border-gray-200'}
+                `}
+                    >
+                      <span className="h-5 w-5 rounded-full border flex items-center justify-center text-xs font-bold bg-white">
+                        {String.fromCharCode(65 + aIndex)}
+                      </span>
+                      <span className="flex-1">{answer.answerText}</span>
+                      {answer.correct && (
+                        <Check className="h-4 w-4 text-green-600" />
+                      )}
                     </div>
-                  ) : (
-                    <>
-                      <button
-                        onClick={() => startUpdate(question)}
-                        className="text-primary-600 hover:text-primary-800 mr-2"
-                      >
-                        <Edit size={16} />
-                      </button>
-                      <button
-                        onClick={() => setShowDeleteConfirm(question.exerciseQuestionId)}
-                        className="text-error-500 hover:text-error-700"
-                      >
-                        <Trash2 size={16} />
-                      </button>
-                    </>
+                  ))}
+                </div>
+
+                {/* Action buttons */}
+                <div className="flex justify-end pt-4 space-x-2">
+                  {(question.status === 'DRAFT' || question.status === 'REJECT') && (
+                    <button
+                      onClick={() => startUpdate(question)}
+                      className="text-blue-600 hover:text-blue-800"
+                    >
+                      <Edit size={16} />
+                    </button>
                   )}
                 </div>
               </div>

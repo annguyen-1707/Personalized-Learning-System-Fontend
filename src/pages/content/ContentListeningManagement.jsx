@@ -527,15 +527,17 @@ function ListeningContentManagement() {
                       </span>
                     </td>
                     <td className="px-4 py-2 space-y-1">
-                      <Link
-                        to={`/admin/content_listening/${content.contentListeningId}/question`}
-                        className="flex items-center text-blue-600 hover:underline mb-1"
-                      >
-                        <MessageCircleQuestion size={14} className="mr-1" />
-                        Question
-                      </Link>
+                      {isContentManagerment&& (
+                        <Link
+                          to={`/admin/content_listening/${content.contentListeningId}/question`}
+                          className="flex items-center text-blue-600 hover:underline mb-1"
+                        >
+                          <MessageCircleQuestion size={14} className="mr-1" />
+                          Question
+                        </Link>
+                     )}
                       <div className="flex space-x-2">
-                        {isStaff && (
+                        {isStaff && content.status != 'PUBLIC' && (
                           <button
                             onClick={() => startUpdate(content)}
                             className="text-primary-600 hover:text-primary-800"

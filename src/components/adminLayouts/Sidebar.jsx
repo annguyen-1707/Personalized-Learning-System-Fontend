@@ -67,8 +67,8 @@ function Sidebar({ open, setOpen }) {
           ],
         },
         {
-          name: "Exercise Bank",
-          href: "/admin/exercise-bank",
+          name: "Question Bank",
+          href: "/admin/question-bank",
           icon: MessageCircleQuestion,
         },
         {
@@ -143,7 +143,6 @@ function Sidebar({ open, setOpen }) {
             <span className="text-lg font-bold text-gray-900">LearnSys</span>
           </Link>
         </div>
-        1
         {/* content managementent */}
         <div className="mt-5 px-4 h-[calc(100vh-64px)] overflow-y-auto">
           <nav className="space-y-1">

@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react';
 import { Plus, Search, Edit, Trash2, Check, X, MessageSquare } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { getPageContentSpeaking, handleUpdateContent, fetchAllContentCategorySpeaking, handleCreateContent, 
-  handleDeleteContent, acceptContent ,rejectContent} from '../../services/ContentSpeakingService';
+import {
+  getPageContentSpeaking, handleUpdateContent, fetchAllContentCategorySpeaking, handleCreateContent,
+  handleDeleteContent, acceptContent, rejectContent
+} from '../../services/ContentSpeakingService';
 import ReactPaginate from 'react-paginate';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { toast } from "react-toastify";
@@ -134,7 +136,6 @@ function SpeakingContentManagement() {
         toast.error("Cập nhật content thất bại!");
       }
     }
-
   };
 
   const handleChangeSize = async (newSize) => {
@@ -346,7 +347,7 @@ function SpeakingContentManagement() {
                 )}
               </div>
 
-               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {/* JLPT Level */}
                 <div>
                   <label className="block mb-1 text-sm font-medium text-gray-700">JLPT Level</label>
@@ -438,20 +439,20 @@ function SpeakingContentManagement() {
                   <td className="px-4 py-2">{content.category}</td>
                   <td className="px-4 py-2">{content.jlptLevel || "N/A"}</td>
 
-                  
-                    {/* Status */}
-                    <td className="px-4 py-2">
-                      <span
-                        className={`text-xs px-2 py-1 rounded font-medium ${content.status === "PUBLIC"
-                          ? "bg-green-100 text-green-700"
-                          : content.status === "REJECT"
-                            ? "bg-red-100 text-red-700"
-                            : "bg-gray-100 text-gray-700"
-                          }`}
-                      >
-                        {content.status}
-                      </span>
-                    </td>
+
+                  {/* Status */}
+                  <td className="px-4 py-2">
+                    <span
+                      className={`text-xs px-2 py-1 rounded font-medium ${content.status === "PUBLIC"
+                        ? "bg-green-100 text-green-700"
+                        : content.status === "REJECT"
+                          ? "bg-red-100 text-red-700"
+                          : "bg-gray-100 text-gray-700"
+                        }`}
+                    >
+                      {content.status}
+                    </span>
+                  </td>
 
                   <td className="px-4 py-2">
                     {new Date(content.createdAt).toLocaleDateString()}
@@ -464,80 +465,82 @@ function SpeakingContentManagement() {
                   </td>
 
                   <td className="px-4 py-2 space-y-1">
-                    <Link
-                      to={`/admin/content_speaking/${content.contentSpeakingId}/dialogue`}
-                      className="flex items-center text-blue-600 hover:underline mb-1"
-                    >
-                      <MessageSquare size={14} className="mr-1" />
-                      Dialogue
-                    </Link>
-                        <div className="flex space-x-2">
-                        {isStaff && (
-                          <button
-                            onClick={() => startUpdate(content)}
-                            className="text-primary-600 hover:text-primary-800"
-                          >
-                            <Edit size={16} />
-                          </button>
-                        )}
+                    {isContentManagerment && (
+                      <Link
+                        to={`/admin/content_speaking/${content.contentSpeakingId}/dialogue`}
+                        className="flex items-center text-blue-600 hover:underline mb-1"
+                      >
+                        <MessageSquare size={14} className="mr-1" />
+                        Dialogue
+                      </Link>
+                    )}
+                    <div className="flex space-x-2">
+                      {isStaff && content.status != 'PUBLIC' && (
+                        <button
+                          onClick={() => startUpdate(content)}
+                          className="text-primary-600 hover:text-primary-800"
+                        >
+                          <Edit size={16} />
+                        </button>
+                      )}
 
-                        {showDeleteConfirm === content.contentSpeakingId ? (
-                          <>
-                            <button
-                              onClick={() => {
-                                handleDelete(content.contentSpeakingId);
-                                setShowDeleteConfirm(null);
-                              }}
-                              className="text-error-500 hover:text-error-700"
-                            >
-                              <Check size={16} />
-                            </button>
-                            <button
-                              onClick={() => setShowDeleteConfirm(null)}
-                              className="text-gray-500 hover:text-gray-700"
-                            >
-                              <X size={16} />
-                            </button>
-                          </>
-                        ) : isContentManagerment && (
+                      {showDeleteConfirm === content.contentSpeakingId ? (
+                        <>
                           <button
-                            onClick={() => setShowDeleteConfirm(content.contentSpeakingId)}
+                            onClick={() => {
+                              handleDelete(content.contentSpeakingId);
+                              setShowDeleteConfirm(null);
+                            }}
                             className="text-error-500 hover:text-error-700"
                           >
-                            <Trash2 size={16} />
+                            <Check size={16} />
                           </button>
-                        )}
-                      </div>
-                      {isContentManagerment && content.status === "DRAFT" && (
-                        <div className="flex gap-3 mt-2">
                           <button
-                            onClick={() => handleAccept(content.contentSpeakingId)}
-                            className="flex items-center bg-green-600 hover:bg-green-700 text-white px-1 py-1 rounded"
+                            onClick={() => setShowDeleteConfirm(null)}
+                            className="text-gray-500 hover:text-gray-700"
                           >
-                            <Check size={16} className="mr-1" />
-                            Accept
+                            <X size={16} />
                           </button>
+                        </>
+                      ) : isContentManagerment && (
+                        <button
+                          onClick={() => setShowDeleteConfirm(content.contentSpeakingId)}
+                          className="text-error-500 hover:text-error-700"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      )}
+                    </div>
+                    {isContentManagerment && content.status === "DRAFT" && (
+                      <div className="flex gap-3 mt-2">
+                        <button
+                          onClick={() => handleAccept(content.contentSpeakingId)}
+                          className="flex items-center bg-green-600 hover:bg-green-700 text-white px-1 py-1 rounded"
+                        >
+                          <Check size={16} className="mr-1" />
+                          Accept
+                        </button>
 
-                          <button
-                            onClick={() => handleReject(content.contentSpeakingId)}
-                            className="flex items-center bg-red-600 hover:bg-red-700 text-white px-1 py-1 rounded"
-                          >
-                            <X size={16} className="mr-1" />
-                            Reject
-                          </button>
-                        </div>
-                      )}
-                      {isContentManagerment && content.status === "PUBLIC" && (
-                        <div className="flex gap-4 mt-2">
-                          <button
-                            onClick={() => handleReject(content.contentSpeakingId)}
-                            className="flex items-center bg-red-600 hover:bg-red-700 text-white px-1 py-1 rounded"
-                          >
-                            <X size={16} className="mr-1" />
-                            Reject
-                          </button>
-                        </div>
-                      )}
+                        <button
+                          onClick={() => handleReject(content.contentSpeakingId)}
+                          className="flex items-center bg-red-600 hover:bg-red-700 text-white px-1 py-1 rounded"
+                        >
+                          <X size={16} className="mr-1" />
+                          Reject
+                        </button>
+                      </div>
+                    )}
+                    {isContentManagerment && content.status === "PUBLIC" && (
+                      <div className="flex gap-4 mt-2">
+                        <button
+                          onClick={() => handleReject(content.contentSpeakingId)}
+                          className="flex items-center bg-red-600 hover:bg-red-700 text-white px-1 py-1 rounded"
+                        >
+                          <X size={16} className="mr-1" />
+                          Reject
+                        </button>
+                      </div>
+                    )}
                   </td>
                 </tr>
               ))}
