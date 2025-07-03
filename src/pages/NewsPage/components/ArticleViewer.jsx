@@ -75,7 +75,7 @@ function ArticleViewer({ article }) {
   // Check initial completion status when article changes
   useEffect(() => {
     const userId = user?.id || user?.userId || user?._id;
-
+    console.log('Checking completion status for user:', userId, 'and article:', article?.id);
     if (userId && article?.id) {
       // Fix to call API correctly
       axios.get('/api/progressReading/checkStatus', {
