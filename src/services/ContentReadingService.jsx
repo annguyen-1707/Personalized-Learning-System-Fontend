@@ -134,8 +134,12 @@ const getGrammarByContentReadingId = async (id) => {
 const acceptContent = (id) => {
     return axios.patch(`/api/content_reading/accept/${id}`)
 }
+
+const rejectContent = (id) => {
+    return axios.patch(`/api/content_reading/reject/${id}`)
+}
 export {
     getPageContentReading, handleUpdateContent, fetchAllContentReading, fetchAllContentCategoryReading, handleCreateContent, handleDeleteContent,
     getPageAllVocabulary, handleAddVocabulary, handleRemoveVocabulary, getVocabularyByContentReadingId, getPageAllGrammar, handleAddGrammar, handleRemoveGrammar
-    , getGrammarByContentReadingId, acceptContent
+    , getGrammarByContentReadingId, acceptContent,rejectContent
 }
