@@ -29,7 +29,7 @@ function QuizPage() {
       } catch (error) {
         console.error('Lỗi khi gọi API:', error);
       } finally {
-        setLoading(true);
+        setLoading(false);
       }
     };
     fetchQuiz();
