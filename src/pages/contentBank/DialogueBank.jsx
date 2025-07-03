@@ -65,6 +65,10 @@ function DialogueManagement() {
         });
     };
 
+    const getAll = async() => {
+        
+    }
+
     const handleDelete = async (id) => {
         await handleDeleteDialogue(id);
         await getDialoguePage(currentPage);
@@ -165,6 +169,7 @@ function DialogueManagement() {
                     </div>
                 </div>
             </div>
+
 
             {/* Add/Edit Form */}
             {(isAdding || isEditing) && (
