@@ -55,6 +55,9 @@ import QuizPage from "./QuizPage/QuizPage.jsx";
 import QuestionManagement from "./pages/content/QuestionManagement.jsx";
 import VocabularyBank from "./pages/contentBank/VocabularyBank.jsx";
 import GrammarBank from "./pages/contentBank/GrammarBank.jsx";
+import NotFound from "./pages/auth/PageNotFound.jsx";
+import WebSocketTest from "./websocketTest.jsx";
+import ErrorPage from "./pages/auth/ErrorPage.jsx";
 
 function App() {
   const [notificationOpen, setNotificationOpen] = useState(false);
@@ -66,6 +69,8 @@ function App() {
         <Routes>
           <Route path="/" element={<Layout onNotificationClick={() => setNotificationOpen(true)} />}>
             {/* Trang chính */}
+            <Route path="/websocket" element={<WebSocketTest />} />
+
             <Route index element={<HomePage />} />
             <Route path="upgrade" element={<UpgradePage />} />
             <Route path="vnpay-return" element={<VnpayReturn />} />
@@ -86,6 +91,7 @@ function App() {
             <Route path="learning/:subjectId/lesson/:lessonId" element={<LessonPage />} />
 
             {/* Favorites */}
+
             <Route path="favorites" element={<FavoriteFoldersPage />} />
             <Route path="favorites/:folderId" element={<FavoriteFolderDetailsPage />} />
 
@@ -94,7 +100,7 @@ function App() {
             {/* News */}
             <Route path="news" element={<NewsPage />} />
 
-            
+
             <Route path="quiz" element={<QuizPage />} />
 
           </Route>
@@ -254,6 +260,8 @@ function App() {
               </AdminRoute>}
             />
           </Route>
+          <Route path="*" element={<NotFound />} />
+          <Route path="/error" element={<ErrorPage />} />
         </Routes>
         <NotificationSlider
           open={notificationOpen}
@@ -271,9 +279,12 @@ function App() {
           pauseOnHover
           theme="light"
         />
+
       </DataProvider>
     </AuthProvider >
+
   );
+
 }
 
 export default App;

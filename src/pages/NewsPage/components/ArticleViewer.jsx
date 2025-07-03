@@ -2,45 +2,23 @@ import { useState, useEffect, useCallback } from 'react'
 import { motion } from 'framer-motion'
 import { FiClock, FiBookmark, FiShare2, FiExternalLink, FiCheck } from 'react-icons/fi'
 import NewsImg from './NewsImg';
-import axios from 'axios';
+import axios from '../../../services/customixe-axios';
 import NewsAudio from './NewsAudio';
 import { useAuth } from '../../../context/AuthContext';
 import { toast } from 'react-toastify';
 
-// Create axios instance
-const api = axios.create({
-  baseURL: 'http://localhost:8080'
-});
+
 
 function ArticleViewer({ article }) {
+  // Add user from auth context
   const { user } = useAuth();
-
-  // Set up interceptor after component mounts and auth is available
-  useEffect(() => {
-
-    const interceptor = api.interceptors.request.use(
-      config => {
-        // Try to get token from auth context first, then localStorage
-        const token = user?.token || localStorage.getItem('accessToken') || localStorage.getItem('token');
-        console.log('Token from context or storage:', !!token);
-        if (token) {
-          config.headers.Authorization = `Bearer ${token}`;
-        }
-        return config;
-      },
-      error => Promise.reject(error)
-    );
-
-    // Clean up interceptor when component unmounts
-    return () => api.interceptors.request.eject(interceptor);
-  }, [user]);
 
   const [showTranslation, setShowTranslation] = useState(false)
   const [showVocab, setShowVocab] = useState(false)
   const [showGrammar, setShowGrammar] = useState(false)
   const [vocabData, setVocabData] = useState([])
   const [grammarData, setGrammarData] = useState([])
-  const [isDone, setIsDone] = useState(true)
+  const [isDone, setIsDone] = useState(false)
   const [audioUrl, setAudioUrl] = useState(null)
   const [isMarking, setIsMarking] = useState(false)
 
@@ -64,11 +42,11 @@ function ArticleViewer({ article }) {
   useEffect(() => {
     if (showVocab && article?.id) {
       setVocabData([]); // loading
-      api.get(`/content_reading/${article.id}/vocabularies`)
+      axios.get(`/api/content_reading/${article.id}/vocabularies`)
         .then(res => {
-          console.log('Vocab response:', res.data);
+          console.log('Vocab response:', res);
           // Display received JSON data for debugging
-          setVocabData(res.data.data || []);
+          setVocabData(res.data || []);
         })
         .catch(err => {
           console.error('Vocab error:', err);
@@ -81,11 +59,11 @@ function ArticleViewer({ article }) {
   useEffect(() => {
     if (showGrammar && article?.id) {
       setGrammarData([]); // loading
-      api.get(`/content_reading/${article.id}/grammars`)
+      axios.get(`/api/content_reading/${article.id}/grammars`)
         .then(res => {
-          console.log('Grammar response:', res.data);
+          console.log('Grammar response:', res);
           // Display received JSON data for debugging
-          setGrammarData(res.data.data || []);
+          setGrammarData(res || []);
         })
         .catch(err => {
           console.error('Grammar error:', err);
@@ -100,131 +78,62 @@ function ArticleViewer({ article }) {
     console.log('Checking completion status for user:', userId, 'and article:', article?.id);
     if (userId && article?.id) {
       // Fix to call API correctly
-      api.get('/api/progressReading/checkStatus', {
+      axios.get('/api/progressReading/checkStatus', {
         params: {
           userId: userId,
           contentReadingId: article.id
         }
       })
-        .then(res => {
-          console.log("res", res)
-          if (res.data) {
-            setIsDone(true);
-          } else {
-            setIsDone(false);
-          }
-        }
-      )
-      
-        .catch(err => {
-          console.error('Error checking reading progress:', err);
+      .then(res => {
+        if (res.data) {
+          console.log('Reading progress status:', res);
+          setIsDone(true);
+        } else {
+          console.log('Reading progress status:', res);
           setIsDone(false);
-        });
+        }
+      })
+      .catch(err => {
+        console.error('Error checking reading progress:', err);
+        setIsDone(false);
+      });
     }
   }, [article?.id, user]);
 
   // Updated handleMarkAsDone function to call your API
-  // const handleMarkAsDone = async () => {
-  //   setIsMarking(true);
-  //   try {
-  //     // Get userId from user context
-  //     const userId = user?.id || user?.userId || user?._id;
-  //     if (!userId || !article?.id) {
-  //       toast.error('User or article information missing.');
-  //       setIsMarking(false);
-  //       return;
-  //     }
-  //     // 1. Gọi API mark as done
-  //     const markResponse = await api.post('/api/progressReading/markAsDone', null, {
-  //       params: { userId, contentReadingId: article.id }
-  //     });
-  //     console.log('Mark response:', markResponse.data);
+ const handleMarkAsDone = () => {
+  const userId = user?.id || user?.userId || user?._id;
 
-  //     // 2. Gọi check status
-  //     const statusResponse = await api.get('/api/progressReading/checkStatus', {
-  //       params: { userId, contentReadingId: article.id }
-  //     });
-  //     console.log('Status response:', statusResponse.data);
+  if (!userId) {
+    toast.error('User ID not found. Please log in again.');
+    return;
+  }
 
-  //     // 3. Cập nhật state
-  //     const newStatus = statusResponse.data?.data?.progressStatus === "Completed";
-  //     console.log('Should update isDone to:', newStatus);
-  //     setIsDone(newStatus);
+  setIsMarking(true);
 
-  //   } catch (error) {
-  //     console.error('Full error:', error.response?.data || error.message);
-  //   } finally {
-  //     setIsMarking(false);
-  //   }
-  // };
-  const handleMarkAsDone = async () => {
-    const userId = user?.id || user?.userId || user?._id;
-    if (!userId) {
-      toast.error('Please login again');
-      return;
+  axios.post('/api/progressReading/markAsDone', null, {
+    params: {
+      userId: userId,
+      contentReadingId: article.id
     }
-
-    setIsMarking(true);
-    try {
-      // 1. Gọi API mark as done
-      const markResponse = await api.post('/api/progressReading/markAsDone', null, {
-        params: {
-          userId: userId,
-          contentReadingId: article.id
-        }
-      });
-      console.log('Mark response:', markResponse.data);
-
-      // 2. Optimistic UI update
-      setIsDone(true);
-
-      // 3. Verify với backend (optional)
-      const statusResponse = await api.get('/api/progressReading/checkStatus', {
-        params: {
-          userId: userId,
-          contentReadingId: article.id
-        }
-      });
-      console.log('Status verification:', statusResponse.data);
-
-      if (!statusResponse.data.data) {
-        setIsDone(false);
-        throw new Error('Verification failed');
+  })
+    .then(res => {
+      if (res) {
+        setIsDone(true);
+        toast.success('Progress saved successfully!');
+      } else {
+        toast.error('Failed to save progress.');
       }
-
-      toast.success('Progress saved successfully!');
-    } catch (error) {
-      console.error('Error:', error.response?.data || error.message);
-      setIsDone(false);
-      toast.error(error.response?.data?.message || 'Failed to save progress');
-    } finally {
+    })
+    .catch(err => {
+      console.error('Error marking as done:', err);
+      toast.error('Failed to save progress. Please try again.');
+    })
+    .finally(() => {
       setIsMarking(false);
-    }
-  };
+    });
+};
 
-
-  // Enhanced version with useCallback (if you want to use it)
-  const checkCompletionStatus = useCallback(async () => {
-    try {
-      const userId = user?.id || user?.userId || user?._id;
-      if (!userId || !article?.id) return;
-
-      const response = await api.get('/api/progressReading/isDoneReading', {
-        params: {
-          userId: userId,
-          contentReadingId: article.id
-        }
-      });
-
-      console.log('Check status response:', response.data);
-      setIsDone(response.data.data === true);
-    } catch (error) {
-      console.error('Error checking status:', error);
-      // setIsDone(false);
-    }
-  }, [user, article?.id]);
-
-  // Function to render action button
   const renderActionButton = () => {
     if (!user) {
       return (
