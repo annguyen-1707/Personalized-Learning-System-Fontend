@@ -51,10 +51,11 @@ import AdminRoute from "./context/AdminRoute.jsx";
 import DenyAdmin from "././pages/auth/DenyAdmin.jsx"
 import FlashcardsPage from './pages/FlashcardsPage/FlashcardsPage.jsx'
 import QuizPage from "./QuizPage/QuizPage.jsx";
-
 import QuestionManagement from "./pages/content/QuestionManagement.jsx";
 import VocabularyBank from "./pages/contentBank/VocabularyBank.jsx";
 import GrammarBank from "./pages/contentBank/GrammarBank.jsx";
+import QuestionBank from "./pages/contentBank/QuestionBank.jsx";
+import DialogueBank from "./pages/contentBank/DialogueBank.jsx";
 
 function App() {
   const [notificationOpen, setNotificationOpen] = useState(false);
@@ -94,7 +95,7 @@ function App() {
             {/* News */}
             <Route path="news" element={<NewsPage />} />
 
-            
+
             <Route path="quiz" element={<QuizPage />} />
 
           </Route>
@@ -113,17 +114,16 @@ function App() {
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/admin/login" element={<Login />} />
           <Route path="/await-confirmation" element={<AwaitEmailConfirmation />} />
-
+          <Route
+            path="deny"
+            element={<DenyAdmin />}>
+          </Route>
           {/* Làm bài tập */}
           <Route path="/do-exercise/:exerciseId" element={<DoExercise />} />
 
           <Route path="/admin" element={<AdminRoute allowedRoles={["STAFF", "CONTENT_MANAGER", "SUPER_ADMIN", "USER_MANAGER"]}>
             <MainLayout />
           </AdminRoute>}>
-            <Route
-              path="deny"
-              element={<DenyAdmin />}>
-            </Route>
             <Route
               path="content-bank/vocabulary"
               element={<AdminRoute allowedRoles={["STAFF", "CONTENT_MANAGER", "SUPER_ADMIN"]}>
@@ -137,6 +137,18 @@ function App() {
               </AdminRoute>}
             />
             <Route
+              path="question-bank"
+              element={<AdminRoute allowedRoles={["STAFF", "SUPER_ADMIN"]}>
+                <QuestionBank />
+              </AdminRoute>}
+            />
+            <Route
+              path="dialogue-bank"
+              element={<AdminRoute allowedRoles={["STAFF", "SUPER_ADMIN"]}>
+                <DialogueBank />
+              </AdminRoute>}
+            />
+            <Route
               path="content_speaking"
               element={<AdminRoute allowedRoles={["STAFF", "CONTENT_MANAGER", "SUPER_ADMIN"]}>
                 <ContentSpeakingManagement />
@@ -144,7 +156,7 @@ function App() {
             />
             <Route
               path="content_speaking/:contentSpeakingId/dialogue"
-              element={<AdminRoute allowedRoles={["STAFF", "CONTENT_MANAGER", "SUPER_ADMIN"]}>
+              element={<AdminRoute allowedRoles={["CONTENT_MANAGER", "SUPER_ADMIN"]}>
                 <DialogueManagement />
               </AdminRoute>}
             />
@@ -156,13 +168,13 @@ function App() {
             />
             <Route
               path="content_reading/:contentReadingId/vocabulary"
-              element={<AdminRoute allowedRoles={["STAFF", "CONTENT_MANAGER", "SUPER_ADMIN"]}>
+              element={<AdminRoute allowedRoles={["CONTENT_MANAGER", "SUPER_ADMIN"]}>
                 <VocabularyManagement />
               </AdminRoute>}
             />
             <Route
               path="content_reading/:contentReadingId/grammar"
-              element={<AdminRoute allowedRoles={["STAFF", "CONTENT_MANAGER", "SUPER_ADMIN"]}>
+              element={<AdminRoute allowedRoles={[ "CONTENT_MANAGER", "SUPER_ADMIN"]}>
                 <GrammarManagement />
               </AdminRoute>}
             />
@@ -174,7 +186,7 @@ function App() {
             />
             <Route
               path="content_listening/:contentListeningId/question"
-              element={<AdminRoute allowedRoles={["STAFF", "CONTENT_MANAGER", "SUPER_ADMIN"]}>
+              element={<AdminRoute allowedRoles={[ "CONTENT_MANAGER", "SUPER_ADMIN"]}>
                 <QuestionManagement />
               </AdminRoute>}
             />

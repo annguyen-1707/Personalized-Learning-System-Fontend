@@ -1,8 +1,10 @@
 import { useState, useEffect } from 'react';
 import { Plus, Search, Edit, Trash2, Check, X, Image, Clock, Book, FileText, LayoutPanelTop, WholeWord } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { getPageContentReading, handleUpdateContent, fetchAllContentCategoryReading, handleCreateContent, 
-  handleDeleteContent, acceptContent,rejectContent } from '../../services/ContentReadingService';
+import {
+  getPageContentReading, handleUpdateContent, fetchAllContentCategoryReading, handleCreateContent,
+  handleDeleteContent, acceptContent, rejectContent
+} from '../../services/ContentReadingService';
 import ReactPaginate from 'react-paginate';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { toast } from "react-toastify";
@@ -534,102 +536,106 @@ function ReadingContentManagement() {
                   <td className="px-4 py-2 text-gray-700 line-clamp ">{content.scriptVn}</td>
                   <td className="px-4 py-2">{content.category}</td>
                   <td className="px-4 py-2">{content.jlptLevel || "N/A"}</td>
-                   {/* Status */}
-                    <td className="px-4 py-2">
-                      <span
-                        className={`text-xs px-2 py-1 rounded font-medium ${content.status === "PUBLIC"
-                          ? "bg-green-100 text-green-700"
-                          : content.status === "REJECT"
-                            ? "bg-red-100 text-red-700"
-                            : "bg-gray-100 text-gray-700"
-                          }`}
-                      >
-                        {content.status}
-                      </span>
-                    </td>
+                  {/* Status */}
+                  <td className="px-4 py-2">
+                    <span
+                      className={`text-xs px-2 py-1 rounded font-medium ${content.status === "PUBLIC"
+                        ? "bg-green-100 text-green-700"
+                        : content.status === "REJECT"
+                          ? "bg-red-100 text-red-700"
+                          : "bg-gray-100 text-gray-700"
+                        }`}
+                    >
+                      {content.status}
+                    </span>
+                  </td>
                   <td className="px-4 py-2">{new Date(content.timeNew).toLocaleDateString()}</td>
                   <td className="px-4 py-2 space-y-1">
-                    <Link
-                      to={`/admin/content_reading/${content.contentReadingId}/vocabulary`}
-                      className="flex items-center text-blue-600 hover:underline mb-1"
-                    >
-                      <WholeWord size={14} className="mr-1" />
-                      Vocabulary
-                    </Link>
-                    <Link
-                      to={`/admin/content_reading/${content.contentReadingId}/grammar`}
-                      className="flex items-center text-blue-600 hover:underline mb-1"
-                    >
-                      <LayoutPanelTop size={14} className="mr-1" />
-                      Grammar
-                    </Link>
+                    {isContentManagerment && (
+                      <div>
+                        <Link
+                          to={`/admin/content_reading/${content.contentReadingId}/vocabulary`}
+                          className="flex items-center text-blue-600 hover:underline mb-1"
+                        >
+                          <WholeWord size={14} className="mr-1" />
+                          Vocabulary
+                        </Link>
+                        <Link
+                          to={`/admin/content_reading/${content.contentReadingId}/grammar`}
+                          className="flex items-center text-blue-600 hover:underline mb-1"
+                        >
+                          <LayoutPanelTop size={14} className="mr-1" />
+                          Grammar
+                        </Link>
+                      </div>
+                    )}
                     <div className="flex space-x-2">
-                        {isStaff && (
-                          <button
-                            onClick={() => startUpdate(content)}
-                            className="text-primary-600 hover:text-primary-800"
-                          >
-                            <Edit size={16} />
-                          </button>
-                        )}
+                      {isStaff && content.status != 'PUBLIC' &&(
+                        <button
+                          onClick={() => startUpdate(content)}
+                          className="text-primary-600 hover:text-primary-800"
+                        >
+                          <Edit size={16} />
+                        </button>
+                      )}
 
-                        {showDeleteConfirm === content.contentReadingId ? (
-                          <>
-                            <button
-                              onClick={() => {
-                                handleDelete(content.contentReadingId);
-                                setShowDeleteConfirm(null);
-                              }}
-                              className="text-error-500 hover:text-error-700"
-                            >
-                              <Check size={16} />
-                            </button>
-                            <button
-                              onClick={() => setShowDeleteConfirm(null)}
-                              className="text-gray-500 hover:text-gray-700"
-                            >
-                              <X size={16} />
-                            </button>
-                          </>
-                        ) : isContentManagerment && (
+                      {showDeleteConfirm === content.contentReadingId ? (
+                        <>
                           <button
-                            onClick={() => setShowDeleteConfirm(content.contentReadingId)}
+                            onClick={() => {
+                              handleDelete(content.contentReadingId);
+                              setShowDeleteConfirm(null);
+                            }}
                             className="text-error-500 hover:text-error-700"
                           >
-                            <Trash2 size={16} />
+                            <Check size={16} />
                           </button>
-                        )}
-                      </div>
-                      {isContentManagerment && content.status === "DRAFT" && (
-                        <div className="flex gap-3 mt-2">
                           <button
-                            onClick={() => handleAccept(content.contentReadingId)}
-                            className="flex items-center bg-green-600 hover:bg-green-700 text-white px-1 py-1 rounded"
+                            onClick={() => setShowDeleteConfirm(null)}
+                            className="text-gray-500 hover:text-gray-700"
                           >
-                            <Check size={16} className="mr-1" />
-                            Accept
+                            <X size={16} />
                           </button>
+                        </>
+                      ) : isContentManagerment && (
+                        <button
+                          onClick={() => setShowDeleteConfirm(content.contentReadingId)}
+                          className="text-error-500 hover:text-error-700"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      )}
+                    </div>
+                    {isContentManagerment && content.status === "DRAFT" && (
+                      <div className="flex gap-3 mt-2">
+                        <button
+                          onClick={() => handleAccept(content.contentReadingId)}
+                          className="flex items-center bg-green-600 hover:bg-green-700 text-white px-1 py-1 rounded"
+                        >
+                          <Check size={16} className="mr-1" />
+                          Accept
+                        </button>
 
-                          <button
-                            onClick={() => handleReject(content.contentReadingId)}
-                            className="flex items-center bg-red-600 hover:bg-red-700 text-white px-1 py-1 rounded"
-                          >
-                            <X size={16} className="mr-1" />
-                            Reject
-                          </button>
-                        </div>
-                      )}
-                      {isContentManagerment && content.status === "PUBLIC" && (
-                        <div className="flex gap-4 mt-2">
-                          <button
-                            onClick={() => handleReject(content.contentReadingId)}
-                            className="flex items-center bg-red-600 hover:bg-red-700 text-white px-1 py-1 rounded"
-                          >
-                            <X size={16} className="mr-1" />
-                            Reject
-                          </button>
-                        </div>
-                      )}
+                        <button
+                          onClick={() => handleReject(content.contentReadingId)}
+                          className="flex items-center bg-red-600 hover:bg-red-700 text-white px-1 py-1 rounded"
+                        >
+                          <X size={16} className="mr-1" />
+                          Reject
+                        </button>
+                      </div>
+                    )}
+                    {isContentManagerment && content.status === "PUBLIC" && (
+                      <div className="flex gap-4 mt-2">
+                        <button
+                          onClick={() => handleReject(content.contentReadingId)}
+                          className="flex items-center bg-red-600 hover:bg-red-700 text-white px-1 py-1 rounded"
+                        >
+                          <X size={16} className="mr-1" />
+                          Reject
+                        </button>
+                      </div>
+                    )}
                   </td>
                   <td className="px-4 py-2">{new Date(content.createdAt).toLocaleDateString()}</td>
                   <td className="px-4 py-2">
