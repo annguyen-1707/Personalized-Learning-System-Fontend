@@ -18,9 +18,8 @@ import { useSearchParams } from "react-router-dom";
 function Flashcard({ card, flipped, setFlipped, isKnown, isSaved, playAudio }) {
   return (
     <div
-      className={`relative h-full w-full perspective-1000 cursor-pointer ${
-        isKnown ? "opacity-60" : ""
-      }`}
+      className={`relative h-full w-full perspective-1000 cursor-pointer ${isKnown ? "opacity-60" : ""
+        }`}
       onClick={() => setFlipped(!flipped)}
     >
       <motion.div
@@ -31,9 +30,8 @@ function Flashcard({ card, flipped, setFlipped, isKnown, isSaved, playAudio }) {
       >
         {/* Front */}
         <div
-          className={`absolute w-full h-full rounded-xl shadow-lg bg-white border-2 ${
-            isSaved ? "border-accent-500" : "border-gray-200"
-          } flex flex-col items-center justify-center p-6`}
+          className={`absolute w-full h-full rounded-xl shadow-lg bg-white border-2 ${isSaved ? "border-accent-500" : "border-gray-200"
+            } flex flex-col items-center justify-center p-6`}
           style={{ backfaceVisibility: "hidden" }}
         >
           <div className="text-4xl font-bold mb-2 text-primary-700">
@@ -73,9 +71,8 @@ function Flashcard({ card, flipped, setFlipped, isKnown, isSaved, playAudio }) {
 
         {/* Back */}
         <div
-          className={`absolute w-full h-full rounded-xl shadow-lg bg-white border-2 ${
-            isSaved ? "border-accent-500" : "border-gray-200"
-          } flex flex-col items-start justify-start p-6`}
+          className={`absolute w-full h-full rounded-xl shadow-lg bg-white border-2 ${isSaved ? "border-accent-500" : "border-gray-200"
+            } flex flex-col items-start justify-start p-6`}
           style={{ backfaceVisibility: "hidden", transform: "rotateY(180deg)" }}
         >
           <div className="text-2xl font-medium mb-2 text-gray-800">
@@ -138,11 +135,10 @@ function FlashcardControls({
       </button>
       <button
         onClick={onKnown}
-        className={`p-3 rounded-full ${
-          isKnown
+        className={`p-3 rounded-full ${isKnown
             ? "bg-success-100 text-success-700 border-success-300"
             : "bg-success-500 text-white"
-        } hover:bg-success-200`}
+          } hover:bg-success-200`}
         title={isKnown ? "Mark Unknown" : "Mark Known"}
       >
         <FiCheck className={`h-5 w-5 ${isKnown ? "opacity-50" : ""}`} />
@@ -338,11 +334,14 @@ export default function FlashcardsPage(words) {
               </motion.div>
             </AnimatePresence>
           </div>
+
+          
           <FlashcardStats
             currentIndex={idx}
             totalCards={cards.length}
             knownCards={known.length}
           />
+          
           <FlashcardControls
             onPrev={prev}
             onNext={next}

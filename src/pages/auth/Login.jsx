@@ -4,14 +4,21 @@ import { useAuth } from '../../context/AuthContext';
 import { BookOpen, Mail, Lock, Github, ToggleLeft as Google, Facebook } from 'lucide-react';
 
 function Login() {
-  const { login, loginWithProvider, loading } = useAuth();
+  const { login, loginWithProvider, loading, handleLogout } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const location = useLocation();
   const [successMessage, setSuccessMessage] = useState('');
   const isAdminLogin = location.pathname.startsWith('/admin');
+  const accessToken = localStorage.getItem('accessToken');
 
+
+  useEffect(() => {
+    if (accessToken) {
+      handleLogout
+    }
+  }, []);
 
   useEffect(() => {
     if (location.state?.successMessage) {
@@ -28,7 +35,7 @@ function Login() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      setError('');
+          setError('');
       await login(email, password, isAdminLogin);
     } catch (err) {
       setError(err.message);
