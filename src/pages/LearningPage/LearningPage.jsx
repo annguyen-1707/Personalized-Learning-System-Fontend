@@ -26,7 +26,6 @@ function LearningPage() {
 
   const fetchCourses = async () => {
     const data = await getAllSubjectsById(currentPage);
-    console.log("Fetched courses:", data);
     setMyCoursesData(data?.content);
     setTotalPages(data?.page?.totalPages);
     setCurrentPage(data?.page?.number);
