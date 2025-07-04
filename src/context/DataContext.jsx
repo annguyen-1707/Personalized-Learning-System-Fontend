@@ -522,7 +522,7 @@ export function DataProvider({ children }) {
 
   const getLessonExercisesById = async (lessonId, page = 1) => {
     try {
-    const response = await fetch(`http://localhost:8080/exercise-questions?lessonId=${lessonId}&page=${page}`, {
+    const response = await fetch(`/api/exercise-questions?lessonId=${lessonId}&page=${page}`, {
       headers: {
         "Content-Type": "application/json",
         "Authorization": `Bearer ${localStorage.getItem('accessToken')}`
