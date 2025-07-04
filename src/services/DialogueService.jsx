@@ -15,8 +15,9 @@ const handleCreateDialogue = async (data) => {
         toast.success("Tạo đoạn hội thoại thành công!");
         return response;
     } catch (error) {
-        console.error(error);
-        toast.error("Tạo đoạn hội thoại thất bại!");
+        const allErrors = error.response?.data?.data?.map(e => `${e.message}`).join(", ");
+        console.error("All error", allErrors)
+        throw new Error(allErrors || "choose content category");
     }
 }
 
