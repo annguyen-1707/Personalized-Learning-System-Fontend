@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import { useParams, Link, useLocation } from "react-router-dom";
 import { useData } from "../../context/DataContext";
+import { useAuth } from '../../context/AuthContext';
+
 import {
   ArrowLeft,
   Plus,
@@ -20,7 +22,6 @@ import { g, s, sub, u } from "framer-motion/client";
 import { GiOpenBook } from "react-icons/gi";
 import { toast } from "react-toastify";
 import ReactPaginate from "react-paginate";
-import { use } from "react";
 
 function LessonManagement() {
   const { subjectId } = useParams();
@@ -34,6 +35,7 @@ function LessonManagement() {
     fetchLessonStatus,
     getSubjectById,
   } = useData();
+  const { user } = useAuth();
 
   const [subject, setSubject] = useState(null);
   const [subjectLessons, setSubjectLessons] = useState([]);
@@ -54,6 +56,21 @@ function LessonManagement() {
     videoPreview: null,
     videoDuration: null,
   });
+
+  const isStaff =
+    user &&
+    Array.isArray(user.role) &&
+    user.role.some(role =>
+      ["STAFF"].includes(role)
+    );
+    
+  const isContentManagerment =
+    user &&
+    Array.isArray(user.role) &&
+    user.role.some(role =>
+      ["CONTENT_MANAGER"].includes(role)
+    );
+
   const [statusOptions, setStatusOptions] = useState([]);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(null);
 

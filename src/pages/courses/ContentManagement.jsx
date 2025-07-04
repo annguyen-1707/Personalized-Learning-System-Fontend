@@ -7,6 +7,8 @@ import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { MultiSectionDigitalClock } from "@mui/x-date-pickers/MultiSectionDigitalClock";
 import dayjs from "dayjs";
 import HandleAddVocabularyInLesson from "./HandleAddVocabularyInLesson";
+  import { useAuth } from '../../context/AuthContext';
+
 
 import {
   ArrowLeft,
@@ -73,6 +75,20 @@ function ContentManagement() {
   const [filter, setFilter] = useState("all");
   const [grammars, setGrammars] = useState([]);
   const [lessonExercises, setLessonExercises] = useState([]);
+  const { user } = useAuth();
+
+   const isStaff =
+    user &&
+    Array.isArray(user.role) &&
+    user.role.some(role =>
+      ["STAFF"].includes(role)
+    );
+  const isContentManagerment =
+    user &&
+    Array.isArray(user.role) &&
+    user.role.some(role =>
+      ["CONTENT_MANAGER"].includes(role)
+    );
 
   // Add these new state variables
   const [showAddQuestion, setShowAddQuestion] = useState(false);
