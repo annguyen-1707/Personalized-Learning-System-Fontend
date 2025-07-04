@@ -47,7 +47,7 @@ function Flashcard({ card, flipped, setFlipped, isKnown, isSaved, playAudio }) {
 
         {/* Back */}
         <div className={`absolute w-full h-full rounded-xl shadow-lg bg-white border-2 ${isSaved ? 'border-accent-500' : 'border-gray-200'} flex flex-col items-start justify-start p-6`} style={{ backfaceVisibility: 'hidden', transform: 'rotateY(180deg)' }}>
-          <div className="text-2xl font-medium mb-2 text-gray-800">{card.translation}</div>
+          <div className="text-2xl font-medium mb-2 text-gray-800 mt-6">{card.translation}</div>
           {card.notes && (
             <div className="mt-2 text-sm p-2 bg-gray-50 rounded text-gray-600 w-full">
               <span className="font-medium">Notes:</span> {card.notes}
