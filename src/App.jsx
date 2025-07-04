@@ -228,7 +228,7 @@ function App() {
             <Route
               path="courses/:subjectId/lessons/:lessonId/exercises/:exerciseId"
               element={
-                <AdminRoute allowedRoles={["STAFF", "CONTENT_MANAGER", "SUPER_ADMIN"]}>
+                <AdminRoute allowedRoles={["CONTENT_MANAGER", "SUPER_ADMIN"]}>
                   <ExerciseManagement />
                 </AdminRoute>
               }
