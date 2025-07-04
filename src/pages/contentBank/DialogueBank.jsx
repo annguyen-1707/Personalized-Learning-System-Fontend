@@ -10,6 +10,8 @@ import {
 import ReactPaginate from 'react-paginate';
 import { getJlptLevel, getStatus } from '../../services/ContentListeningService';
 import { getContentSpeakingByLever } from '../../services/ContentSpeakingService';
+import { toast } from "react-toastify";
+
 
 function DialogueManagement() {
     const [dialogues, setDialogues] = useState([]);
@@ -43,8 +45,7 @@ function DialogueManagement() {
         e.preventDefault();
         const updatedFormData = {
             ...formData,
-            contentSpeakingId: formChoose.contentSpeakingId,
-            exerciseId: formChoose.exerciseId
+            contentSpeakingId: Number(formChoose.contentSpeakingId),
         };
         if (isEditing) {
             try {
@@ -54,22 +55,21 @@ function DialogueManagement() {
                 setIsEditing(null);
                 handleSetNullAll();
             } catch (error) {
-                console.error("Error updating dialogue:", error);
+                setErrorMessage(error.message || "Failed to update Dialogue.");
+                toast.error("CFailed to update Dialogue.!");
             }
         } else {
             try {
-                await handleCreateDialogue(formData);
+                console.log("updatedFormData:", updatedFormData)
+                await handleCreateDialogue(updatedFormData);
                 await getDialoguePage(1);
                 setIsAdding(false);
                 setIsEditing(null);
                 handleSetNullAll();
             } catch (error) {
                 console.error("Error creating dialogue:", error);
-                if (error.response && error.response.data) {
-                    alert(error.response.data.message || "Failed to create dialogue");
-                } else {
-                    alert("An unexpected error occurred");
-                }
+                toast.error("Error creating dialogue!");
+                setErrorMessage(error.message || "Failed to add content Speaking.");
             }
         }
     };
