@@ -18,8 +18,8 @@ export function AuthProvider({ children }) {
 
   useEffect(() => {
     console.log("AuthProvider mounted", localStorage.getItem("accessToken") + user);
-    if(!localStorage.getItem("accessToken")){
-            localStorage.removeItem("isAdmin");
+    if (!localStorage.getItem("accessToken")) {
+      localStorage.removeItem("isAdmin");
     }
     setLoading(true);
     if (!isAdmin) {
@@ -82,12 +82,10 @@ export function AuthProvider({ children }) {
 
             const userData = await userRes.json();
             setUser(userData.data);
-
           }
           else {
             console.warn("Phản hồi check-login không ok:", response.status);
           }
-
         } catch (err) {
           console.error(err);
         } finally {
@@ -121,15 +119,12 @@ export function AuthProvider({ children }) {
         } else if (role === "USER") {
           navigate("/");
         }
-        else if (role === "CONTENT_MANAGER") {
-          navigate("/admin");
-        }
         else {
-          navigate("/login");
+          navigate("/admin");
         }
       }
     }
-    if (isAdmin) {
+    if (isAdmin && location.pathname === "/admin") {
       navigate("/admin");
     }
   }, [user]);

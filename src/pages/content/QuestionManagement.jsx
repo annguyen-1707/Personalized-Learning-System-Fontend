@@ -173,13 +173,33 @@ function QuestionManagement() {
 
                   {/* Action buttons */}
                   <div className="flex justify-end pt-2 space-x-2">
-                    {(question.status === 'DRAFT' || question.status === 'REJECT') && (
+                    {(question.status === 'PUBLIC') && (
                       <button
-                        onClick={() => startUpdate(question)}
-                        className="text-blue-600 hover:text-blue-800"
+                        onClick={() => handleReject(question.exerciseQuestionId)}
+                        className="flex items-center bg-red-600 hover:bg-red-700 text-white px-1 py-1 rounded"
                       >
-                        <Edit size={16} />
+                        <X size={16} className="mr-1" />
+                        Reject
                       </button>
+                    )}
+                    {(question.status === 'DRAFT') && (
+                      <div className="flex gap-3 mt-2">
+                        <button
+                          onClick={() => handleAccept(question.exerciseQuestionId)}
+                          className="flex items-center bg-green-600 hover:bg-green-700 text-white px-1 py-1 rounded"
+                        >
+                          <Check size={16} className="mr-1" />
+                          Accept
+                        </button>
+
+                        <button
+                          onClick={() => handleReject(question.exerciseQuestionId)}
+                          className="flex items-center bg-red-600 hover:bg-red-700 text-white px-1 py-1 rounded"
+                        >
+                          <X size={16} className="mr-1" />
+                          Reject
+                        </button>
+                      </div>
                     )}
                     <button
                       onClick={() => setShowDeleteConfirm(question.exerciseQuestionId)}

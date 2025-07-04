@@ -134,6 +134,26 @@ const handleAddGrammarInLesson = async (lessonId, grammarId) => {
   }
 };
 
+const acceptCourse = async (courseId) => {
+  try {
+    const response = await axios.patch(`/api/subjects/accept/${courseId}`);
+    return response.data;
+  } catch (error) {
+    console.error("Error accepting course:", error);
+    throw error;
+  }
+}
+
+const rejectCourse = async (courseId) => {
+  try {
+    const response = await axios.patch(`/api/subjects/reject/${courseId}`);
+    return response.data;
+  } catch (error) {
+    console.error("Error rejecting course:", error);
+    throw error;
+  }
+};
+
 export {
   getPageAllVocabulary,
   editVocabulary,
@@ -147,4 +167,6 @@ export {
   updateGrammar,
   addGrammar,
   deleteGrammar,
+  acceptCourse,
+  rejectCourse
 };

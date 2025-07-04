@@ -2,12 +2,14 @@ import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { ArrowLeft, Plus, Edit, Trash2, Check, X, MessageSquare, Languages, Search } from 'lucide-react';
 import {
-    getDialoguePageByContentSpeakingId,
+    fetchDialoguePage,
     handleCreateDialogue,
     handleDeleteDialogue,
     handleUpdateDialogue
 } from '../../services/DialogueService';
 import ReactPaginate from 'react-paginate';
+import { getJlptLevel, getStatus } from '../../services/ContentListeningService';
+import { getContentSpeakingByLever } from '../../services/ContentSpeakingService';
 
 function DialogueManagement() {
     const [dialogues, setDialogues] = useState([]);
@@ -15,29 +17,42 @@ function DialogueManagement() {
     const [isAdding, setIsAdding] = useState(false);
     const [isEditing, setIsEditing] = useState(null);
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(null);
-    const { contentSpeakingId } = useParams();
     const [pageCount, setPageCount] = useState(0); // so luong trang page
     const [currentPage, setCurrentPage] = useState(1); // trang page hien tai
     const [size, setSize] = useState(6); // 1trang bn phan tu
     const [totalElements, setTotalElements] = useState(); // tong phan tu
+    const [listStatus, setListStatus] = useState([]);
+    const [listContentSpeaking, setListContentSpeaking] = useState([]);
+    const [listLever, setListLever] = useState([]);
     const [formData, setFormData] = useState({
         questionJp: '',
         questionVn: '',
         answerJp: '',
         answerVn: '',
-        contentSpeakingId: contentSpeakingId
+        contentSpeakingId: ''
     });
+    const [formChoose, setFormChoose] = useState({
+        jlptLevel: '',
+        contentSpeakingId: ''
+    })
     useEffect(() => {
         getDialoguePage(1);
+        getListLever();
     }, [size]);
     const handleSubmit = async (e) => {
         e.preventDefault();
+        const updatedFormData = {
+            ...formData,
+            contentSpeakingId: formChoose.contentSpeakingId,
+            exerciseId: formChoose.exerciseId
+        };
         if (isEditing) {
             try {
-                await handleUpdateDialogue(isEditing, formData);
+                await handleUpdateDialogue(isEditing, updatedFormData);
                 await getDialoguePage(currentPage);
                 setIsAdding(false);
                 setIsEditing(null);
+                handleSetNullAll();
             } catch (error) {
                 console.error("Error updating dialogue:", error);
             }
@@ -47,6 +62,7 @@ function DialogueManagement() {
                 await getDialoguePage(1);
                 setIsAdding(false);
                 setIsEditing(null);
+                handleSetNullAll();
             } catch (error) {
                 console.error("Error creating dialogue:", error);
                 if (error.response && error.response.data) {
@@ -56,14 +72,28 @@ function DialogueManagement() {
                 }
             }
         }
-        setFormData({
-            questionJp: '',
-            questionVn: '',
-            answerJp: '',
-            answerVn: '',
-            contentSpeakingId: contentSpeakingId
-        });
     };
+
+    const getListLever = async () => {
+        let res = await getJlptLevel();
+        if (res && res.data) {
+            setListLever(res.data)
+        }
+    }
+
+    const getListStatus = async () => {
+        let res = await getStatus();
+        if (res && res.data) {
+            setListStatus(res.data)
+        }
+    }
+
+    const getListContentLisSpeaking = async (newLever) => {
+        let res = await getContentSpeakingByLever(newLever);
+        if (res && res.data) {
+            setListContentSpeaking(res.data)
+        }
+    }
 
     const handleDelete = async (id) => {
         await handleDeleteDialogue(id);
@@ -78,7 +108,8 @@ function DialogueManagement() {
     };
 
     const getDialoguePage = async (page) => {
-        let res = await getDialoguePageByContentSpeakingId(page, contentSpeakingId, size);
+        console.log("Fetching page", page, "with size", size);
+        let res = await fetchDialoguePage(page, size);
         console.log("Data page", res)
         if (res && res.data && res.data.content) {
             setDialogues(res.data.content);
@@ -107,6 +138,37 @@ function DialogueManagement() {
         const selectedPage = +event.selected + 1;
         setCurrentPage(selectedPage);
         getDialoguePage(selectedPage);
+    }
+
+    const handleSetNullAll = () => {
+        setFormChoose({
+            jlptLevel: '',
+            conetntSpeaking: ''
+        });
+        setFormData({
+            questionJp: '',
+            questionVn: '',
+            answerJp: '',
+            answerVn: '',
+            contentSpeakingId: ''
+        })
+        setErrorMessage("");
+    }
+
+    const handleWhenChooseLever = async (newLever) => {
+        setFormChoose(prev => ({
+            ...prev,
+            contentSpeakingId: '',
+            jlptLevel: newLever,
+        }));
+        await getListContentLisSpeaking(newLever);
+    }
+
+    const handleWhenChooseContentSpeaking = async (newContent) => {
+        setFormChoose(prev => ({
+            ...prev,
+            contentSpeakingId: newContent,
+        }));
     }
 
 
@@ -165,6 +227,7 @@ function DialogueManagement() {
                     </div>
                 </div>
             </div>
+
 
             {/* Add/Edit Form */}
             {(isAdding || isEditing) && (
@@ -229,6 +292,38 @@ function DialogueManagement() {
                                     placeholder="Tên tôi là Tanaka."
                                 />
                             </div>
+                            <>
+                                <div>
+                                    <label>JLPT Level:</label>
+                                    <select
+                                        value={formChoose.jlptLevel}
+                                        onChange={(e) => handleWhenChooseLever(e.target.value)}
+                                        className="border p-2 ml-2"
+                                    >
+                                        <option value="">-- Select Level --</option>
+                                        {listLever.map((level) => (
+                                            <option key={level} value={level}>{level}</option>
+                                        ))}
+                                    </select>
+                                </div>
+
+                                {/* Nếu đã chọn level thì hiển thị chọn content */}
+                                {formChoose.jlptLevel && (
+                                    <div>
+                                        <label>Content Speaking:</label>
+                                        <select
+                                            value={formChoose.contentSpeakingId}
+                                            onChange={(e) => handleWhenChooseContentSpeaking(e.target.value)}
+                                            className="border p-2 ml-2"
+                                        >
+                                            <option value="">-- Select Content --</option>
+                                            {listContentSpeaking.map((content) => (
+                                                <option key={content.contentSpeakingId} value={content.contentSpeakingId}>{content.title}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                )}
+                            </>
                         </div>
 
                         <div className="mt-6 flex justify-end space-x-3">
@@ -237,13 +332,7 @@ function DialogueManagement() {
                                 onClick={() => {
                                     setIsAdding(false);
                                     setIsEditing(null);
-                                    setFormData({
-                                        questionJp: '',
-                                        questionVn: '',
-                                        answerJp: '',
-                                        answerVn: '',
-                                        contentSpeakingId: contentSpeakingId
-                                    });
+                                    handleSetNullAll();
                                 }}
                                 className="btn-outline"
                             >

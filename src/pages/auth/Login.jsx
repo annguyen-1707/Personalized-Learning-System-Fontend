@@ -35,7 +35,7 @@ function Login() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-          setError('');
+      setError('');
       await login(email, password, isAdminLogin);
     } catch (err) {
       setError(err.message);
@@ -156,26 +156,26 @@ function Login() {
               </button>
             </div>
           </form>
+          {!isAdminLogin && (
+            <div className="mt-6">
+              <div className= "flex gap-3 justify-between">
+                <button
+                  onClick={() => handleProviderLogin('google')}
+                  className="btn-outline py-2 px-4 flex justify-center items-center w-40"
+                >
+                  <Google className="h-5 w-5" />
+                </button>
 
-          <div className="mt-6">
-            <div className={`flex gap-3 ${isAdminLogin ? 'justify-center' : 'justify-between'}`}>
-              <button
-                onClick={() => handleProviderLogin('google')}
-                className="btn-outline py-2 px-4 flex justify-center items-center w-40"
-              >
-                <Google className="h-5 w-5" />
-              </button>
 
-              {!isAdminLogin && (
                 <button
                   onClick={() => handleProviderLogin('facebook')}
                   className="btn-outline py-2 px-4 flex justify-center items-center w-40"
                 >
                   <Facebook className="h-5 w-5" />
                 </button>
-              )}
-            </div>
-          </div>
+
+              </div>
+            </div>)}
         </div>
       </div>
     </div>

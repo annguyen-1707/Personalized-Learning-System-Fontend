@@ -5,6 +5,10 @@ const fetchDialogueAllByContentSpeakingId = (id) => {
     return axios.get(`/api/dialogue/content_speakingAll/${id}`);
 }
 
+const fetchDialoguePage = (page, size) => {
+    return axios.get(`/api/dialogue/page/all?page=${page}&size=${size}`);
+}
+
 const handleCreateDialogue = async (data) => {
     try {
         const response = await axios.post(`/api/dialogue`, data);
@@ -49,6 +53,7 @@ export {
     getDialoguePageByContentSpeakingId,
     handleCreateDialogue,
     handleDeleteDialogue,
-    handleUpdateDialogue
+    handleUpdateDialogue,
+    fetchDialoguePage
 };
 

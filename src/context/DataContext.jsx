@@ -83,6 +83,23 @@ export function DataProvider({ children }) {
   };
 
   // Subject CRUD operations
+const fetchSubjectStatus = async () => {
+    try {
+      const response = await fetch("/api/subjects/status", {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+        },
+      });
+      if (!response.ok)
+        throw new Error(`HTTP error! status: ${response.status}`);
+      const data = await response.json();
+      return data.data;
+    } catch (error) {
+      console.error("Error fetching lesson status:", error);
+    }
+  };
+
 
   const getSubjectById = async (id) => {
     try {
@@ -772,6 +789,7 @@ export function DataProvider({ children }) {
     approveVocabulary,
     approveGrammar,
     deleteGrammar,
+    fetchSubjectStatus,
   };
 
   return <DataContext.Provider value={value}>{children}</DataContext.Provider>;

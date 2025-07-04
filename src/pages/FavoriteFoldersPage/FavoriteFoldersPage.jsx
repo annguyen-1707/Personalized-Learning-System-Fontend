@@ -157,7 +157,12 @@ function FavoriteFoldersPage() {
                     />
                     <button onClick={handleSearch} className="px-4 py-2 bg-blue-500 text-white rounded">Search</button>
                 </div>
-                <button onClick={() => setShowAddForm(true)} className="px-4 py-2 bg-green-500 text-white rounded flex items-center"><FiPlus className="mr-2" /> Add Folder</button>
+
+                {viewType === 'mine' && (
+                    <button onClick={() => setShowAddForm(true)} className="px-4 py-2 bg-green-500 text-white rounded flex items-center">
+                        <FiPlus className="mr-2" /> Add Folder
+                    </button>
+                )}
             </div>
 
             {showAddForm && (

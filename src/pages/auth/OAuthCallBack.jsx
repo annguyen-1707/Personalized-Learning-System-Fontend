@@ -54,10 +54,6 @@ function OAuthCallBack() {
 
         const userData = await userRes.json();
         setUser(userData.data);
-        if (userData.data?.roleName === 'CONTENT_MANAGER') {
-          navigate("/admin");
-        }
-
         navigate("/");
       } catch (error) {
         console.error("Lỗi callback OAuth:", error);
