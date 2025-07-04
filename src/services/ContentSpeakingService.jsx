@@ -90,7 +90,11 @@ const acceptContent = (id) => {
 const rejectContent = (id) => {
     return axios.patch(`/api/content_speaking/reject/${id}`)
 }
+
+const getContentSpeakingByLever = (jlptLevel) => {
+    return axios.get(`/api/content_speaking/jlptLevel?jlptLevel=${jlptLevel}`)
+}
 export {
     getPageContentSpeaking, handleUpdateContent, fetchAllContentSpeaking, fetchAllContentCategorySpeaking,
-    handleCreateContent, handleDeleteContent, acceptContent,rejectContent
+    handleCreateContent, handleDeleteContent, acceptContent, rejectContent,getContentSpeakingByLever
 };
