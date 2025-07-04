@@ -1,9 +1,11 @@
 import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useData } from "../../context/DataContext";
-import { ArrowLeft, Book, FileText, Dumbbell, Check } from "lucide-react";
+import { ArrowLeft, Book, FileText, Dumbbell, Check, Trash2 ,X} from "lucide-react";
 import ReactPaginate from "react-paginate";
 import { g } from "framer-motion/client";
+import {acceptQuestion, rejectQuestion } from '../../services/QuestionService';
+
 
 function ExerciseManagement() {
   const { subjectId, lessonId, exerciseId } = useParams();
@@ -65,6 +67,7 @@ function ExerciseManagement() {
     getSubject();
     getLessons();
     getLessonExercises();
+    console.log("list question",lessonExercises)
   }, [subjectId, lessonId, exerciseId]);
 
   if (!lessonExercises || !subject || !lesson) {
@@ -75,68 +78,120 @@ function ExerciseManagement() {
     );
   }
 
+  const handleAccept = async (id) => {
+    await acceptQuestion(id);
+    await getLessonExercises(currentPage);
+
+  }
+
+  const handleReject = async (id) => {
+    await rejectQuestion(id)
+    await getLessonExercises(currentPage);
+  }
+
   const renderContent = () => {
     return (
       <div className="card space-y-6">
         {lessonExercises.length > 0 ? (
-          lessonExercises.map((exercise, eIndex) => (
+          lessonExercises.map((question) => (
             <div
-              key={exercise.exerciseQuestionId}
-              className="bg-gray-50 rounded-lg p-4"
+              key={question.exerciseQuestionId}
+              className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm hover:shadow-md transition"
             >
-              <div className="flex items-start space-x-3">
-                <span className="flex-shrink-0 h-6 w-6 rounded-full bg-primary-200 flex items-center justify-center text-sm font-medium text-primary-700">
-                  {eIndex + 1 + currentPage * 10}
+              {/* Question + Status */}
+              <div className="flex items-center justify-between mb-3">
+                <p className="text-sm font-semibold text-gray-900">
+                  {question.questionText}
+                </p>
+                <span
+                  className={`
+                  text-xs font-semibold px-2 py-1 rounded-full
+                  ${question.status === 'DRAFT'
+                      ? 'bg-gray-200 text-gray-700'
+                      : question.status === 'REJECT'
+                        ? 'bg-red-200 text-red-700'
+                        : question.status === 'PUBLIC'
+                          ? 'bg-green-200 text-green-700'
+                          : 'bg-gray-100 text-gray-500'
+                    }
+                `}
+                >
+                  {question.status}
                 </span>
-                <div className="flex-1">
-                  <p className="text-sm font-medium text-black-900 mb-3">
-                    {exercise.questionText}
-                  </p>
-                  <div className="space-y-2">
-                    {exercise.answerQuestions.map((answer, aIndex) => (
-                      <div
-                        key={aIndex}
-                        className={`flex items-center space-x-2 text-sm ${
-                          answer.correct
-                            ? "text-green-800 bg-green-50"
-                            : "text-gray-700 bg-white"
-                        } px-3 py-2 rounded-md`}
-                      >
-                        <span className="flex-shrink-0 h-5 w-5 rounded-full border flex items-center justify-center text-xs">
-                          {String.fromCharCode(65 + aIndex)}
-                        </span>
-                        <span className="flex-1">{answer.answerText}</span>
-                        {answer.correct && (
-                          <span className="flex-shrink-0 text-green-600">
-                            <Check className="h-4 w-4" />
-                          </span>
-                        )}
-                      </div>
-                    ))}
+              </div>
+
+              {/* Answer list */}
+              <div className="space-y-2">
+                {question.answerQuestions.map((answer, aIndex) => (
+                  <div
+                    key={aIndex}
+                    className={`
+                    flex items-center space-x-2 text-sm px-3 py-2 rounded-md border
+                    ${answer.correct
+                        ? 'bg-green-50 text-green-800 border-green-200'
+                        : 'bg-gray-50 text-gray-700 border-gray-200'
+                      }
+                  `}
+                  >
+                    <span className="h-5 w-5 rounded-full border flex items-center justify-center text-xs font-bold bg-white">
+                      {String.fromCharCode(65 + aIndex)}
+                    </span>
+                    <span className="flex-1">{answer.answerText}</span>
+                    {answer.correct && (
+                      <Check className="h-4 w-4 text-green-600" />
+                    )}
                   </div>
-                </div>
+                ))}
+              </div>
+
+              {/* Action buttons */}
+              <div className="flex justify-end pt-2 space-x-2">
+                {(question.status === 'PUBLIC') && (
+                  <button
+                    onClick={() => handleReject(question.exerciseQuestionId)}
+                    className="flex items-center bg-red-600 hover:bg-red-700 text-white px-1 py-1 rounded"
+                  >
+                    <X size={16} className="mr-1" />
+                    Reject
+                  </button>
+                )}
+                {(question.status === 'DRAFT') && (
+                  <div className="flex gap-3 mt-2">
+                    <button
+                      onClick={() => handleAccept(question.exerciseQuestionId)}
+                      className="flex items-center bg-green-600 hover:bg-green-700 text-white px-1 py-1 rounded"
+                    >
+                      <Check size={16} className="mr-1" />
+                      Accept
+                    </button>
+
+                    <button
+                      onClick={() => handleReject(question.exerciseQuestionId)}
+                      className="flex items-center bg-red-600 hover:bg-red-700 text-white px-1 py-1 rounded"
+                    >
+                      <X size={16} className="mr-1" />
+                      Reject
+                    </button>
+                  </div>
+                )}
+                <button
+                  onClick={() => setShowDeleteConfirm(question.exerciseQuestionId)}
+                  className="text-red-500 hover:text-red-700"
+                >
+                  <Trash2 size={16} />
+                </button>
               </div>
             </div>
           ))
         ) : (
-          <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-12 text-center">
-            <div className="flex flex-col items-center">
-              <div className="h-16 w-16 rounded-full bg-gray-50 flex items-center justify-center mb-4">
-                <Dumbbell className="h-8 w-8 text-gray-400" />
-              </div>
-              <h3 className="text-lg font-medium text-gray-900 mb-2">
-                No Exercises Available
-              </h3>
-              <p className="text-gray-500 max-w-sm">
-                There are no exercises added to this lesson yet. Add some
-                exercises to help students practice and learn.
-              </p>
-            </div>
+          <div className="p-6 text-center text-gray-500">
+            <p>No question found. Please add a new question.</p>
           </div>
         )}
       </div>
     );
   };
+
 
   return (
     <div className="animate-fade-in">
