@@ -14,7 +14,7 @@ const getMonthlyUserFromAPI = (year) => {
 }
 
 const getAllSubjectFromAPI = () => {
-    return axios.get(`api/subjects/getListAllSubject`)
+    return axios.get(`api/subjects/getListAllSubjectActive`)
 }
 export {
     getCoureraRateFromAPI, getOverviewFromAPI, getMonthlyUserFromAPI, getAllSubjectFromAPI

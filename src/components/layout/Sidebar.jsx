@@ -2,8 +2,8 @@ import { Fragment } from 'react'
 import { Dialog, Transition } from '@headlessui/react'
 import { NavLink } from 'react-router-dom'
 import {
-  FiX, FiHome, FiBook, FiFileText, FiLayers, FiHelpCircle,
-  FiActivity, FiMessageCircle, FiGlobe, FiHeadphones, FiMic,
+  FiX, FiHome, FiBook, FiFileText,
+ FiGlobe, FiHeadphones, FiMic,
   FiType, FiCreditCard, FiStar
 } from 'react-icons/fi'
 import { FiBookOpen } from 'react-icons/fi'
@@ -14,7 +14,6 @@ function Sidebar({ sidebarOpen, setSidebarOpen }) {
     { name: 'Learn', href: '/learning', icon: FiBook },
     { name: 'Favorite', href: '/favorites', icon: FiFileText },
     // { name: 'AI Conversation', href: '/ai-conversation', icon: FiMessageCircle },
-    { name: 'Quiz', href: '/quiz', icon: FiHelpCircle },
     { name: 'News', href: '/news', icon: FiGlobe },
     { name: 'Listening', href: '/listening', icon: FiHeadphones },
     { name: 'Speaking', href: '/speaking', icon: FiMic },

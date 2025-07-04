@@ -122,7 +122,7 @@ function ListeningDetailPage() {
             <ListeningQuiz
              questions={questions}
               currentTime={currentTime}
-               contentId={contentListeningId} />
+               contentListeningId={contentListeningId} />
           ) : (
             <div className="bg-white rounded-lg shadow-md p-6 text-gray-400">No questions available</div>
           )}

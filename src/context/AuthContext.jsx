@@ -10,13 +10,18 @@ export function useAuth() {
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [errors, setErrors] = useState({});
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(() => {
     return localStorage.getItem("isAdmin") === "true"; // hoặc false nếu không có
   });
   const navigate = useNavigate(); // ✅ thêm dòng này
 
   useEffect(() => {
+    console.log("AuthProvider mounted", localStorage.getItem("accessToken") + user);
+    if(!localStorage.getItem("accessToken")){
+            localStorage.removeItem("isAdmin");
+    }
+    setLoading(true);
     if (!isAdmin) {
       const checkLogin = async () => {
         try {
@@ -31,7 +36,6 @@ export function AuthProvider({ children }) {
               console.warn("Không tìm thấy accessToken trong phản hồi", data);
               return;
             }
-
             localStorage.setItem("accessToken", accessToken);
 
             const userRes = await fetch("http://localhost:8080/auth/user", {
@@ -49,11 +53,13 @@ export function AuthProvider({ children }) {
         } catch (err) {
           console.error(err);
         }
+        finally {
+          setLoading(false);
+        }
       };
       checkLogin();
     }
     else {
-      console.log("vlonnnn");
       const checkLogin = async () => {
         try {
           const response = await fetch("http://localhost:8080/admin/check-login", {
@@ -84,11 +90,27 @@ export function AuthProvider({ children }) {
 
         } catch (err) {
           console.error(err);
+        } finally {
+          setLoading(false);
         }
       };
       checkLogin();
     }
   }, []);
+
+  const handleLogout = async () => {
+    try {
+      await fetch("http://localhost:8080/auth/logout", {
+        method: "POST",
+        credentials: "include",
+      });
+      localStorage.removeItem("isAdmin");
+      localStorage.removeItem("accessToken");
+      navigate("/"); // ✅ điều hướng về login
+    } catch (error) {
+      console.error("Logout failed:", error);
+    }
+  };
 
   useEffect(() => {
     if (user !== null && !isAdmin) {
@@ -100,21 +122,6 @@ export function AuthProvider({ children }) {
           navigate("/");
         }
         else if (role === "CONTENT_MANAGER") {
-          if (location.pathname === "/log-out") {
-            console.log("da log out roi mAAAAAA")
-            navigate("/");
-            const handleLogout = async () => {
-              await fetch("http://localhost:8080/auth/logout", {
-                method: "POST",
-                credentials: "include",
-              });
-              localStorage.removeItem("accessToken");
-              setUser(null);
-            };
-            handleLogout()
-
-            return;
-          }
           navigate("/admin");
         }
         else {
@@ -123,20 +130,6 @@ export function AuthProvider({ children }) {
       }
     }
     if (isAdmin) {
-      if (location.pathname === "/") {
-        navigate("/");
-        localStorage.setItem("isAdmin", "false");
-        const handleLogout = async () => {
-          await fetch("http://localhost:8080/auth/logout", {
-            method: "POST",
-            credentials: "include",
-          });
-          localStorage.removeItem("accessToken");
-          setUser(null);
-        };
-        handleLogout()
-        return;
-      }
       navigate("/admin");
     }
   }, [user]);
@@ -175,8 +168,8 @@ export function AuthProvider({ children }) {
         throw new Error(userData.message || 'Failed to fetch user data');
       }
       setUser(userData.data);
+      console.log("User data:", user);
       const role = userData.data.roleName;
-      console.log("ádasddasd", userData.data.parents)
       if (role === "PARENT") {
         navigate("/parentpage");
       } else if (role === "USER") {
@@ -304,11 +297,13 @@ export function AuthProvider({ children }) {
     setErrors,
     loading,
     isAdmin,
+    setIsAdmin,
     login,
     loginWithProvider,
     register1,
     register2,
-    forgotPassword
+    forgotPassword,
+    handleLogout
   };
 
   return (

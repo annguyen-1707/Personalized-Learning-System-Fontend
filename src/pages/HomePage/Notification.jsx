@@ -11,15 +11,13 @@ function NotificationSlider({ open, setOpen }) {
 
   useEffect(() => {
     if (open) {
-      console.log("ccAAA")
-      getNotification();
+     getNotification();
 
     }
   }, [open]);
 
   const getNotification = async () => {
     const res = await axios.get(`/api/api/notifications/${user.userId}/notificationUser`)
-    console.log("Notification API response:", res);  // <- thêm dòng này
     if (res === null) {
       setLoading(true);
     } else {

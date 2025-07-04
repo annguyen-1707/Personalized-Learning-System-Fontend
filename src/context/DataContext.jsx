@@ -6,7 +6,10 @@ import {
   mockExercises,
   mockResources,
 } from "../data/mockData";
-import { uploadFile, uploadVideoToYouTube } from "../services/UploadFileService";
+import {
+  uploadFile,
+  uploadVideoToYouTube,
+} from "../services/UploadFileService";
 const DataContext = createContext();
 
 export function useData() {
@@ -32,8 +35,8 @@ export function DataProvider({ children }) {
     const response = await fetch(`/api/subjects?page=${page}`, {
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${localStorage.getItem('accessToken')}`
-      }
+        Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+      },
     });
     const data = await response.json();
     if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
@@ -45,12 +48,14 @@ export function DataProvider({ children }) {
   const lessonsFetch = async (subjectId, page) => {
     try {
       const response = await fetch(
-        `/api/lessons?subjectId=${subjectId}&page=${page}`, {
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${localStorage.getItem('accessToken')}`
+        `/api/lessons?subjectId=${subjectId}&page=${page}`,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+          },
         }
-      });
+      );
       if (!response.ok)
         throw new Error(`HTTP error! status: ${response.status}`);
       const data = await response.json();
@@ -65,8 +70,8 @@ export function DataProvider({ children }) {
       const response = await fetch("/api/lessons/status", {
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${localStorage.getItem('accessToken')}`
-        }
+          Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+        },
       });
       if (!response.ok)
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -84,8 +89,8 @@ export function DataProvider({ children }) {
       const response = await fetch(`/api/subjects/${id}`, {
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${localStorage.getItem('accessToken')}`
-        }
+          Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+        },
       });
       if (!response.ok) {
         const data = await response.json();
@@ -101,14 +106,17 @@ export function DataProvider({ children }) {
 
   const addSubject = async (subject) => {
     try {
-      const imageUrl = await uploadFile(subject.thumbnailFile, "images/content_learning");
+      const imageUrl = await uploadFile(
+        subject.thumbnailFile,
+        "images/content_learning"
+      );
       subject.thumbnailUrl = imageUrl;
 
       const response = await fetch("/api/subjects", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          'authorization': `Bearer ${localStorage.getItem('accessToken')}`
+          authorization: `Bearer ${localStorage.getItem("accessToken")}`,
         },
         body: JSON.stringify(subject),
       });
@@ -130,14 +138,17 @@ export function DataProvider({ children }) {
     try {
       let thumbnailUrl = subject.thumbnailUrl;
       if (subject.thumbnailFile) {
-        thumbnailUrl = await uploadFile(subject.thumbnailFile, "images/content_learning");
+        thumbnailUrl = await uploadFile(
+          subject.thumbnailFile,
+          "images/content_learning"
+        );
       }
       subject.thumbnailUrl = thumbnailUrl;
       const response = await fetch(`/api/subjects/${id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
-          'authorization': `Bearer ${localStorage.getItem('accessToken')}`
+          authorization: `Bearer ${localStorage.getItem("accessToken")}`,
         },
         body: JSON.stringify(subject),
       });
@@ -161,8 +172,8 @@ export function DataProvider({ children }) {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${localStorage.getItem('accessToken')}`
-        }
+          Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+        },
       });
 
       if (!response.ok) {
@@ -190,8 +201,8 @@ export function DataProvider({ children }) {
       const response = await fetch(`/api/lessons/${id}`, {
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${localStorage.getItem('accessToken')}`
-        }
+          Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+        },
       });
       if (!response.ok) {
         const data = await response.json();
@@ -237,7 +248,10 @@ export function DataProvider({ children }) {
   const updateLesson = async (id, updatedLesson) => {
     let lessonName = updatedLesson.name;
     if (updatedLesson.videoUrl instanceof File) {
-      const res = await uploadVideoToYouTube(updatedLesson.videoUrl, lessonName);
+      const res = await uploadVideoToYouTube(
+        updatedLesson.videoUrl,
+        lessonName
+      );
       updatedLesson.videoUrl = res.data;
     }
     const response = await fetch(`/api/lessons/${id}`, {
@@ -363,6 +377,7 @@ export function DataProvider({ children }) {
       const response = await fetch(
         `/api/vocabularies?lessonId=${lessonId}&page=${page}`
       );
+      console.log("Fetching vocabulary for lessonId:", lessonId, "page:", page);
       if (!response.ok) {
         const data = await response.json();
         setErrorMessage(data.message || "failed to fetch vocabulary");
@@ -415,10 +430,13 @@ export function DataProvider({ children }) {
     return data.data;
   };
 
-  const deleteVocabulary = async (id) => {
-    const response = await fetch(`/api/vocabularies/${id}`, {
-      method: "DELETE",
-    });
+  const removeVocabFromLesson = async (id, lessonId) => {
+    const response = await fetch(
+      `/api/vocabularies/${id}/remove-from-lesson/${lessonId}`,
+      {
+        method: "DELETE",
+      }
+    );
     const data = await response.json();
     if (!response.ok) {
       return data;
@@ -426,11 +444,12 @@ export function DataProvider({ children }) {
     return data;
   };
 
-
   // Grammar CRUD operations
 
   const fetchGrammar = async (lessonId, page) => {
-    const response = await fetch(`/api/grammars?lessonId=${lessonId}&page=${page}`);
+    const response = await fetch(
+      `/api/grammars?lessonId=${lessonId}&page=${page}`
+    );
     if (!response.ok) {
       const data = await response.json();
       return data;
@@ -469,9 +488,7 @@ export function DataProvider({ children }) {
       return data;
     }
     setGrammar(
-      grammar.map((item) =>
-        item.id === id ? { ...item, ...data.data } : item
-      )
+      grammar.map((item) => (item.id === id ? { ...item, ...data.data } : item))
     );
     return data.data;
   };
@@ -487,22 +504,39 @@ export function DataProvider({ children }) {
     return data;
   };
 
+  const removeGrammarFromLesson = async (id, lessonId) => {
+    const res = await fetch(
+      `/api/grammars/${id}/remove-from-lesson/${lessonId}`,
+      {
+        method: "DELETE",
+      }
+    );
+    const data = await res.json();
+    if (!res.ok) {
+      return data;
+    }
+    return data;
+  };
+
   // Exercise and Resource CRUD operations
 
-  const getLessonExercisesById = async (lessonId, page) => {
+  const getLessonExercisesById = async (lessonId, page = 1) => {
     try {
-      const response = await fetch(`http://localhost:8080/exercise-questions?lessonId=${lessonId}&page=${page}`, {
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${localStorage.getItem('accessToken')}`
-        }
-      });
-
-      if (!response.ok) {
-        const data = await response.json();
-        setErrorMessage(data.message || `Failed to fetch exercises for lesson ${lessonId}`);
-        throw new Error(data.message || `Failed to fetch exercises for lesson ${lessonId}`);
+    const response = await fetch(`http://localhost:8080/exercise-questions?lessonId=${lessonId}&page=${page}`, {
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${localStorage.getItem('accessToken')}`
       }
+    });
+    if (!response.ok) {
+      const data = await response.json();
+      setErrorMessage(
+        data.message || `Failed to fetch exercises for lesson ${lessonId}`
+      );
+      throw new Error(
+        data.message || `Failed to fetch exercises for lesson ${lessonId}`
+      );
+    }         
 
       const data = await response.json();
 
@@ -512,8 +546,8 @@ export function DataProvider({ children }) {
         page: {
           totalPages: data.data?.page?.totalPages || 0,
           number: data.data?.page?.number || 0,
-          totalElements: data.data?.page?.totalElements || 0
-        }
+          totalElements: data.data?.page?.totalElements || 0,
+        },
       };
     } catch (error) {
       console.error("Error fetching lesson exercises:", error);
@@ -523,19 +557,22 @@ export function DataProvider({ children }) {
         page: {
           totalPages: 0,
           number: 0,
-          totalElements: 0
-        }
+          totalElements: 0,
+        },
       };
     }
   };
 
   const getExerciseDetailsById = async (exerciseId) => {
-    const res = await fetch(`/api/exercise-questions/exercise-details?exerciseId=${exerciseId}`, {
+    const res = await fetch(
+      `/api/exercise-questions/exercise-details?exerciseId=${exerciseId}`,
+      {
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${localStorage.getItem('accessToken')}`
-        }
-      });
+          Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+        },
+      }
+    );
     console.log("Exercise Details Response:", exerciseId);
     if (!res.ok) {
       const data = await res.json();
@@ -548,7 +585,7 @@ export function DataProvider({ children }) {
 
   const addExercise = async (exerciseData) => {
     try {
-      if (!exerciseData || typeof exerciseData !== 'object') {
+      if (!exerciseData || typeof exerciseData !== "object") {
         throw new Error("Invalid exercise data: data must be an object");
       }
 
@@ -556,7 +593,6 @@ export function DataProvider({ children }) {
         throw new Error("lessonId is required for creating an exercise");
       }
 
-      // Không thêm answerQuestionRequests ở đây nữa
 
       console.log("Exercise Data to Send:", exerciseData);
       console.log("Stringified:", JSON.stringify(exerciseData));
@@ -564,7 +600,7 @@ export function DataProvider({ children }) {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${localStorage.getItem('accessToken')}`
+          Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
         },
         body: JSON.stringify(exerciseData),
       });
@@ -585,14 +621,17 @@ export function DataProvider({ children }) {
 
   const updateExercise = async (id, updatedItem) => {
     try {
-      const response = await fetch(`http://localhost:8080/exercise-questions?exercise-questions/${id}`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${localStorage.getItem('accessToken')}`
-        },
-        body: JSON.stringify(updatedItem),
-      });
+      const response = await fetch(
+        `http://localhost:8080/exercise-questions?exercise-questions/${id}`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+          },
+          body: JSON.stringify(updatedItem),
+        }
+      );
       const data = await response.json();
       if (!response.ok) {
         setErrorMessage(data.message || "Failed to update exercise");
@@ -609,13 +648,16 @@ export function DataProvider({ children }) {
 
   const deleteExercise = async (id) => {
     try {
-      const response = await fetch(`http://localhost:8080/exercise-questions/${id}`, {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${localStorage.getItem('accessToken')}`
+      const response = await fetch(
+        `http://localhost:8080/exercise-questions/${id}`,
+        {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+          },
         }
-      });
+      );
 
       if (!response.ok) {
         const data = await response.json();
@@ -705,10 +747,10 @@ export function DataProvider({ children }) {
     deleteLesson,
     addVocabulary,
     updateVocabulary,
-    deleteVocabulary,
+    removeVocabFromLesson,
     addGrammar,
     updateGrammar,
-    deleteGrammar,
+    removeGrammarFromLesson,
     addExercise,
     updateExercise,
     deleteExercise,
@@ -728,7 +770,8 @@ export function DataProvider({ children }) {
     getLessonExercisesById,
     getExerciseDetailsById,
     approveVocabulary,
-    approveGrammar
+    approveGrammar,
+    deleteGrammar,
   };
 
   return <DataContext.Provider value={value}>{children}</DataContext.Provider>;

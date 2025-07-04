@@ -78,6 +78,8 @@ function ListeningPage() {
     fetchListeningContents();
   }, [page, size]);
 
+  
+
   const filteredContents = listeningContents.filter(item => {
     // Only search by title (case insensitive)
     const matchesSearch = searchTerm === "" || 
