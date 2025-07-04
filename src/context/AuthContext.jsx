@@ -18,8 +18,8 @@ export function AuthProvider({ children }) {
 
   useEffect(() => {
     console.log("AuthProvider mounted", localStorage.getItem("accessToken") + user);
-    if(!localStorage.getItem("accessToken")){
-            localStorage.removeItem("isAdmin");
+    if (!localStorage.getItem("accessToken")) {
+      localStorage.removeItem("isAdmin");
     }
     setLoading(true);
     if (!isAdmin) {
