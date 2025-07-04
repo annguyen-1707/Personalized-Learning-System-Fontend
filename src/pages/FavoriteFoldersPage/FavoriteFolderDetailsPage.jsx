@@ -79,6 +79,9 @@ function FavoriteFolderDetailsPage() {
   const goToFlashcards = () =>
     navigate(`/flashcards?type=${activeTab}&favoriteListId=${folderId}`);
 
+  const goToQuiz = () =>
+    navigate(`/quiz?type=${activeTab}&favoriteListId=${folderId}`);
+
   // Fetch filter options for JLPT & POS
   useEffect(() => {
     async function fetchOptions() {
@@ -661,6 +664,12 @@ function FavoriteFolderDetailsPage() {
             className="px-4 py-2 rounded bg-green-500 text-white flex items-center hover:bg-green-600 transition-colors"
           >
             <FiPlus className="mr-1" /> Add
+          </button>
+          <button
+            onClick={goToQuiz}
+            className="px-4 py-2 rounded bg-red-500 text-white flex items-center hover:bg-red-600 transition-colors"
+          >
+            <FiBookOpen className="mr-1" /> AI Quiz
           </button>
           <button
             onClick={goToFlashcards}

@@ -16,14 +16,14 @@ function QuizPage() {
   const type = searchParams.get("type") || "vocabulary";
   const favoriteListId = searchParams.get("favoriteListId");
 
-  const listId = 3;
+
 
   useEffect(() => {
     setLoading(true);
     const fetchQuiz = async () => {
       const api = "vocabulary" === type ? '/api/quiz/vocabulary-list' : '/api/quiz/grammar-list';
       try {
-        const response = await axios.get(`${api}?id=${listId}`);
+        const response = await axios.get(`${api}?id=${favoriteListId}`);
         setQuizDatas(response);
         console.log('Quiz data fetched:', response);
       } catch (error) {
@@ -34,6 +34,7 @@ function QuizPage() {
     };
     fetchQuiz();
   }, []);
+
   const tips = [
     "🧠 Tip: Learning through examples improves memorization!",
     "💡 Hint: Practice speaking along with vocabulary for better retention!",
