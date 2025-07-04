@@ -91,6 +91,29 @@ const getContentListeningByLeverFromAPI = async(jlptLevel) => {
     return axios.get(`/api/content_listening/jlptLevel?jlptLevel=${jlptLevel}`)
 }
 
+// //exercise
+// const getExerciseQuestionByExerciseLesson = async (page, size, exerciseId) => {
+//     return axios.get(`/api/exercise-questions/exercise-details?page=${page}&size=${size}&exerciseId=${exerciseId}`);
+// }
+// const createExerciseQuestion = async (data) => {
+//     return axios.post(`/api/exercise-questions`, data);
+// }
+// const deleteExerciseQuestion = async (id) => {
+//     return axios.delete(`/api/exercise-questions/${id}`);
+// }
+// const updateExerciseLesson = async (id, data) => {
+//     return axios.patch(`/api/exercise-questions/${id}`, data);
+// }
+// const getAllExerciseQuestions = async (page, size) => {
+//     return axios.get(`/api/exercise-questions?page=${page}&size=${size}`);
+// }
+// const handleSaveExerciseQuestionIntoLesson = async (data) => {
+//     return axios.post(`/api/exercise-questions/save`, data);
+// }
+// const handleDeleteExerciseQuestionFromLesson = async (id) => {
+//     return axios.delete(`/api/exercise-questions/${lessonId}/remove-exercise-question/${exerciseQuestionId}`);
+// }
+
 export {
     getQuestionPageByContentListeningId,
     handleCreateQuestion,
@@ -104,5 +127,12 @@ export {
     getListAllSubjectFromAPI,
     getExerciseByLessonIdFromAPI,
     getContentListeningByLeverFromAPI,
+    // getExerciseQuestionByExerciseLesson,
+    // createExerciseQuestion,
+    // deleteExerciseQuestion,
+    // updateExerciseLesson,
+    // getAllExerciseQuestions,
+    // handleSaveExerciseQuestionIntoLesson,
+    // handleDeleteExerciseQuestionFromLesson
 }
 

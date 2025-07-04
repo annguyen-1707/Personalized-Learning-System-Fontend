@@ -7,13 +7,15 @@ import {
   getLessonBySubjectIdFromAPI,
   getListAllSubjectFromAPI,
   getExerciseByLessonIdFromAPI,
-  getContentListeningByLeverFromAPI
+  getContentListeningByLeverFromAPI,
+
 } from '../../services/QuestionService';
 import ReactPaginate from 'react-paginate';
 import { toast } from "react-toastify";
 import { getJlptLevel, getStatus } from '../../services/ContentListeningService';
 
 function QuestionManagement() {
+  const { lessonId } = useParams();
   const [questions, setQuestions] = useState([]);
   const [isAdding, setIsAdding] = useState(false);
   const [isEditing, setIsEditing] = useState(null);
@@ -493,7 +495,7 @@ function QuestionManagement() {
                       >
                         <option value="">-- Select Exercise --</option>
                         {listExercise.map((ex) => (
-                          <option key={ex.id} value={ex.id}>{ex.title}</option>
+                          <option key={ex.exerciseId} value={ex.id}>{ex.title}</option>
                         ))}
                       </select>
                     </div>

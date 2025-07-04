@@ -539,7 +539,7 @@ const fetchSubjectStatus = async () => {
 
   const getLessonExercisesById = async (lessonId, page = 1) => {
     try {
-    const response = await fetch(`http://localhost:8080/exercise-questions?lessonId=${lessonId}&page=${page}`, {
+    const response = await fetch(`/api/exercise-questions?lessonId=${lessonId}&page=${page}`, {
       headers: {
         "Content-Type": "application/json",
         "Authorization": `Bearer ${localStorage.getItem('accessToken')}`
@@ -609,7 +609,6 @@ const fetchSubjectStatus = async () => {
       if (!exerciseData.lessonId) {
         throw new Error("lessonId is required for creating an exercise");
       }
-
 
       console.log("Exercise Data to Send:", exerciseData);
       console.log("Stringified:", JSON.stringify(exerciseData));
@@ -690,6 +689,7 @@ const fetchSubjectStatus = async () => {
     }
   };
 
+  // Add a comma here to separate object properties
   const addResource = (item) => {
     const newItem = { ...item, id: Date.now().toString() };
     setResources([...resources, newItem]);
