@@ -70,14 +70,8 @@ function Flashcard({ card, flipped, setFlipped, isKnown, isSaved, playAudio }) {
         </div>
 
         {/* Back */}
-        <div
-          className={`absolute w-full h-full rounded-xl shadow-lg bg-white border-2 ${isSaved ? "border-accent-500" : "border-gray-200"
-            } flex flex-col items-start justify-start p-6`}
-          style={{ backfaceVisibility: "hidden", transform: "rotateY(180deg)" }}
-        >
-          <div className="text-2xl font-medium mb-2 text-gray-800">
-            {card.translation}
-          </div>
+        <div className={`absolute w-full h-full rounded-xl shadow-lg bg-white border-2 ${isSaved ? 'border-accent-500' : 'border-gray-200'} flex flex-col items-start justify-start p-6`} style={{ backfaceVisibility: 'hidden', transform: 'rotateY(180deg)' }}>
+          <div className="text-2xl font-medium mb-2 text-gray-800 mt-6">{card.translation}</div>
           {card.notes && (
             <div className="mt-2 text-sm p-2 bg-gray-50 rounded text-gray-600 w-full">
               <span className="font-medium">Notes:</span> {card.notes}
@@ -136,8 +130,8 @@ function FlashcardControls({
       <button
         onClick={onKnown}
         className={`p-3 rounded-full ${isKnown
-            ? "bg-success-100 text-success-700 border-success-300"
-            : "bg-success-500 text-white"
+          ? "bg-success-100 text-success-700 border-success-300"
+          : "bg-success-500 text-white"
           } hover:bg-success-200`}
         title={isKnown ? "Mark Unknown" : "Mark Known"}
       >
@@ -335,13 +329,13 @@ export default function FlashcardsPage(words) {
             </AnimatePresence>
           </div>
 
-          
+
           <FlashcardStats
             currentIndex={idx}
             totalCards={cards.length}
             knownCards={known.length}
           />
-          
+
           <FlashcardControls
             onPrev={prev}
             onNext={next}
