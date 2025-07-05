@@ -62,8 +62,8 @@ const getQuestionPageByContentListeningId = async (page, id, size) => {
     return axios.get(`/api/question/content_listening/${id}?page=${page}&size=${size}`);
 }
 
-const getQuestionPageFromAPI = async(page, size) => {
-    return axios.get(`/api/question?page=${page}&size=${size}`);
+const getQuestionPageFromAPI = async(page, size, activeType) => {
+    return axios.get(`/api/question/type?page=${page}&size=${size}&type=${activeType}`);
 }
 
 const acceptQuestion = async(id) => {
@@ -91,28 +91,9 @@ const getContentListeningByLeverFromAPI = async(jlptLevel) => {
     return axios.get(`/api/content_listening/jlptLevel?jlptLevel=${jlptLevel}`)
 }
 
-// //exercise
-// const getExerciseQuestionByExerciseLesson = async (page, size, exerciseId) => {
-//     return axios.get(`/api/exercise-questions/exercise-details?page=${page}&size=${size}&exerciseId=${exerciseId}`);
-// }
-// const createExerciseQuestion = async (data) => {
-//     return axios.post(`/api/exercise-questions`, data);
-// }
-// const deleteExerciseQuestion = async (id) => {
-//     return axios.delete(`/api/exercise-questions/${id}`);
-// }
-// const updateExerciseLesson = async (id, data) => {
-//     return axios.patch(`/api/exercise-questions/${id}`, data);
-// }
-// const getAllExerciseQuestions = async (page, size) => {
-//     return axios.get(`/api/exercise-questions?page=${page}&size=${size}`);
-// }
-// const handleSaveExerciseQuestionIntoLesson = async (data) => {
-//     return axios.post(`/api/exercise-questions/save`, data);
-// }
-// const handleDeleteExerciseQuestionFromLesson = async (id) => {
-//     return axios.delete(`/api/exercise-questions/${lessonId}/remove-exercise-question/${exerciseQuestionId}`);
-// }
+const inActiveQuestion = async(id) => {
+    return axios.patch(`/api/question/inactive/${id}`)
+}
 
 export {
     getQuestionPageByContentListeningId,
@@ -127,12 +108,6 @@ export {
     getListAllSubjectFromAPI,
     getExerciseByLessonIdFromAPI,
     getContentListeningByLeverFromAPI,
-    // getExerciseQuestionByExerciseLesson,
-    // createExerciseQuestion,
-    // deleteExerciseQuestion,
-    // updateExerciseLesson,
-    // getAllExerciseQuestions,
-    // handleSaveExerciseQuestionIntoLesson,
-    // handleDeleteExerciseQuestionFromLesson
+    inActiveQuestion
 }
 

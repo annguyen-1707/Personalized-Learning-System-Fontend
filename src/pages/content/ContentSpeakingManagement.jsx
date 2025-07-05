@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
-import { Plus, Search, Edit, Trash2, Check, X, MessageSquare } from 'lucide-react';
+import { Plus, Search, Edit, Trash2, Check, X, MessageSquare,ShieldX } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import {
   getPageContentSpeaking, handleUpdateContent, fetchAllContentCategorySpeaking, handleCreateContent,
-  handleDeleteContent, acceptContent, rejectContent
+  handleDeleteContent, acceptContent, rejectContent, inActiveContent
 } from '../../services/ContentSpeakingService';
 import ReactPaginate from 'react-paginate';
 import 'bootstrap/dist/css/bootstrap.min.css';
@@ -198,6 +198,11 @@ function SpeakingContentManagement() {
 
   const handleReject = async (id) => {
     await rejectContent(id);
+    await getContentPage(currentPage);
+  }
+
+  const handleInActive = async (id) => {
+    await inActiveContent(id);
     await getContentPage(currentPage);
   }
   return (
@@ -447,7 +452,9 @@ function SpeakingContentManagement() {
                         ? "bg-green-100 text-green-700"
                         : content.status === "REJECT"
                           ? "bg-red-100 text-red-700"
-                          : "bg-gray-100 text-gray-700"
+                          : content.status === "IN_ACTIVE"
+                            ? "bg-yellow-100 text-yellow-700"
+                            : "bg-gray-100 text-gray-700"
                         }`}
                     >
                       {content.status}
@@ -533,11 +540,11 @@ function SpeakingContentManagement() {
                     {isContentManagerment && content.status === "PUBLIC" && (
                       <div className="flex gap-4 mt-2">
                         <button
-                          onClick={() => handleReject(content.contentSpeakingId)}
-                          className="flex items-center bg-red-600 hover:bg-red-700 text-white px-1 py-1 rounded"
+                          onClick={() => handleInActive(content.contentSpeakingId)}
+                          className="flex items-center bg-yellow-600 hover:bg-yellow-700 text-white px-1 py-1 rounded"
                         >
-                          <X size={16} className="mr-1" />
-                          Reject
+                          <ShieldX size={16} className="mr-1" />
+                          In Active
                         </button>
                       </div>
                     )}
