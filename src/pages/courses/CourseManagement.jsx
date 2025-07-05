@@ -4,7 +4,11 @@ import { useData } from "../../context/DataContext";
 import { toast } from "react-toastify";
 import ReactPaginate from "react-paginate";
 import { useAuth } from "../../context/AuthContext";
-import { acceptCourse, rejectCourse } from "../../services/ContentBankService";
+import {
+  acceptCourse,
+  rejectCourse,
+  inactiveCourse,
+} from "../../services/ContentBankService";
 
 import {
   Edit,
@@ -213,7 +217,7 @@ function CourseManagement() {
       subjectCode: "",
       subjectName: "",
       description: "",
-      status: "ACTIVE",
+      status: "DRAFT",
       thumbnailFile: null,
       thumbnailPreview: null,
     });
@@ -237,6 +241,15 @@ function CourseManagement() {
     }
   };
 
+  const handleInactive = async (id) => {
+    try {
+      await inactiveCourse(id);
+      loadSubjects();
+    } catch (error) {
+      console.error("Failed to inactive course:", error);
+    }
+  };
+
   // Helper to get status badge color
   const getStatusBadgeClass = (status) => {
     switch (status) {
@@ -244,7 +257,7 @@ function CourseManagement() {
         return "bg-success-50 text-success-700";
       case "DRAFT":
         return "bg-gray-100 text-gray-700";
-      case "INACTIVE":
+      case "IN_ACTIVE":
         return "bg-warning-50 text-warning-700";
       case "REJECTED":
         return "bg-error-50 text-error-700";
@@ -663,12 +676,11 @@ function CourseManagement() {
                               {subject.status === "PUBLIC" && (
                                 <button
                                   onClick={() =>
-                                    handleReject(subject.subjectId)
+                                    handleInactive(subject.subjectId)
                                   }
-                                  className="flex items-center bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded"
+                                  className="flex items-center bg-yellow-600 hover:bg-yellow-700 text-white px-3 py-1 rounded"
                                 >
-                                  <X size={16} className="mr-1" />
-                                  Reject
+                                  Inactive
                                 </button>
                               )}
                             </div>

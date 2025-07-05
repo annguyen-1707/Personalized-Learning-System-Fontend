@@ -157,6 +157,49 @@ const rejectCourse = async (courseId) => {
   }
 };
 
+const inactiveCourse = async (courseId) => {
+  try {
+    const response = await axios.patch(`/api/subjects/inactive/${courseId}`);
+    return response.data;
+  } catch (error) {
+    console.error("Error inactivating course:", error);
+    throw error;
+  }
+};
+const acceptLesson = async (lessonId) => {
+  try {
+    const response = await axios.patch(`/api/lessons/accept/${lessonId}`);
+    return response.data;
+  } catch (error) {
+    console.error("Error accepting lesson:", error);
+    throw new Error(
+      error?.response?.data?.message ||
+        error?.message ||
+        "Failed to accept lesson."
+    );
+  }
+};
+
+const rejectLesson = async (lessonId) => {
+  try {
+    const response = await axios.patch(`/api/lessons/reject/${lessonId}`);
+    return response.data;
+  } catch (error) {
+    console.error("Error rejecting lesson:", error);
+    throw error;
+  }
+};
+
+const inactiveLesson = async (lessonId) => {
+  try {
+    const response = await axios.patch(`/api/lessons/inactive/${lessonId}`);
+    return response.data;
+  } catch (error) {
+    console.error("Error inactivating lesson:", error);
+    throw error;
+  }
+};
+
 export {
   getPageAllVocabulary,
   editVocabulary,
@@ -172,4 +215,8 @@ export {
   deleteGrammar,
   acceptCourse,
   rejectCourse,
+  inactiveCourse,
+  acceptLesson,
+  rejectLesson,
+  inactiveLesson,
 };
