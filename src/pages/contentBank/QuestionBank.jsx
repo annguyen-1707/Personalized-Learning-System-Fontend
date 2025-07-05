@@ -7,8 +7,7 @@ import {
   getLessonBySubjectIdFromAPI,
   getListAllSubjectFromAPI,
   getExerciseByLessonIdFromAPI,
-  getContentListeningByLeverFromAPI, inActiveQuestion,
-
+   getContentListeningByLeverFromAPI, inActiveQuestion
 } from '../../services/QuestionService';
 import ReactPaginate from 'react-paginate';
 import { toast } from "react-toastify";
