@@ -1,80 +1,31 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { ArrowLeft, Plus, Edit, Trash2, Check, X, MessageSquare, Languages, Search } from 'lucide-react';
+import { ArrowLeft, Plus, Edit, Trash2, Check, X, MessageSquare, Languages, Search, ShieldX } from 'lucide-react';
 import {
     getDialoguePageByContentSpeakingId,
-    handleCreateDialogue,
     handleDeleteDialogue,
-    handleUpdateDialogue
+    inActiveDialogue,
+    acceptDialogue,
+    rejectDialogue
 } from '../../services/DialogueService';
 import ReactPaginate from 'react-paginate';
 
 function DialogueManagement() {
     const [dialogues, setDialogues] = useState([]);
     const [search, setSearch] = useState('');
-    const [isAdding, setIsAdding] = useState(false);
-    const [isEditing, setIsEditing] = useState(null);
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(null);
     const { contentSpeakingId } = useParams();
     const [pageCount, setPageCount] = useState(0); // so luong trang page
     const [currentPage, setCurrentPage] = useState(1); // trang page hien tai
     const [size, setSize] = useState(6); // 1trang bn phan tu
     const [totalElements, setTotalElements] = useState(); // tong phan tu
-    const [formData, setFormData] = useState({
-        questionJp: '',
-        questionVn: '',
-        answerJp: '',
-        answerVn: '',
-        contentSpeakingId: contentSpeakingId
-    });
     useEffect(() => {
         getDialoguePage(1);
     }, [size]);
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        if (isEditing) {
-            try {
-                await handleUpdateDialogue(isEditing, formData);
-                await getDialoguePage(currentPage);
-                setIsAdding(false);
-                setIsEditing(null);
-            } catch (error) {
-                console.error("Error updating dialogue:", error);
-            }
-        } else {
-            try {
-                await handleCreateDialogue(formData);
-                await getDialoguePage(1);
-                setIsAdding(false);
-                setIsEditing(null);
-            } catch (error) {
-                console.error("Error creating dialogue:", error);
-                if (error.response && error.response.data) {
-                    alert(error.response.data.message || "Failed to create dialogue");
-                } else {
-                    alert("An unexpected error occurred");
-                }
-            }
-        }
-        setFormData({
-            questionJp: '',
-            questionVn: '',
-            answerJp: '',
-            answerVn: '',
-            contentSpeakingId: contentSpeakingId
-        });
-    };
 
     const handleDelete = async (id) => {
         await handleDeleteDialogue(id);
         await getDialoguePage(currentPage);
-    };
-
-    const startUpdate = (dialogue) => {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-        setFormData(dialogue);
-        setIsEditing(dialogue.dialogueId);
-        setIsAdding(false);
     };
 
     const getDialoguePage = async (page) => {
@@ -109,6 +60,21 @@ function DialogueManagement() {
         getDialoguePage(selectedPage);
     }
 
+    const handleAccept = async (id) => {
+        await acceptDialogue(id);
+        await getDialoguePage(currentPage);
+
+    }
+
+    const handleReject = async (id) => {
+        await rejectDialogue(id)
+        await getDialoguePage(currentPage);
+    }
+
+    const handleInActive = async (id) => {
+        await inActiveDialogue(id);
+        await getDialoguePage(currentPage);
+    }
 
     return (
         <div className="animate-fade-in">
@@ -123,14 +89,6 @@ function DialogueManagement() {
                         <h1 className="text-2xl font-bold text-gray-900">Dialogue Management</h1>
                         <p className="text-gray-500 mt-1">Manage dialogue pairs for speaking practice</p>
                     </div>
-                    <button
-                        onClick={() => { setIsAdding(true); setIsEditing(null); }}
-                        className="btn-primary flex items-center"
-                        disabled={isAdding || isEditing}
-                    >
-                        <Plus size={16} className="mr-1" />
-                        Add Dialogue
-                    </button>
                 </div>
             </div>
 
@@ -166,100 +124,6 @@ function DialogueManagement() {
                 </div>
             </div>
 
-            {/* Add/Edit Form */}
-            {(isAdding || isEditing) && (
-                <div className="card p-6 mb-6">
-                    <h2 className="text-xl font-medium mb-4">
-                        {isAdding ? 'Add New Dialogue' : 'Edit Dialogue'}
-                    </h2>
-                    <form onSubmit={handleSubmit}>
-                        <div className="space-y-4">
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
-                                    Question (Japanese)
-                                </label>
-                                <input
-                                    type="text"
-                                    required
-                                    value={formData.questionJp}
-                                    onChange={(e) => setFormData({ ...formData, questionJp: e.target.value })}
-                                    className="w-full"
-                                    placeholder="お名前は何ですか？"
-                                />
-                            </div>
-
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
-                                    Question (Vietnamese)
-                                </label>
-                                <input
-                                    type="text"
-                                    required
-                                    value={formData.questionVn}
-                                    onChange={(e) => setFormData({ ...formData, questionVn: e.target.value })}
-                                    className="w-full"
-                                    placeholder="Tên bạn là gì?"
-                                />
-                            </div>
-
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
-                                    Answer (Japanese)
-                                </label>
-                                <input
-                                    type="text"
-                                    required
-                                    value={formData.answerJp}
-                                    onChange={(e) => setFormData({ ...formData, answerJp: e.target.value })}
-                                    className="w-full"
-                                    placeholder="私の名前は田中です。"
-                                />
-                            </div>
-
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
-                                    Answer (Vietnamese)
-                                </label>
-                                <input
-                                    type="text"
-                                    required
-                                    value={formData.answerVn}
-                                    onChange={(e) => setFormData({ ...formData, answerVn: e.target.value })}
-                                    className="w-full"
-                                    placeholder="Tên tôi là Tanaka."
-                                />
-                            </div>
-                        </div>
-
-                        <div className="mt-6 flex justify-end space-x-3">
-                            <button
-                                type="button"
-                                onClick={() => {
-                                    setIsAdding(false);
-                                    setIsEditing(null);
-                                    setFormData({
-                                        questionJp: '',
-                                        questionVn: '',
-                                        answerJp: '',
-                                        answerVn: '',
-                                        contentSpeakingId: contentSpeakingId
-                                    });
-                                }}
-                                className="btn-outline"
-                            >
-                                Cancel
-                            </button>
-                            <button
-                                type="submit"
-                                className="btn-primary"
-                            >
-                                {isAdding ? 'Add Dialogue' : 'Save Changes'}
-                            </button>
-                        </div>
-                    </form>
-                </div>
-            )}
-
             {/* Dialogues List */}
             <div className="card mb-4">
                 {filteredDialogues?.length > 0 ? (
@@ -267,10 +131,27 @@ function DialogueManagement() {
                         {filteredDialogues.map((dialogue, index) => (
                             <div key={dialogue.dialogueId || index} className="p-6 border rounded-lg shadow hover:bg-gray-50">
                                 <div className="flex flex-col h-full">
-                                    <div className="flex items-center mb-4">
-                                        <MessageSquare className="h-5 w-5 text-primary-600 mr-2" />
-                                        <span className="badge bg-primary-50 text-primary-700">
-                                            {dialogue?.contentSpeaking?.category}
+                                    <div className="flex items-center justify-between mb-4">
+                                        {/* Category badge */}
+                                        <div className="flex items-center">
+                                            <MessageSquare className="h-5 w-5 text-primary-600 mr-2" />
+                                            <span className="badge bg-primary-50 text-primary-700">
+                                                {dialogue?.contentSpeaking?.category}
+                                            </span>
+                                        </div>
+
+                                        {/* Status badge */}
+                                        <span
+                                            className={`text-xs px-2 py-1 rounded font-medium ${dialogue.status === "PUBLIC"
+                                                ? "bg-green-100 text-green-700"
+                                                : dialogue.status === "REJECT"
+                                                    ? "bg-red-100 text-red-700"
+                                                    : dialogue.status === "IN_ACTIVE"
+                                                        ? "bg-yellow-100 text-yellow-700"
+                                                        : "bg-gray-100 text-gray-700"
+                                                }`}
+                                        >
+                                            {dialogue.status}
                                         </span>
                                     </div>
 
@@ -312,15 +193,39 @@ function DialogueManagement() {
                                             </div>
                                         ) : (
                                             <>
-                                                <button
-                                                    onClick={() => startUpdate(dialogue)}
-                                                    className="text-primary-600 hover:text-primary-800 mr-2"
-                                                >
-                                                    <Edit size={16} />
-                                                </button>
+                                                {dialogue.status === "DRAFT" && (
+                                                    <div className="flex gap-3 mt-2">
+                                                        <button
+                                                            onClick={() => handleAccept(dialogue.dialogueId)}
+                                                            className="flex items-center bg-green-600 hover:bg-green-700 text-white px-1 py-1 rounded"
+                                                        >
+                                                            <Check size={16} className="mr-1" />
+                                                            Accept
+                                                        </button>
+
+                                                        <button
+                                                            onClick={() => handleReject(dialogue.dialogueId)}
+                                                            className="flex items-center bg-red-600 hover:bg-red-700 text-white px-1 py-1 rounded"
+                                                        >
+                                                            <X size={16} className="mr-1" />
+                                                            Reject
+                                                        </button>
+                                                    </div>
+                                                )}
+                                                {dialogue.status === "PUBLIC" && (
+                                                    <div className="flex gap-4 mt-2">
+                                                        <button
+                                                            onClick={() => handleInActive(dialogue.dialogueId)}
+                                                            className="flex items-center bg-yellow-600 hover:bg-yellow-700 text-white px-1 py-1 rounded"
+                                                        >
+                                                            <ShieldX size={16} className="mr-1" />
+                                                            In Active
+                                                        </button>
+                                                    </div>
+                                                )}
                                                 <button
                                                     onClick={() => setShowDeleteConfirm(dialogue.dialogueId)}
-                                                    className="text-error-500 hover:text-error-700"
+                                                    className="text-error-500 hover:text-error-700 ml-2"
                                                 >
                                                     <Trash2 size={16} />
                                                 </button>

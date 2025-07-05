@@ -94,7 +94,13 @@ const rejectContent = (id) => {
 const getContentSpeakingByLever = (jlptLevel) => {
     return axios.get(`/api/content_speaking/jlptLevel?jlptLevel=${jlptLevel}`)
 }
+
+const inActiveContent = (id) => {
+    return axios.patch(`/api/content_speaking/inactive/${id}`)
+}
+
 export {
     getPageContentSpeaking, handleUpdateContent, fetchAllContentSpeaking, fetchAllContentCategorySpeaking,
-    handleCreateContent, handleDeleteContent, acceptContent, rejectContent,getContentSpeakingByLever
+    handleCreateContent, handleDeleteContent, acceptContent, rejectContent,getContentSpeakingByLever,
+    inActiveContent
 };
