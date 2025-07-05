@@ -12,12 +12,14 @@ const fetchDialoguePage = (page, size) => {
 const handleCreateDialogue = async (data) => {
     try {
         const response = await axios.post(`/api/dialogue`, data);
-        toast.success("Tạo đoạn hội thoại thành công!");
         return response;
     } catch (error) {
-        const allErrors = error.response?.data?.data?.map(e => `${e.message}`).join(", ");
+        let allErrors = error.response?.data?.data?.map(e => e.message).join(", ");
+        if (!allErrors) {
+            allErrors = error?.response?.data?.message || "Failed to update content";
+        } 
         console.error("All error", allErrors)
-        throw new Error(allErrors || "choose content category");
+        throw new Error(allErrors);
     }
 }
 
@@ -37,11 +39,11 @@ const handleDeleteDialogue = async (id) => {
 const handleUpdateDialogue = async (id, data) => {
     try {
         const response = await axios.patch(`/api/dialogue/${id}`, data);
-        toast.success("Cập nhật đoạn hội thoại thành công!");
         return response;
     } catch (error) {
-        console.error(error);
-        toast.error("Cập nhật đoạn hội thoại thất bại!");
+        const allErrors = error.response?.data?.data?.map(e => `${e.message}`).join(", ");
+        console.error("All error", allErrors)
+        throw new Error(allErrors || "Failed to create dialogue");
     }
 }
 
