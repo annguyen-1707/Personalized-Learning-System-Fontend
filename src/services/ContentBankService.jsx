@@ -139,10 +139,13 @@ const acceptCourse = async (courseId) => {
     const response = await axios.patch(`/api/subjects/accept/${courseId}`);
     return response.data;
   } catch (error) {
-    console.error("Error accepting course:", error);
-    throw error;
+    const errorMessage =
+      error?.response?.data?.message ||
+      error?.message ||
+      "Failed to accept course.";
+    throw new Error(errorMessage);
   }
-}
+};
 
 const rejectCourse = async (courseId) => {
   try {
@@ -168,5 +171,5 @@ export {
   addGrammar,
   deleteGrammar,
   acceptCourse,
-  rejectCourse
+  rejectCourse,
 };

@@ -4,8 +4,7 @@ import { useData } from "../../context/DataContext";
 import { toast } from "react-toastify";
 import ReactPaginate from "react-paginate";
 import { useAuth } from "../../context/AuthContext";
-import {acceptCourse, rejectCourse
-} from '../../services/ContentBankService';
+import { acceptCourse, rejectCourse } from "../../services/ContentBankService";
 
 import {
   Edit,
@@ -21,9 +20,14 @@ import {
 import { a, div, sub } from "framer-motion/client";
 
 function CourseManagement() {
-
-  const { addSubject, updateSubject, deleteSubject, addLog, fetchSubjects, fetchSubjectStatus } =
-    useData();
+  const {
+    addSubject,
+    updateSubject,
+    deleteSubject,
+    addLog,
+    fetchSubjects,
+    fetchSubjectStatus,
+  } = useData();
   const { user } = useAuth();
   const [isAdding, setIsAdding] = useState(false);
   const [isEditing, setIsEditing] = useState(null);
@@ -59,7 +63,6 @@ function CourseManagement() {
     try {
       const status = await fetchSubjectStatus();
       setStatus(status);
-      console.log("Fetched subject statuses:", status);
     } catch (error) {
       console.error("Failed to fetch subject status:", error);
       toast.error("Failed to fetch subject status.");
@@ -176,10 +179,6 @@ function CourseManagement() {
       await loadSubjects();
     } catch (error) {
       console.error("Failed to delete subject:", error);
-      const message =
-        error?.response?.data?.message ||
-        error?.message ||
-        "Failed to delete subject.";
       toast.error("Subject has many lessons, cannot delete.");
       showDeleteConfirm(null);
     }
@@ -221,13 +220,21 @@ function CourseManagement() {
   };
 
   const handleAccept = async (id) => {
-    await acceptCourse(id);
-    loadSubjects();
+    try {
+      await acceptCourse(id);
+      loadSubjects();
+    } catch (error) {
+      toast.error(error.message);
+    }
   };
 
   const handleReject = async (id) => {
-    await rejectCourse(id);
-    loadSubjects();
+    try {
+      await rejectCourse(id);
+      loadSubjects();
+    } catch (error) {
+      console.error("Failed to reject course:", error);
+    }
   };
 
   // Helper to get status badge color
@@ -237,6 +244,8 @@ function CourseManagement() {
         return "bg-success-50 text-success-700";
       case "DRAFT":
         return "bg-gray-100 text-gray-700";
+      case "INACTIVE":
+        return "bg-warning-50 text-warning-700";
       case "REJECTED":
         return "bg-error-50 text-error-700";
     }
@@ -600,30 +609,29 @@ function CourseManagement() {
                               <Layers size={16} className="mr-1" />
                             </Link>
 
-                            {isStaff &&  subject.status != "PUBLIC" && (
-                                <button
-                                  onClick={() => startEdit(subject)}
-                                  className="text-primary-600 hover:text-primary-800 flex items-center"
-                                  disabled={isAdding || isEditing}
-                                  title="Edit Subject"
-                                >
-                                  <Edit size={16} className="mr-1" />
-                                </button>
+                            {isStaff && subject.status != "PUBLIC" && (
+                              <button
+                                onClick={() => startEdit(subject)}
+                                className="text-primary-600 hover:text-primary-800 flex items-center"
+                                disabled={isAdding || isEditing}
+                                title="Edit Subject"
+                              >
+                                <Edit size={16} className="mr-1" />
+                              </button>
                             )}
 
                             {isContentManagerment && (
                               <button
-                                  onClick={() =>
-                                    setShowDeleteConfirm(subject.subjectId)
-                                  }
-                                  className="text-error-500 hover:text-error-700 flex items-center"
-                                  disabled={isAdding || isEditing}
-                                  title="Delete Subject"
-                                >
-                                  <Trash2 size={16} className="mr-1" />
-                                </button>
+                                onClick={() =>
+                                  setShowDeleteConfirm(subject.subjectId)
+                                }
+                                className="text-error-500 hover:text-error-700 flex items-center"
+                                disabled={isAdding || isEditing}
+                                title="Delete Subject"
+                              >
+                                <Trash2 size={16} className="mr-1" />
+                              </button>
                             )}
-                            
                           </div>
 
                           {/* Hàng 2: Accept / Reject */}
