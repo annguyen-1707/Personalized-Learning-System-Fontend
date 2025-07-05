@@ -409,7 +409,7 @@ function DialogueManagement() {
                                     </div>
 
                                     <div className="mt-auto flex justify-end pt-4">
-                                        {dialogue.status === "PUBLIC" && (
+                                        {dialogue.status != "PUBLIC" && (
                                             <div className="flex gap-4 mt-2">
                                                 <button
                                                     onClick={() => startUpdate(dialogue)}
