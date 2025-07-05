@@ -37,12 +37,48 @@ function QuestionManagement() {
   const [listSubject, setListSubject] = useState([]);
   const [listLesson, setListLesson] = useState([]);
   const [listExercise, setListExercise] = useState([]);
-  const [formData, setFormData] = useState({
-    questionText: '',
-    answerQuestions: [{ answerText: '', correct: false }],
-    contentListeningId: '',
-    exerciseId: ''
-  });
+  const [activeType, setActiveType] = useState("exercise");
+  const TypeTabs = ({ activeType, setActiveType }) => {
+    const types = [
+      {
+        key: "exercise",
+        label: "Exercise",
+        icon: <Dumbbell className="mr-2" size={16} />,
+      },
+      {
+        key: "contentListening",
+        label: "Content Listening",
+        icon: <Headphones className="mr-2" size={16} />,
+      },
+    ];
+
+    return (
+      <div className="border-b border-gray-200 mb-4">
+        <nav className="flex">
+          {types.map((type) => (
+            <button
+              key={type.key}
+              onClick={() => {
+                setActiveType(type.key)
+                getQuestionPage(1, type.key);
+                setCurrentPage(1);
+              }}
+              className={`
+              flex items-center px-4 py-3 text-sm font-medium border-b-2 transition
+              ${activeType === type.key
+                  ? "border-primary-600 text-primary-600"
+                  : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                }
+            `}
+            >
+              {type.icon}
+              {type.label}
+            </button>
+          ))}
+        </nav>
+      </div>
+    );
+  };
 
   useEffect(() => {
     getQuestionPage(1);
