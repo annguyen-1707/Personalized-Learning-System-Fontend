@@ -34,15 +34,12 @@ function NotificationSlider({ open, setOpen }) {
         const content = n.content;
         const match = content.match(/package:\s*(\d+)\s*VND/);
         const price = match ? parseInt(match[1], 10) : null;
-        console.log(price);
         const res = await axios.post(`/api/payment`, {
           amount: price,
-          userId: n.userSendId,
-          notificationId: n.notificationId
+          notificationId: notificationId
         }
         );
         const paymentUrl = res.url;
-        console.log("aaaaaa", paymentUrl)
 
         if (paymentUrl) {
           console.log("aaaaaa", price, n.uerSendId)

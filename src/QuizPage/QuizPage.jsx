@@ -139,7 +139,7 @@ function QuizPage() {
   );
 }
 
-  if (currentQuiz.questions.length === 0) {
+  if (currentQuiz.questions.length <= 1) {
     return (
       <div className="max-w-2xl mx-auto bg-yellow-100 text-yellow-800 border border-yellow-300 p-4 rounded">
         Not enough data to generate questions (at least 2 vocabulary items are required).
