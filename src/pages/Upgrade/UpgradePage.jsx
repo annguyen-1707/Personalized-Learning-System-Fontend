@@ -1,6 +1,7 @@
 import { Link, useLocation } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { useEffect, useState } from 'react'
+import axios from '../../services/customixe-axios'
 
 function UpgradePage() {
   const [plans, setPlans] = useState([])
@@ -8,25 +9,20 @@ function UpgradePage() {
   const [text, setText] = useState('');
   const location = useLocation(); // để lấy location.state
   const [notification, setNotification] = useState('');
+  
+  
 
 
 
   const handleBuy = async (amount, userIdParam) => {
-    const accessToken = localStorage.getItem('accessToken');
+    // const accessToken = localStorage.getItem('accessToken');
     const userId = location.state?.userId ?? userIdParam;
+   
     try {
-      const response = await fetch(`http://localhost:8080/payment/getMembershipOfUser`, {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${accessToken}`
-        }
-      });
-      const inforData = await response.json();
-
+      const inforData = await axios.get(`/api/payment/getMembershipOfUser`)
       let confirmed = false;
-
-      if (inforData.data) {
-        const isOk = window.confirm(inforData.data + ". Do you want to buy it!");
+      if (inforData !== null && inforData !== undefined) {
+        const isOk = window.confirm(inforData + ". Do you want to buy it!");
         if (!isOk) {
           return;
         }
@@ -41,39 +37,27 @@ function UpgradePage() {
         confirmed = true;
         showTempMessage("Redirecting to payment gateway...");
       }
-
       if (confirmed) {
-        const paymentResponse = await fetch("http://localhost:8080/payment/sendToParent", {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${accessToken}`
-          },
-          body: JSON.stringify({ amount, userId }),
+        const paymentResponse = await axios.post('/api/payment/sendToParent', {
+          amount: amount,
+          notificationId: userId,
         });
-
-        if (paymentResponse.ok) {
+        if (paymentResponse) {
           showTempMessage("Your request has been sent to your parents successfully!");
-      }else {
-          const data = await paymentResponse.json()
-        alert(data.message);
+        }
       }
-    }
     } catch (error) {
       console.error('Lỗi trong quá trình xử lý:', error);
       alert(error);
     }
-
-    
-
   };
 
-const showTempMessage = (message, duration = 3000) => {
-      setText(message);
-      setTimeout(() => {
-        setText('');
-      }, duration);
-    };
+  const showTempMessage = (message, duration = 3000) => {
+    setText(message);
+    setTimeout(() => {
+      setText('');
+    }, duration);
+  };
   useEffect(() => {
     if (location.state?.text) {
       setNotification(location.state.text);

@@ -1,3 +1,4 @@
+import axios from "./customixe-axios";
 
 const getAllSubjectsById = async (page) => {
     const res = await fetch(`api/subjects/students?page=${page}`, {

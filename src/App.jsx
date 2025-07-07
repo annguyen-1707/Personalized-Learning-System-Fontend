@@ -55,10 +55,11 @@ import QuestionManagement from "./pages/content/QuestionManagement.jsx";
 import VocabularyBank from "./pages/contentBank/VocabularyBank.jsx";
 import GrammarBank from "./pages/contentBank/GrammarBank.jsx";
 import NotFound from "./pages/auth/PageNotFound.jsx";
-import WebSocketTest from "./websocketTest.jsx";
 import ErrorPage from "./pages/auth/ErrorPage.jsx";
 import QuestionBank from "./pages/contentBank/QuestionBank.jsx";
 import DialogueBank from "./pages/contentBank/DialogueBank.jsx";
+import AccessDeniedUserPage from "./pages/auth/DenyUser.jsx";
+import UserRoute from "./context/UserRoute.jsx";
 
 function App() {
   const [notificationOpen, setNotificationOpen] = useState(false);
@@ -68,42 +69,46 @@ function App() {
       <DataProvider>
         <FeedbackWidget />
         <Routes>
-          <Route path="/" element={<Layout onNotificationClick={() => setNotificationOpen(true)} />}>
-            {/* Trang chính */}
-            <Route path="/websocket" element={<WebSocketTest />} />
+          <Route element={<UserRoute />}>
+            <Route path="/" element={<Layout onNotificationClick={() => setNotificationOpen(true)} />}>
 
-            <Route index element={<HomePage />} />
-            <Route path="upgrade" element={<UpgradePage />} />
-            <Route path="vnpay-return" element={<VnpayReturn />} />
 
-            {/* Profile */}
-            <Route path="profile" element={<ProfilePage />} />
-            <Route path="profile/edit" element={<EditProfilePage />} />
-            <Route path="profile/change-password" element={<ChangePasswordPage />} />
+              {/* Profile */}
+              <Route path="profile" element={<ProfilePage />} />
+              <Route path="profile/edit" element={<EditProfilePage />} />
+              <Route path="profile/change-password" element={<ChangePasswordPage />} />
 
-            {/* Listening */}
-            <Route path="listening" element={<ListeningPage />} />
-            <Route path="listening/detail/:contentListeningId" element={<ListeningDetailPage />} />
-            <Route path="listening/:id" element={<ListeningDetailPage />} />
+              {/* Listening */}
+              <Route path="listening" element={<ListeningPage />} />
+              <Route path="listening/detail/:contentListeningId" element={<ListeningDetailPage />} />
+              <Route path="listening/:id" element={<ListeningDetailPage />} />
 
-            {/* Learning */}
-            <Route path="learning" element={<LearningPage />} />
-            <Route path="learning/:subjectId" element={<CourseContentPage />} />
-            <Route path="learning/:subjectId/lesson/:lessonId" element={<LessonPage />} />
+              {/* Learning */}
+              <Route path="learning" element={<LearningPage />} />
+              <Route path="learning/:subjectId" element={<CourseContentPage />} />
+              <Route path="learning/:subjectId/lesson/:lessonId" element={<LessonPage />} />
 
-            {/* Favorites */}
+              {/* Favorites */}
 
-            <Route path="favorites" element={<FavoriteFoldersPage />} />
-            <Route path="favorites/:folderId" element={<FavoriteFolderDetailsPage />} />
+              <Route path="favorites" element={<FavoriteFoldersPage />} />
+              <Route path="favorites/:folderId" element={<FavoriteFolderDetailsPage />} />
 
-            { /* Flashcard */}
-            <Route path="flashcards" element={<FlashcardsPage />} />
-            {/* News */}
-            <Route path="news" element={<NewsPage />} />
-            
-            <Route path="quiz" element={<QuizPage />} />
+              { /* Flashcard */}
+              <Route path="flashcards" element={<FlashcardsPage />} />
+              {/* News */}
+              <Route path="news" element={<NewsPage />} />
 
+              <Route path="quiz" element={<QuizPage />} />
+
+            </Route>
           </Route>
+          <Route path="/" element={<Layout onNotificationClick={() => setNotificationOpen(true)} />}>
+            <Route index element={<HomePage />} />
+          </Route>
+
+          {/* Trang chính */}
+          <Route path="upgrade" element={<UpgradePage />} />
+          <Route path="vnpay-return" element={<VnpayReturn />} />
 
           {/* Routes cho phụ huynh */}
           <Route path="/" element={<LayoutParent onNotificationClick={() => setNotificationOpen(true)} />}>
@@ -179,7 +184,7 @@ function App() {
             />
             <Route
               path="content_reading/:contentReadingId/grammar"
-              element={<AdminRoute allowedRoles={[ "CONTENT_MANAGER", "SUPER_ADMIN"]}>
+              element={<AdminRoute allowedRoles={["CONTENT_MANAGER", "SUPER_ADMIN"]}>
                 <GrammarManagement />
               </AdminRoute>}
             />
@@ -191,7 +196,7 @@ function App() {
             />
             <Route
               path="content_listening/:contentListeningId/question"
-              element={<AdminRoute allowedRoles={[ "CONTENT_MANAGER", "SUPER_ADMIN"]}>
+              element={<AdminRoute allowedRoles={["CONTENT_MANAGER", "SUPER_ADMIN"]}>
                 <QuestionManagement />
               </AdminRoute>}
             />
@@ -273,6 +278,8 @@ function App() {
           </Route>
           <Route path="*" element={<NotFound />} />
           <Route path="/error" element={<ErrorPage />} />
+          <Route path="/deny-user" element={<AccessDeniedUserPage />} />
+
         </Routes>
         <NotificationSlider
           open={notificationOpen}
