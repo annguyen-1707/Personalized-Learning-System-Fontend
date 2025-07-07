@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { ArrowLeft, Plus, Edit, Trash2, Check, X, Search } from 'lucide-react';
-import { getQuestionPageByContentListeningId, handleDeleteQuestion, acceptQuestion, rejectQuestion } from '../../services/QuestionService';
+import { ArrowLeft, Plus, Edit, Trash2, Check, X, Search, ShieldX } from 'lucide-react';
+import { getQuestionPageByContentListeningId, handleDeleteQuestion, acceptQuestion, rejectQuestion, inActiveQuestion } from '../../services/QuestionService';
 import ReactPaginate from 'react-paginate';
 import { toast } from "react-toastify";
 
@@ -21,8 +21,8 @@ function QuestionManagement() {
     getQuestionPage(1);
   }, [size]);
 
-  const getQuestionPage = async (page) => {
-    let res = await getQuestionPageByContentListeningId(page, contentListeningId, size);
+  const getQuestionPage = async (page, type) => {
+    let res = await getQuestionPageByContentListeningId(page, contentListeningId, size, type);
     console.log("Data page", res)
     if (res && res.data && res.data.content) {
       setQuestions(res.data.content);
@@ -66,6 +66,11 @@ function QuestionManagement() {
 
   const handleReject = async (id) => {
     await rejectQuestion(id)
+    await getQuestionPage(currentPage);
+  }
+
+  const handleInActive = async (id) => {
+    await inActiveQuestion(id);
     await getQuestionPage(currentPage);
   }
 
@@ -136,12 +141,12 @@ function QuestionManagement() {
                       className={`
                   text-xs font-semibold px-2 py-1 rounded-full
                   ${question.status === 'DRAFT'
-                          ? 'bg-gray-200 text-gray-700'
+                          ? 'bg-gray-100 text-gray-700'
                           : question.status === 'REJECT'
-                            ? 'bg-red-200 text-red-700'
+                            ? 'bg-red-100 text-red-700'
                             : question.status === 'PUBLIC'
-                              ? 'bg-green-200 text-green-700'
-                              : 'bg-gray-100 text-gray-500'}
+                              ? 'bg-green-100 text-green-700'
+                              : 'bg-yellow-100 text-yellow-500'}
                 `}
                     >
                       {question.status}
@@ -174,13 +179,15 @@ function QuestionManagement() {
                   {/* Action buttons */}
                   <div className="flex justify-end pt-2 space-x-2">
                     {(question.status === 'PUBLIC') && (
-                      <button
-                        onClick={() => handleReject(question.exerciseQuestionId)}
-                        className="flex items-center bg-red-600 hover:bg-red-700 text-white px-1 py-1 rounded"
-                      >
-                        <X size={16} className="mr-1" />
-                        Reject
-                      </button>
+                      <div className="flex gap-4 mt-2">
+                        <button
+                          onClick={() => handleInActive(question.exerciseQuestionId)}
+                          className="flex items-center bg-yellow-600 hover:bg-yellow-700 text-white px-1 py-1 rounded"
+                        >
+                          <ShieldX size={16} className="mr-1" />
+                          In Active
+                        </button>
+                      </div>
                     )}
                     {(question.status === 'DRAFT') && (
                       <div className="flex gap-3 mt-2">
@@ -201,12 +208,32 @@ function QuestionManagement() {
                         </button>
                       </div>
                     )}
+                    {showDeleteConfirm === question.exerciseQuestionId ? (
+                        <>
+                          <button
+                            onClick={() => {
+                              handleDelete(question.exerciseQuestionId);
+                              setShowDeleteConfirm(null);
+                            }}
+                            className="text-error-500 hover:text-error-700"
+                          >
+                            <Check size={16} />
+                          </button>
+                          <button
+                            onClick={() => setShowDeleteConfirm(null)}
+                            className="text-gray-500 hover:text-gray-700"
+                          >
+                            <X size={16} />
+                          </button>
+                        </>
+                      ) : (
                     <button
                       onClick={() => setShowDeleteConfirm(question.exerciseQuestionId)}
                       className="text-red-500 hover:text-red-700"
                     >
                       <Trash2 size={16} />
                     </button>
+                    )}
                   </div>
                 </div>
               </div>

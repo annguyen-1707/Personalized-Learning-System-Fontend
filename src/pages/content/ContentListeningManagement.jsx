@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
-import { Plus, Search, Edit, Trash2, Check, X, MessageCircleQuestion } from 'lucide-react';
+import { Plus, Search, Edit, Trash2, Check, X, MessageCircleQuestion, ShieldX } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import {
   getPageContentListening, handleUpdateContent, fetchAllContentCategoryListening, handleCreateContent,
-  handleDeleteContent, getJlptLevel, getStatus, acceptContent, rejectContent
+  handleDeleteContent, getJlptLevel, getStatus, acceptContent, rejectContent, inActiveContent
 } from '../../services/ContentListeningService';
 import ReactPaginate from 'react-paginate';
 import 'bootstrap/dist/css/bootstrap.min.css';
@@ -220,6 +220,11 @@ function ListeningContentManagement() {
 
   const handleReject = async (id) => {
     await rejectContent(id);
+    await getContentPage(currentPage);
+  }
+
+  const handleInActive = async (id) => {
+    await inActiveContent(id);
     await getContentPage(currentPage);
   }
 
@@ -520,14 +525,16 @@ function ListeningContentManagement() {
                           ? "bg-green-100 text-green-700"
                           : content.status === "REJECT"
                             ? "bg-red-100 text-red-700"
-                            : "bg-gray-100 text-gray-700"
+                            : content.status === "IN_ACTIVE"
+                              ? "bg-yellow-100 text-yellow-700"
+                              : "bg-gray-100 text-gray-700"
                           }`}
                       >
                         {content.status}
                       </span>
                     </td>
                     <td className="px-4 py-2 space-y-1">
-                      {isContentManagerment&& (
+                      {isContentManagerment && (
                         <Link
                           to={`/admin/content_listening/${content.contentListeningId}/question`}
                           className="flex items-center text-blue-600 hover:underline mb-1"
@@ -535,7 +542,7 @@ function ListeningContentManagement() {
                           <MessageCircleQuestion size={14} className="mr-1" />
                           Question
                         </Link>
-                     )}
+                      )}
                       <div className="flex space-x-2">
                         {isStaff && content.status != 'PUBLIC' && (
                           <button
@@ -594,11 +601,11 @@ function ListeningContentManagement() {
                       {isContentManagerment && content.status === "PUBLIC" && (
                         <div className="flex gap-4 mt-2">
                           <button
-                            onClick={() => handleReject(content.contentListeningId)}
-                            className="flex items-center bg-red-600 hover:bg-red-700 text-white px-1 py-1 rounded"
+                            onClick={() => handleInActive(content.contentListeningId)}
+                            className="flex items-center bg-yellow-600 hover:bg-yellow-700 text-white px-1 py-1 rounded"
                           >
-                            <X size={16} className="mr-1" />
-                            Reject
+                            <ShieldX size={16} className="mr-1" />
+                            In Active
                           </button>
                         </div>
                       )}

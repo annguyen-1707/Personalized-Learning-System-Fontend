@@ -138,8 +138,12 @@ const acceptContent = (id) => {
 const rejectContent = (id) => {
     return axios.patch(`/api/content_reading/reject/${id}`)
 }
+
+const inActiveContent = (id) => {
+    return axios.patch(`/api/content_reading/inactive/${id}`)
+}
 export {
     getPageContentReading, handleUpdateContent, fetchAllContentReading, fetchAllContentCategoryReading, handleCreateContent, handleDeleteContent,
     getPageAllVocabulary, handleAddVocabulary, handleRemoveVocabulary, getVocabularyByContentReadingId, getPageAllGrammar, handleAddGrammar, handleRemoveGrammar
-    , getGrammarByContentReadingId, acceptContent,rejectContent
+    , getGrammarByContentReadingId, acceptContent,rejectContent,inActiveContent
 }

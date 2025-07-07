@@ -14,6 +14,7 @@ import { toast } from "react-toastify";
 
 
 function DialogueManagement() {
+    const [errorMessage, setErrorMessage] = useState("");
     const [dialogues, setDialogues] = useState([]);
     const [search, setSearch] = useState('');
     const [isAdding, setIsAdding] = useState(false);
@@ -54,9 +55,10 @@ function DialogueManagement() {
                 setIsAdding(false);
                 setIsEditing(null);
                 handleSetNullAll();
+                toast.success("Success to update Dialogue.!");
             } catch (error) {
                 setErrorMessage(error.message || "Failed to update Dialogue.");
-                toast.error("CFailed to update Dialogue.!");
+                toast.error("Failed to update Dialogue.!");
             }
         } else {
             try {
@@ -66,6 +68,7 @@ function DialogueManagement() {
                 setIsAdding(false);
                 setIsEditing(null);
                 handleSetNullAll();
+                toast.success("Success creating dialogue!");
             } catch (error) {
                 console.error("Error creating dialogue:", error);
                 toast.error("Error creating dialogue!");
@@ -235,6 +238,12 @@ function DialogueManagement() {
                     <h2 className="text-xl font-medium mb-4">
                         {isAdding ? 'Add New Dialogue' : 'Edit Dialogue'}
                     </h2>
+                    {errorMessage && (
+                        <div className="mb-4 p-3 rounded bg-red-100 text-red-700 text-sm flex items-center justify-between">
+                            <p className="mb-2">{errorMessage}</p>
+                            <button className="text-red-700 hover:text-red-900" onClick={() => setErrorMessage("")}>X</button>
+                        </div>
+                    )}
                     <form onSubmit={handleSubmit}>
                         <div className="space-y-4">
                             <div>
@@ -243,7 +252,7 @@ function DialogueManagement() {
                                 </label>
                                 <input
                                     type="text"
-                                    required
+
                                     value={formData.questionJp}
                                     onChange={(e) => setFormData({ ...formData, questionJp: e.target.value })}
                                     className="w-full"
@@ -257,7 +266,7 @@ function DialogueManagement() {
                                 </label>
                                 <input
                                     type="text"
-                                    required
+
                                     value={formData.questionVn}
                                     onChange={(e) => setFormData({ ...formData, questionVn: e.target.value })}
                                     className="w-full"
@@ -271,7 +280,7 @@ function DialogueManagement() {
                                 </label>
                                 <input
                                     type="text"
-                                    required
+
                                     value={formData.answerJp}
                                     onChange={(e) => setFormData({ ...formData, answerJp: e.target.value })}
                                     className="w-full"
@@ -285,7 +294,7 @@ function DialogueManagement() {
                                 </label>
                                 <input
                                     type="text"
-                                    required
+
                                     value={formData.answerVn}
                                     onChange={(e) => setFormData({ ...formData, answerVn: e.target.value })}
                                     className="w-full"
@@ -356,10 +365,27 @@ function DialogueManagement() {
                         {filteredDialogues.map((dialogue, index) => (
                             <div key={dialogue.dialogueId || index} className="p-6 border rounded-lg shadow hover:bg-gray-50">
                                 <div className="flex flex-col h-full">
-                                    <div className="flex items-center mb-4">
-                                        <MessageSquare className="h-5 w-5 text-primary-600 mr-2" />
-                                        <span className="badge bg-primary-50 text-primary-700">
-                                            {dialogue?.contentSpeaking?.category}
+                                    <div className="flex items-center justify-between mb-4">
+                                        {/* Category badge */}
+                                        <div className="flex items-center">
+                                            <MessageSquare className="h-5 w-5 text-primary-600 mr-2" />
+                                            <span className="badge bg-primary-50 text-primary-700">
+                                                {dialogue?.contentSpeaking?.category}
+                                            </span>
+                                        </div>
+
+                                        {/* Status badge */}
+                                        <span
+                                            className={`text-xs px-2 py-1 rounded font-medium ${dialogue.status === "PUBLIC"
+                                                ? "bg-green-100 text-green-700"
+                                                : dialogue.status === "REJECT"
+                                                    ? "bg-red-100 text-red-700"
+                                                    : dialogue.status === "IN_ACTIVE"
+                                                        ? "bg-yellow-100 text-yellow-700"
+                                                        : "bg-gray-100 text-gray-700"
+                                                }`}
+                                        >
+                                            {dialogue.status}
                                         </span>
                                     </div>
 
@@ -383,37 +409,15 @@ function DialogueManagement() {
                                     </div>
 
                                     <div className="mt-auto flex justify-end pt-4">
-                                        {showDeleteConfirm === dialogue.dialogueId ? (
-                                            <div className="flex items-center space-x-2">
-                                                <span className="text-xs text-gray-500">Delete?</span>
-                                                <button
-                                                    onClick={() => handleDelete(dialogue.dialogueId)}
-                                                    className="text-error-500 hover:text-error-700"
-                                                >
-                                                    <Check size={16} />
-                                                </button>
-                                                <button
-                                                    onClick={() => setShowDeleteConfirm(null)}
-                                                    className="text-gray-500 hover:text-gray-700"
-                                                >
-                                                    <X size={16} />
-                                                </button>
-                                            </div>
-                                        ) : (
-                                            <>
+                                        {dialogue.status != "PUBLIC" && (
+                                            <div className="flex gap-4 mt-2">
                                                 <button
                                                     onClick={() => startUpdate(dialogue)}
                                                     className="text-primary-600 hover:text-primary-800 mr-2"
                                                 >
                                                     <Edit size={16} />
                                                 </button>
-                                                <button
-                                                    onClick={() => setShowDeleteConfirm(dialogue.dialogueId)}
-                                                    className="text-error-500 hover:text-error-700"
-                                                >
-                                                    <Trash2 size={16} />
-                                                </button>
-                                            </>
+                                            </div>
                                         )}
                                     </div>
                                 </div>
