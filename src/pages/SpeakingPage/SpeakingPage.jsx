@@ -164,30 +164,28 @@ function SpeakingPage() {
             </div>
 
             {/* Pagination controls */}
-            {filteredContents.length > 0 && (
-                <ReactPaginate
-                    className="pagination mt-6 justify-center"
-                    nextLabel="next >"
-                    onPageChange={handlePageClick}
-                    pageRangeDisplayed={3}
-                    marginPagesDisplayed={2}
-                    pageCount={totalPages}
-                    previousLabel="< previous"
-                    pageClassName="page-item"
-                    pageLinkClassName="page-link"
-                    previousClassName="page-item"
-                    previousLinkClassName="page-link"
-                    nextClassName="page-item"
-                    nextLinkClassName="page-link"
-                    breakLabel="..."
-                    breakClassName="page-item"
-                    breakLinkClassName="page-link"
-                    containerClassName="pagination"
-                    activeClassName="active"
-                    forcePage={page - 1}
-                    renderOnZeroPageCount={null}
-                />
-            )}
+            <ReactPaginate
+                className="pagination mt-6 justify-center"
+                nextLabel="next >"
+                onPageChange={handlePageClick}
+                pageRangeDisplayed={3}
+                marginPagesDisplayed={2}
+                pageCount={totalPages}
+                previousLabel="< previous"
+                pageClassName="page-item"
+                pageLinkClassName="page-link"
+                previousClassName="page-item"
+                previousLinkClassName="page-link"
+                nextClassName="page-item"
+                nextLinkClassName="page-link"
+                breakLabel="..."
+                breakClassName="page-item"
+                breakLinkClassName="page-link"
+                containerClassName="pagination"
+                activeClassName="active"
+                forcePage={page - 1}
+                renderOnZeroPageCount={null}
+            />
         </div>
     );
 }

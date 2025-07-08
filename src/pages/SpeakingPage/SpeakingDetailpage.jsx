@@ -18,14 +18,23 @@ const SpeakingDetailPage = () => {
     const [pronunciationResult, setPronunciationResult] = useState(null);
 
     useEffect(() => {
-        getDialogueByContentSpeaking();
-        setDialogue(listDialogue[currentIndex]);
-        getResultBeforeAssess(listDialogue[currentIndex]?.dialogueId);
+        getDialogueByContentSpeaking(); // Giả sử hàm này setListDialogue(...)
+    }, []); // chỉ gọi một lần khi mount
+
+    useEffect(() => {
+        if (!listDialogue || listDialogue.length === 0) return;
+        const current = listDialogue[currentIndex];
+        if (!current) return;
+
+        setDialogue(current);
+        getResultBeforeAssess(current.dialogueId);
+
         const timeout = setTimeout(() => {
-            playAudio(listDialogue[currentIndex]?.questionJp);
-        }, 1200); // chờ 1.2 giây
+            playAudio(current.questionJp);
+        }, 1200);
+
         return () => clearTimeout(timeout);
-    }, [currentIndex]);
+    }, [listDialogue, currentIndex]); // 👈 chỉ khi listDialogue đã được cập nhật mới chạy
 
     const getResultBeforeAssess = async (dialogueId) => {
         var response = await getResultBeforeAssessFromAPI(dialogueId);
