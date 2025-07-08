@@ -58,6 +58,8 @@ import NotFound from "./pages/auth/PageNotFound.jsx";
 import ErrorPage from "./pages/auth/ErrorPage.jsx";
 import QuestionBank from "./pages/contentBank/QuestionBank.jsx";
 import DialogueBank from "./pages/contentBank/DialogueBank.jsx";
+import SpeakingPage from "./pages/SpeakingPage/SpeakingPage.jsx";
+import SpeakingDetailPage from "./pages/SpeakingPage/SpeakingDetailPage.jsx";
 import AccessDeniedUserPage from "./pages/auth/DenyUser.jsx";
 import UserRoute from "./context/UserRoute.jsx";
 
@@ -99,6 +101,12 @@ function App() {
               <Route path="news" element={<NewsPage />} />
 
               <Route path="quiz" element={<QuizPage />} />
+
+            { /*Speaking */}
+            <Route path="speaking" element={<SpeakingPage />} />
+            <Route path="speaking/detail/:contentSpeakingId" element={<SpeakingDetailPage />} />
+
+            {/* Routes cho người dùng đã đăng nhập */}
 
             </Route>
           </Route>
