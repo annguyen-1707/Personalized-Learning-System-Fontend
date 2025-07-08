@@ -59,6 +59,8 @@ import WebSocketTest from "./websocketTest.jsx";
 import ErrorPage from "./pages/auth/ErrorPage.jsx";
 import QuestionBank from "./pages/contentBank/QuestionBank.jsx";
 import DialogueBank from "./pages/contentBank/DialogueBank.jsx";
+import SpeakingPage from "./pages/SpeakingPage/SpeakingPage.jsx";
+import SpeakingDetailPage from "./pages/SpeakingPage/SpeakingDetailPage.jsx";
 
 function App() {
   const [notificationOpen, setNotificationOpen] = useState(false);
@@ -100,8 +102,13 @@ function App() {
             <Route path="flashcards" element={<FlashcardsPage />} />
             {/* News */}
             <Route path="news" element={<NewsPage />} />
-            
             <Route path="quiz" element={<QuizPage />} />
+
+            { /*Speaking */}
+            <Route path="speaking" element={<SpeakingPage />} />
+            <Route path="speaking/detail/:contentSpeakingId" element={<SpeakingDetailPage />} />
+
+            {/* Routes cho người dùng đã đăng nhập */}
 
           </Route>
 
@@ -179,7 +186,7 @@ function App() {
             />
             <Route
               path="content_reading/:contentReadingId/grammar"
-              element={<AdminRoute allowedRoles={[ "CONTENT_MANAGER", "SUPER_ADMIN"]}>
+              element={<AdminRoute allowedRoles={["CONTENT_MANAGER", "SUPER_ADMIN"]}>
                 <GrammarManagement />
               </AdminRoute>}
             />
@@ -191,7 +198,7 @@ function App() {
             />
             <Route
               path="content_listening/:contentListeningId/question"
-              element={<AdminRoute allowedRoles={[ "CONTENT_MANAGER", "SUPER_ADMIN"]}>
+              element={<AdminRoute allowedRoles={["CONTENT_MANAGER", "SUPER_ADMIN"]}>
                 <QuestionManagement />
               </AdminRoute>}
             />
