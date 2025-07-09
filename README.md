@@ -141,6 +141,40 @@ I. Client
 
 II. Admin
 
+1 Dashboard
+![image](https://github.com/user-attachments/assets/ef3bb5c5-68ac-47d2-8976-d66adc2d7568)
+
+2 User Manager
+
+![image](https://github.com/user-attachments/assets/c95f7828-1db3-47a6-9c8e-1e7e180b53da)
+
+3 Content Manager
+
+3.1 Learning
+3.1.1 Subject
+Manager: <img width="1512" alt="Screenshot 2025-07-09 at 15 34 18" src="https://github.com/user-attachments/assets/5c70256d-2c80-4b20-a3bd-fdce82f10ed2" />
+
+Staff: <img width="1512" alt="Screenshot 2025-07-09 at 15 34 10 1" src="https://github.com/user-attachments/assets/a56e1a23-66c0-452e-879e-63be6c4b37b0" />
+3.1.2 Lesson
+Manager: <img width="1512" alt="Screenshot 2025-07-09 at 15 43 19" src="https://github.com/user-attachments/assets/d28af204-5d7c-4313-b4c3-dbe86970aa1f" />
+
+Staff:<img width="1512" alt="Screenshot 2025-07-09 at 15 43 13" src="https://github.com/user-attachments/assets/68bd7f1b-7dbe-4b41-b9e9-f922fad1637e" />
+
+3.1.3 Content in Lesson
+<img width="1512" alt="Screenshot 2025-07-09 at 15 45 06" src="https://github.com/user-attachments/assets/7a240d27-0cb8-403d-8c44-61a918c2b326" />
+
+<img width="1512" alt="Screenshot 2025-07-09 at 15 45 02" src="https://github.com/user-attachments/assets/0c756a14-1fb1-4309-b00d-2ff294f774dc" />
+
+<img width="1512" alt="Screenshot 2025-07-09 at 15 44 57" src="https://github.com/user-attachments/assets/91dbc269-3420-41f2-835c-76276a621a05" />
+
+<img width="1512" alt="Screenshot 2025-07-09 at 15 45 06" src="https://github.com/user-attachments/assets/e05b99bd-6db1-4b44-bcb5-7d88a14f3c21" />
+
+3.2 Practice
+
+3.3 Content Bank
+
+
+
 
 
 
