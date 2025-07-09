@@ -60,6 +60,7 @@ import QuestionBank from "./pages/contentBank/QuestionBank.jsx";
 import DialogueBank from "./pages/contentBank/DialogueBank.jsx";
 import AccessDeniedUserPage from "./pages/auth/DenyUser.jsx";
 import UserRoute from "./context/UserRoute.jsx";
+import ChatComponent from "./ChatComponent.jsx";
 
 function App() {
   const [notificationOpen, setNotificationOpen] = useState(false);
@@ -71,8 +72,6 @@ function App() {
         <Routes>
           <Route element={<UserRoute />}>
             <Route path="/" element={<Layout onNotificationClick={() => setNotificationOpen(true)} />}>
-
-
               {/* Profile */}
               <Route path="profile" element={<ProfilePage />} />
               <Route path="profile/edit" element={<EditProfilePage />} />
@@ -104,6 +103,8 @@ function App() {
           </Route>
           <Route path="/" element={<Layout onNotificationClick={() => setNotificationOpen(true)} />}>
             <Route index element={<HomePage />} />
+            <Route path="/websocket" element={<ChatComponent />} />
+
           </Route>
 
           {/* Trang chính */}
@@ -279,7 +280,6 @@ function App() {
           <Route path="*" element={<NotFound />} />
           <Route path="/error" element={<ErrorPage />} />
           <Route path="/deny-user" element={<AccessDeniedUserPage />} />
-
         </Routes>
         <NotificationSlider
           open={notificationOpen}

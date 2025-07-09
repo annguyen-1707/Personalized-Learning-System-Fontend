@@ -16,85 +16,85 @@ export function AuthProvider({ children }) {
   });
   const navigate = useNavigate(); // ✅ thêm dòng này
 
-  useEffect(() => {
-    console.log("AuthProvider mounted", localStorage.getItem("accessToken") + user);
-    if (!localStorage.getItem("accessToken")) {
-      localStorage.removeItem("isAdmin");
-    }
-    setLoading(true);
-    if (!isAdmin) {
-      const checkLogin = async () => {
-        try {
-          const response = await fetch("http://localhost:8080/auth/check-login", {
-            method: "GET",
-            credentials: "include",
-          });
-          if (response.ok) {
-            const data = await response.json();
-            const accessToken = data?.data?.accessToken;
-            if (!accessToken) {
-              console.warn("Không tìm thấy accessToken trong phản hồi", data);
-              return;
-            }
-            localStorage.setItem("accessToken", accessToken);
+  // useEffect(() => {
+  //   console.log("AuthProvider mounted", localStorage.getItem("accessToken") + user);
+  //   if (!localStorage.getItem("accessToken")) {
+  //     localStorage.removeItem("isAdmin");
+  //   }
+  //   setLoading(true);
+  //   if (!isAdmin) {
+  //     const checkLogin = async () => {
+  //       try {
+  //         const response = await fetch("http://localhost:8080/auth/check-login", {
+  //           method: "GET",
+  //           credentials: "include",
+  //         });
+  //         if (response.ok) {
+  //           const data = await response.json();
+  //           const accessToken = data?.data?.accessToken;
+  //           if (!accessToken) {
+  //             console.warn("Không tìm thấy accessToken trong phản hồi", data);
+  //             return;
+  //           }
+  //           localStorage.setItem("accessToken", accessToken);
 
-            const userRes = await fetch("http://localhost:8080/auth/user", {
-              headers: { Authorization: `Bearer ${accessToken}` },
-            });
+  //           const userRes = await fetch("http://localhost:8080/auth/user", {
+  //             headers: { Authorization: `Bearer ${accessToken}` },
+  //           });
 
-            const userData = await userRes.json();
-            setUser(userData.data);
-          }
+  //           const userData = await userRes.json();
+  //           setUser(userData.data);
+  //         }
 
-          else {
-            console.warn("Phản hồi check-login không ok:", response.status);
-          }
+  //         else {
+  //           console.warn("Phản hồi check-login không ok:", response.status);
+  //         }
 
-        } catch (err) {
-          console.error(err);
-        }
-        finally {
-          setLoading(false);
-        }
-      };
-      checkLogin();
-    }
-    else {
-      const checkLogin = async () => {
-        try {
-          const response = await fetch("http://localhost:8080/admin/check-login", {
-            method: "GET",
-            credentials: "include",
-          });
-          if (response.ok) {
-            const data = await response.json();
-            const accessToken = data?.data?.accessToken;
-            if (!accessToken) {
-              console.warn("Không tìm thấy accessToken trong phản hồi", data);
-              return;
-            }
+  //       } catch (err) {
+  //         console.error(err);
+  //       }
+  //       finally {
+  //         setLoading(false);
+  //       }
+  //     };
+  //     checkLogin();
+  //   }
+  //   else {
+  //     const checkLogin = async () => {
+  //       try {
+  //         const response = await fetch("http://localhost:8080/admin/check-login", {
+  //           method: "GET",
+  //           credentials: "include",
+  //         });
+  //         if (response.ok) {
+  //           const data = await response.json();
+  //           const accessToken = data?.data?.accessToken;
+  //           if (!accessToken) {
+  //             console.warn("Không tìm thấy accessToken trong phản hồi", data);
+  //             return;
+  //           }
 
-            localStorage.setItem("accessToken", accessToken);
+  //           localStorage.setItem("accessToken", accessToken);
 
-            const userRes = await fetch("http://localhost:8080/admin/user", {
-              headers: { Authorization: `Bearer ${accessToken}` },
-            });
+  //           const userRes = await fetch("http://localhost:8080/admin/user", {
+  //             headers: { Authorization: `Bearer ${accessToken}` },
+  //           });
 
-            const userData = await userRes.json();
-            setUser(userData.data);
-          }
-          else {
-            console.warn("Phản hồi check-login không ok:", response.status);
-          }
-        } catch (err) {
-          console.error(err);
-        } finally {
-          setLoading(false);
-        }
-      };
-      checkLogin();
-    }
-  }, []);
+  //           const userData = await userRes.json();
+  //           setUser(userData.data);
+  //         }
+  //         else {
+  //           console.warn("Phản hồi check-login không ok:", response.status);
+  //         }
+  //       } catch (err) {
+  //         console.error(err);
+  //       } finally {
+  //         setLoading(false);
+  //       }
+  //     };
+  //     checkLogin();
+  //   }
+  // }, []);
 
   const handleLogout = async () => {
     try {
