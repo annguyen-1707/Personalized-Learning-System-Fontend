@@ -8,7 +8,7 @@ export default defineConfig({
     exclude: ["lucide-react"],
   },
   define: {
-    global: {}, // 👈 fix lỗi `global is not defined`
+    global: 'window', // 👈 fix lỗi `global is not defined`
   },
   server: {
     proxy: {

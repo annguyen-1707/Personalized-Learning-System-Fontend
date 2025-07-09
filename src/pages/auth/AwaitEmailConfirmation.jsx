@@ -1,33 +1,46 @@
 import { useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-
+import websocket from '../../services/websocket';
 function AwaitEmailConfirmation() {
   const navigate = useNavigate();
   const location = useLocation();
   const email = new URLSearchParams(location.search).get('email');
 
   useEffect(() => {
-    const interval = setInterval(async () => {
-      try {
-        const response = await fetch(`http://localhost:8080/auth?email=${encodeURIComponent(email)}`, {
-          method: 'GET',
-          headers: { 'X-Requested-With': 'XMLHttpRequest' }
-        });
-
-        if (response.ok) {
+    websocket.connect().then(() => {
+      const topic = `/topic/confirm.${encodeURIComponent(email)}`;
+      websocket.subscribe(topic, (msg) => {
+        const data = JSON.parse(msg);
+        if (data.email === email && data.status === "Registered") {
+          console.log("✅ Email xác nhận thành công");
           localStorage.setItem("email", email);
-          const data = await response.json();
-          if (data.data === 'Registered') {
-            clearInterval(interval);
-            navigate('/register2');
-          }
-        }
-      } catch (err) {
-        console.error('Lỗi khi kiểm tra xác nhận email:', err);
-      }
-    }, 3000);
+          navigate('/register2');
 
-    return () => clearInterval(interval);
+        }
+      });
+    });
+    return () => websocket.disconnect();
+    // const interval = setInterval(async () => {
+    //   try {
+    //     const response = await fetch(`http://localhost:8080/auth?email=${encodeURIComponent(email)}`, {
+    //       method: 'GET',
+    //       headers: { 'X-Requested-With': 'XMLHttpRequest' }
+    //     });
+
+    //     if (response.ok) {
+    //       localStorage.setItem("email", email);
+    //       const data = await response.json();
+    //       if (data.data === 'Registered') {
+    //         clearInterval(interval);
+    //         navigate('/register2');
+    //       }
+    //     }
+    //   } catch (err) {
+    //     console.error('Lỗi khi kiểm tra xác nhận email:', err);
+    //   }
+    // }, 3000);
+
+    // return () => clearInterval(interval);
   }, [email, navigate]);
 
   const handleResendEmail = async () => {
@@ -48,22 +61,22 @@ function AwaitEmailConfirmation() {
 
   return (
     <div className="min-h-screen flex flex-col justify-center items-center text-center px-4">
-  <h2 className="text-2xl font-semibold mb-4">Please check your email to confirm your account</h2>
-  <p className="mb-4">
-    We have sent a confirmation email to <strong>{email}</strong>. After confirming, you will be automatically redirected.
-  </p>
+      <h2 className="text-2xl font-semibold mb-4">Please check your email to confirm your account</h2>
+      <p className="mb-4">
+        We have sent a confirmation email to <strong>{email}</strong>. After confirming, you will be automatically redirected.
+      </p>
 
-  <div className="spinner mb-4" />
+      <div className="spinner mb-4" />
 
-  <p>
-    If you didn't receive the email, please check your spam folder or{' '}
-    <button
-      onClick={handleResendEmail}
-      className="text-blue-600 underline"
-    >
-      resend the confirmation email
-    </button>.
-  </p>
+      <p>
+        If you didn't receive the email, please check your spam folder or{' '}
+        <button
+          onClick={handleResendEmail}
+          className="text-blue-600 underline"
+        >
+          resend the confirmation email
+        </button>.
+      </p>
 
       <style>{`
         .spinner {
