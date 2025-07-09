@@ -36,6 +36,12 @@ function ExerciseManagement() {
     user &&
     Array.isArray(user.role) &&
     user.role.some((role) => ["STAFF"].includes(role));
+  const isContentManagerment =
+    user &&
+    Array.isArray(user.role) &&
+    user.role.some(role =>
+      ["CONTENT_MANAGER"].includes(role)
+    );
 
   const getSubject = async () => {
     try {
@@ -119,15 +125,14 @@ function ExerciseManagement() {
                 <span
                   className={`
                   text-xs font-semibold px-2 py-1 rounded-full
-                  ${
-                    question.status === "DRAFT"
+                  ${question.status === "DRAFT"
                       ? "bg-gray-200 text-gray-700"
                       : question.status === "REJECT"
-                      ? "bg-red-200 text-red-700"
-                      : question.status === "PUBLIC"
-                      ? "bg-green-200 text-green-700"
-                      : "bg-gray-100 text-gray-500"
-                  }
+                        ? "bg-red-200 text-red-700"
+                        : question.status === "PUBLIC"
+                          ? "bg-green-200 text-green-700"
+                          : "bg-gray-100 text-gray-500"
+                    }
                 `}
                 >
                   {question.status}
@@ -141,11 +146,10 @@ function ExerciseManagement() {
                     key={aIndex}
                     className={`
                     flex items-center space-x-2 text-sm px-3 py-2 rounded-md border
-                    ${
-                      answer.correct
+                    ${answer.correct
                         ? "bg-green-50 text-green-800 border-green-200"
                         : "bg-gray-50 text-gray-700 border-gray-200"
-                    }
+                      }
                   `}
                   >
                     <span className="h-5 w-5 rounded-full border flex items-center justify-center text-xs font-bold bg-white">
@@ -161,7 +165,7 @@ function ExerciseManagement() {
 
               {/* Action buttons */}
               <div className="flex justify-end pt-2 space-x-2">
-                {question.status === "PUBLIC" && (
+                {isContentManagerment && question.status === "PUBLIC" && (
                   <button
                     onClick={() => handleReject(question.exerciseQuestionId)}
                     className="flex items-center bg-red-600 hover:bg-red-700 text-white px-1 py-1 rounded"
@@ -170,7 +174,7 @@ function ExerciseManagement() {
                     Reject
                   </button>
                 )}
-                {question.status === "DRAFT" && (
+                {isContentManagerment && question.status === "DRAFT" && (
                   <div className="flex gap-3 mt-2">
                     <button
                       onClick={() => handleAccept(question.exerciseQuestionId)}

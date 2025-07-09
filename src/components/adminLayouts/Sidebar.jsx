@@ -60,22 +60,12 @@ function Sidebar({ open, setOpen }) {
           name: "Content Bank",
           icon: FileText,
           children: [
-            {
-              name: "Vocabulary", href: "/admin/content-bank/vocabulary", icon: BookCheck,
-            },
-            { name: "Grammar", href: "/admin/content-bank/grammar", icon: Pencil },
+            {name: "Vocabulary", href: "/admin/vocabulary-bank", icon: BookCheck},
+            { name: "Grammar", href: "/admin/grammar-bank", icon: Pencil },
+            { name: "Question", href: "/admin/question-bank", icon: MessageCircleQuestion },
+            { name: "Dialogue", href: "/admin/dialogue-bank", icon: MessageSquare },
           ],
-        },
-        {
-          name: "Question Bank",
-          href: "/admin/question-bank",
-          icon: MessageCircleQuestion,
-        },
-        {
-          name: "Dialogue Bank",
-          href: "/admin/dialogue-bank",
-          icon: MessageSquare,
-        },
+        }
       ],
     },
   ];

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Plus, Search, Edit, Trash2, Check, X, Image, Clock, Book, FileText, LayoutPanelTop, WholeWord ,ShieldX} from 'lucide-react';
+import { Plus, Search, Edit, Trash2, Check, X, Image, Clock, Book, FileText, LayoutPanelTop, WholeWord, ShieldX } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import {
   getPageContentReading, handleUpdateContent, fetchAllContentCategoryReading, handleCreateContent,
@@ -504,8 +504,6 @@ function ReadingContentManagement() {
                 <th className="px-4 py-2 text-left font-medium text-gray-700 min-w-[120px]">Title</th>
                 <th className="px-4 py-2 text-left font-medium text-gray-700">Image</th>
                 <th className="px-4 py-2 text-left font-medium text-gray-700">Audio</th>
-                <th className="px-4 py-2 text-left font-medium text-gray-700 min-w-[120px]">JP Script</th>
-                <th className="px-4 py-2 text-left font-medium text-gray-700 min-w-[120px]">VN Script</th>
                 <th className="px-4 py-2 text-left font-medium text-gray-700">Category</th>
                 <th className="px-4 py-2 text-left font-medium text-gray-700">JLPT Level</th>
                 <th className="px-4 py-2 text-left font-medium text-gray-700">Status</th>
@@ -513,6 +511,8 @@ function ReadingContentManagement() {
                 <th className="px-4 py-2 text-left font-medium text-gray-700">Actions</th>
                 <th className="px-4 py-2 text-left font-medium text-gray-700">Created At</th>
                 <th className="px-4 py-2 text-left font-medium text-gray-700">Updated At</th>
+                <th className="px-4 py-2 text-left font-medium text-gray-700 min-w-[120px]">JP Script</th>
+                <th className="px-4 py-2 text-left font-medium text-gray-700 min-w-[120px]">VN Script</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
@@ -537,8 +537,6 @@ function ReadingContentManagement() {
                       </audio>
                     )}
                   </td>
-                  <td className="px-4 py-2 text-gray-900 line-clamp-3">{content.scriptJp}</td>
-                  <td className="px-4 py-2 text-gray-700 line-clamp ">{content.scriptVn}</td>
                   <td className="px-4 py-2">{content.category}</td>
                   <td className="px-4 py-2">{content.jlptLevel || "N/A"}</td>
                   {/* Status */}
@@ -558,24 +556,22 @@ function ReadingContentManagement() {
                   </td>
                   <td className="px-4 py-2">{new Date(content.timeNew).toLocaleDateString()}</td>
                   <td className="px-4 py-2 space-y-1">
-                    {isContentManagerment && (
-                      <div>
-                        <Link
-                          to={`/admin/content_reading/${content.contentReadingId}/vocabulary`}
-                          className="flex items-center text-blue-600 hover:underline mb-1"
-                        >
-                          <WholeWord size={14} className="mr-1" />
-                          Vocabulary
-                        </Link>
-                        <Link
-                          to={`/admin/content_reading/${content.contentReadingId}/grammar`}
-                          className="flex items-center text-blue-600 hover:underline mb-1"
-                        >
-                          <LayoutPanelTop size={14} className="mr-1" />
-                          Grammar
-                        </Link>
-                      </div>
-                    )}
+                    <div>
+                      <Link
+                        to={`/admin/content_reading/${content.contentReadingId}/vocabulary`}
+                        className="flex items-center text-blue-600 hover:underline mb-1"
+                      >
+                        <WholeWord size={14} className="mr-1" />
+                        Vocabulary
+                      </Link>
+                      <Link
+                        to={`/admin/content_reading/${content.contentReadingId}/grammar`}
+                        className="flex items-center text-blue-600 hover:underline mb-1"
+                      >
+                        <LayoutPanelTop size={14} className="mr-1" />
+                        Grammar
+                      </Link>
+                    </div>
                     <div className="flex space-x-2">
                       {isStaff && content.status != 'PUBLIC' && (
                         <button
@@ -650,6 +646,8 @@ function ReadingContentManagement() {
                       ? new Date(content.updatedAt).toLocaleDateString()
                       : "Never update"}
                   </td>
+                  <td className="px-4 py-2 text-gray-900 max-w-[300px] truncate">{content.scriptJp}</td>
+                  <td className="px-4 py-2 text-gray-700 max-w-[300px] truncate">{content.scriptVn}</td>
                 </tr>
               ))}
             </tbody>

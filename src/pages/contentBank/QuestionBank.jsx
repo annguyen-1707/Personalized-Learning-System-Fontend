@@ -1,18 +1,19 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { ArrowLeft, Plus, Edit, Trash2, Check, X, Search, Dumbbell, Headphones } from 'lucide-react';
+import { ArrowLeft, Plus, Edit, Trash2, Check, X, Search, Dumbbell, Headphones, ShieldX } from 'lucide-react';
 import {
   getQuestionPageFromAPI, handleCreateQuestion, handleDeleteQuestion, handleUpdateQuestion, acceptQuestion,
   rejectQuestion,
   getLessonBySubjectIdFromAPI,
   getListAllSubjectFromAPI,
   getExerciseByLessonIdFromAPI,
-   getContentListeningByLeverFromAPI, inActiveQuestion
+  getContentListeningByLeverFromAPI, inActiveQuestion
 } from '../../services/QuestionService';
 import ReactPaginate from 'react-paginate';
 import { toast } from "react-toastify";
 import { getJlptLevel, getStatus } from '../../services/ContentListeningService';
 import { a } from 'framer-motion/client';
+import { useAuth } from '../../context/AuthContext';
 
 function QuestionManagement() {
   const { lessonId } = useParams();
@@ -81,12 +82,26 @@ function QuestionManagement() {
       </div>
     );
   };
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(null);
   const [formData, setFormData] = useState({
     questionText: '',
     answerQuestions: [{ answerText: '', correct: false }],
     contentListeningId: '',
     exerciseId: ''
   });
+  const { user } = useAuth();
+  const isStaff =
+    user &&
+    Array.isArray(user.role) &&
+    user.role.some(role =>
+      ["STAFF"].includes(role)
+    );
+  const isContentManagerment =
+    user &&
+    Array.isArray(user.role) &&
+    user.role.some(role =>
+      ["CONTENT_MANAGER"].includes(role)
+    );
 
   useEffect(() => {
     getQuestionPage(1);
@@ -301,6 +316,22 @@ function QuestionManagement() {
     }));
   }
 
+  const handleAccept = async (id) => {
+    await acceptQuestion(id);
+    await getQuestionPage(currentPage);
+
+  }
+
+  const handleReject = async (id) => {
+    await rejectQuestion(id)
+    await getQuestionPage(currentPage);
+  }
+
+  const handleInActive = async (id) => {
+    await inActiveQuestion(id);
+    await getQuestionPage(currentPage);
+  }
+
   return (
     <div className="animate-fade-in">
       <div className="mb-6">
@@ -309,14 +340,16 @@ function QuestionManagement() {
             <h1 className="text-2xl font-bold text-gray-900">Question Management</h1>
             <p className="text-gray-500 mt-1">Manage questions for this question</p>
           </div>
-          <button
-            onClick={() => { setIsAdding(true); setIsEditing(null); }}
-            className="btn-primary flex items-center"
-            disabled={isAdding || isEditing}
-          >
-            <Plus size={16} className="mr-1" />
-            Add Question
-          </button>
+          {(isStaff &&
+            <button
+              onClick={() => { setIsAdding(true); setIsEditing(null); }}
+              className="btn-primary flex items-center"
+              disabled={isAdding || isEditing}
+            >
+              <Plus size={16} className="mr-1" />
+              Add Question
+            </button>
+          )}
         </div>
       </div>
 
@@ -646,12 +679,68 @@ function QuestionManagement() {
 
                 {/* Action buttons */}
                 <div className="flex justify-end pt-4 space-x-2">
-                  {(question.status != 'PUBLIC') && (
+                  {(isContentManagerment && question.status === 'PUBLIC') && (
+                    <div className="flex gap-4 mt-2">
+                      <button
+                        onClick={() => handleInActive(question.exerciseQuestionId)}
+                        className="flex items-center bg-yellow-600 hover:bg-yellow-700 text-white px-1 py-1 rounded"
+                      >
+                        <ShieldX size={16} className="mr-1" />
+                        In Active
+                      </button>
+                    </div>
+                  )}
+                  {(isContentManagerment && question.status === 'DRAFT') && (
+                    <div className="flex gap-3 mt-2">
+                      <button
+                        onClick={() => handleAccept(question.exerciseQuestionId)}
+                        className="flex items-center bg-green-600 hover:bg-green-700 text-white px-1 py-1 rounded"
+                      >
+                        <Check size={16} className="mr-1" />
+                        Accept
+                      </button>
+
+                      <button
+                        onClick={() => handleReject(question.exerciseQuestionId)}
+                        className="flex items-center bg-red-600 hover:bg-red-700 text-white px-1 py-1 rounded"
+                      >
+                        <X size={16} className="mr-1" />
+                        Reject
+                      </button>
+                    </div>
+                  )}
+                  {(isStaff && question.status != 'PUBLIC') && (
                     <button
                       onClick={() => startUpdate(question)}
                       className="text-blue-600 hover:text-blue-800"
                     >
                       <Edit size={16} />
+                    </button>
+                  )}
+                  {showDeleteConfirm === question.exerciseQuestionId ? (
+                    <>
+                      <button
+                        onClick={() => {
+                          handleDelete(question.exerciseQuestionId);
+                          setShowDeleteConfirm(null);
+                        }}
+                        className="text-error-500 hover:text-error-700"
+                      >
+                        <Check size={16} />
+                      </button>
+                      <button
+                        onClick={() => setShowDeleteConfirm(null)}
+                        className="text-gray-500 hover:text-gray-700"
+                      >
+                        <X size={16} />
+                      </button>
+                    </>
+                  ) : (
+                    <button
+                      onClick={() => setShowDeleteConfirm(question.exerciseQuestionId)}
+                      className="text-red-500 hover:text-red-700"
+                    >
+                      <Trash2 size={16} />
                     </button>
                   )}
                 </div>
