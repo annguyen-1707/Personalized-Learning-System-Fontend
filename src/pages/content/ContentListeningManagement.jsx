@@ -215,8 +215,13 @@ function ListeningContentManagement() {
   }
 
   const handleAccept = async (id) => {
-    await acceptContent(id);
-    await getContentPage(currentPage);
+    try {
+      await acceptContent(id);
+      await getContentPage(currentPage);
+    } catch (error) {
+      console.log("Error accepting content:", error);
+      toast.error(error.message || "Chấp nhận content thất bại!");
+    }
   }
 
   const handleReject = async (id) => {

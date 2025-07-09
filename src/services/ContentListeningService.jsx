@@ -108,8 +108,13 @@ const getJlptLevel = () => {
     return axios.get(`/api/vocabularies/levels`)
 }
 
-const acceptContent = (id) => {
-    return axios.patch(`/api/content_listening/accept/${id}`)
+const acceptContent = async (id) => {
+    try {
+        return await axios.patch(`/api/content_listening/accept/${id}`)
+    } catch (error) {
+        const allErrors = error.response?.data?.message
+        throw new Error(allErrors || "can not accept");
+    }
 }
 
 const rejectContent = (id) => {

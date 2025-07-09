@@ -191,9 +191,13 @@ function SpeakingContentManagement() {
   }
 
   const handleAccept = async (id) => {
-    await acceptContent(id);
-    await getContentPage(currentPage);
-
+    try {
+      await acceptContent(id);
+      await getContentPage(currentPage);
+    } catch (error) {
+      console.error("Error accepting content:", error);
+      toast.error(error.message || "Failed to accept content.");
+    }
   }
 
   const handleReject = async (id) => {
