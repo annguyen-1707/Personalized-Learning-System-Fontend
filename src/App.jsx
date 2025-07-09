@@ -144,26 +144,26 @@ function App() {
             <MainLayout />
           </AdminRoute>}>
             <Route
-              path="content-bank/vocabulary"
+              path="vocabulary-bank"
               element={<AdminRoute allowedRoles={["STAFF", "CONTENT_MANAGER", "SUPER_ADMIN"]}>
                 <VocabularyBank />
               </AdminRoute>}
             />
             <Route
-              path="content-bank/grammar"
+              path="grammar-bank"
               element={<AdminRoute allowedRoles={["STAFF", "CONTENT_MANAGER", "SUPER_ADMIN"]}>
                 <GrammarBank />
               </AdminRoute>}
             />
             <Route
               path="question-bank"
-              element={<AdminRoute allowedRoles={["STAFF", "SUPER_ADMIN"]}>
+              element={<AdminRoute allowedRoles={["STAFF", "SUPER_ADMIN","CONTENT_MANAGER"]}>
                 <QuestionBank />
               </AdminRoute>}
             />
             <Route
               path="dialogue-bank"
-              element={<AdminRoute allowedRoles={["STAFF", "SUPER_ADMIN"]}>
+              element={<AdminRoute allowedRoles={["STAFF", "SUPER_ADMIN","CONTENT_MANAGER"]}>
                 <DialogueBank />
               </AdminRoute>}
             />
@@ -175,7 +175,7 @@ function App() {
             />
             <Route
               path="content_speaking/:contentSpeakingId/dialogue"
-              element={<AdminRoute allowedRoles={["CONTENT_MANAGER", "SUPER_ADMIN"]}>
+              element={<AdminRoute allowedRoles={["CONTENT_MANAGER", "SUPER_ADMIN","STAFF"]}>
                 <DialogueManagement />
               </AdminRoute>}
             />
@@ -187,13 +187,13 @@ function App() {
             />
             <Route
               path="content_reading/:contentReadingId/vocabulary"
-              element={<AdminRoute allowedRoles={["CONTENT_MANAGER", "SUPER_ADMIN"]}>
+              element={<AdminRoute allowedRoles={["CONTENT_MANAGER", "SUPER_ADMIN","STAFF"]}>
                 <VocabularyManagement />
               </AdminRoute>}
             />
             <Route
               path="content_reading/:contentReadingId/grammar"
-              element={<AdminRoute allowedRoles={["CONTENT_MANAGER", "SUPER_ADMIN"]}>
+              element={<AdminRoute allowedRoles={["CONTENT_MANAGER", "SUPER_ADMIN","STAFF"]}>
                 <GrammarManagement />
               </AdminRoute>}
             />
@@ -205,7 +205,7 @@ function App() {
             />
             <Route
               path="content_listening/:contentListeningId/question"
-              element={<AdminRoute allowedRoles={["CONTENT_MANAGER", "SUPER_ADMIN"]}>
+              element={<AdminRoute allowedRoles={["CONTENT_MANAGER", "SUPER_ADMIN", "STAFF"]}>
                 <QuestionManagement />
               </AdminRoute>}
             />
@@ -242,7 +242,7 @@ function App() {
             <Route
               path="courses/:subjectId/lessons/:lessonId/exercises/:exerciseId"
               element={
-                <AdminRoute allowedRoles={["CONTENT_MANAGER", "SUPER_ADMIN"]}>
+                <AdminRoute allowedRoles={["CONTENT_MANAGER", "SUPER_ADMIN", "STAFF"]}>
                   <ExerciseManagement />
                 </AdminRoute>
               }

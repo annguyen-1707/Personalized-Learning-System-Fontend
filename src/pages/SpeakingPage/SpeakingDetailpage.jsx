@@ -144,7 +144,7 @@ const SpeakingDetailPage = () => {
                 <div className="p-6 border rounded bg-white shadow">
                     <div className="flex items-center justify-between mb-4">
                         <div>
-                            <div className="text-xl text-primary-600">Japanese: {dialogue?.questionJp}</div>
+                            <div className="text-xl text-primary-600">Question: {dialogue?.questionJp}</div>
                             <div className="text-gray-600">Vietnamese: {dialogue?.questionVn}</div>
                         </div>
                         <button
@@ -154,7 +154,7 @@ const SpeakingDetailPage = () => {
                             <FiVolume2 className="h-5 w-5" />
                         </button>
                     </div>
-                    <div className="text-xl text-primary-600">Japanese: {dialogue?.answerJp}</div>
+                    <div className="text-xl text-primary-600">Answer: {dialogue?.answerJp}</div>
                     <div className="text-gray-600 mb-6">Vietnamese: {dialogue?.answerVn}</div>
 
                     <div className="flex flex-col items-center">

@@ -9,6 +9,7 @@ import {
     rejectDialogue
 } from '../../services/DialogueService';
 import ReactPaginate from 'react-paginate';
+import { useAuth } from '../../context/AuthContext';
 
 function DialogueManagement() {
     const [dialogues, setDialogues] = useState([]);
@@ -19,6 +20,19 @@ function DialogueManagement() {
     const [currentPage, setCurrentPage] = useState(1); // trang page hien tai
     const [size, setSize] = useState(6); // 1trang bn phan tu
     const [totalElements, setTotalElements] = useState(); // tong phan tu
+    const { user } = useAuth();
+    const isStaff =
+        user &&
+        Array.isArray(user.role) &&
+        user.role.some(role =>
+            ["STAFF"].includes(role)
+        );
+    const isContentManagerment =
+        user &&
+        Array.isArray(user.role) &&
+        user.role.some(role =>
+            ["CONTENT_MANAGER"].includes(role)
+        );
     useEffect(() => {
         getDialoguePage(1);
     }, [size]);
@@ -193,7 +207,7 @@ function DialogueManagement() {
                                             </div>
                                         ) : (
                                             <>
-                                                {dialogue.status === "DRAFT" && (
+                                                {isContentManagerment && dialogue.status === "DRAFT" && (
                                                     <div className="flex gap-3 mt-2">
                                                         <button
                                                             onClick={() => handleAccept(dialogue.dialogueId)}
@@ -212,7 +226,7 @@ function DialogueManagement() {
                                                         </button>
                                                     </div>
                                                 )}
-                                                {dialogue.status === "PUBLIC" && (
+                                                {isContentManagerment && dialogue.status === "PUBLIC" && (
                                                     <div className="flex gap-4 mt-2">
                                                         <button
                                                             onClick={() => handleInActive(dialogue.dialogueId)}

@@ -4,6 +4,7 @@ import { ArrowLeft, Plus, Edit, Trash2, Check, X, Search, ShieldX } from 'lucide
 import { getQuestionPageByContentListeningId, handleDeleteQuestion, acceptQuestion, rejectQuestion, inActiveQuestion } from '../../services/QuestionService';
 import ReactPaginate from 'react-paginate';
 import { toast } from "react-toastify";
+import { useAuth } from '../../context/AuthContext';
 
 function QuestionManagement() {
   const { contentListeningId } = useParams();
@@ -15,7 +16,20 @@ function QuestionManagement() {
   const [pageCount, setPageCount] = useState(0); // so luong trang page
   const [currentPage, setCurrentPage] = useState(1); // trang page hien tai
   const [size, setSize] = useState(6); // 1trang bn phan tu
-  const [totalElements, setTotalElements] = useState(); // tong phan tu
+  const [totalElements, setTotalElements] = useState(); // tong phan 
+  const { user } = useAuth();
+  const isStaff =
+    user &&
+    Array.isArray(user.role) &&
+    user.role.some(role =>
+      ["STAFF"].includes(role)
+    );
+  const isContentManagerment =
+    user &&
+    Array.isArray(user.role) &&
+    user.role.some(role =>
+      ["CONTENT_MANAGER"].includes(role)
+    );
 
   useEffect(() => {
     getQuestionPage(1);
@@ -178,7 +192,7 @@ function QuestionManagement() {
 
                   {/* Action buttons */}
                   <div className="flex justify-end pt-2 space-x-2">
-                    {(question.status === 'PUBLIC') && (
+                    {(isContentManagerment && question.status === 'PUBLIC') && (
                       <div className="flex gap-4 mt-2">
                         <button
                           onClick={() => handleInActive(question.exerciseQuestionId)}
@@ -189,7 +203,7 @@ function QuestionManagement() {
                         </button>
                       </div>
                     )}
-                    {(question.status === 'DRAFT') && (
+                    {(isContentManagerment && question.status === 'DRAFT') && (
                       <div className="flex gap-3 mt-2">
                         <button
                           onClick={() => handleAccept(question.exerciseQuestionId)}

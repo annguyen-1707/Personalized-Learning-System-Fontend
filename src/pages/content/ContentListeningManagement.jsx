@@ -115,6 +115,7 @@ function ListeningContentManagement() {
   }
   const handleSubmit = async (e) => {
     e.preventDefault();
+    console.log("formData", formData);
     if (isAdding) {
       try {
         await handleCreateContent(formData);
@@ -479,14 +480,14 @@ function ListeningContentManagement() {
                   <th className="px-4 py-2 text-left font-medium text-gray-700 min-w-[120px]">Title</th>
                   <th className="px-4 py-2 text-left font-medium text-gray-700">Image</th>
                   <th className="px-4 py-2 text-left font-medium text-gray-700">Audio</th>
-                  <th className="px-4 py-2 text-left font-medium text-gray-700 min-w-[120px]">JP Script</th>
-                  <th className="px-4 py-2 text-left font-medium text-gray-700 min-w-[120px]">VN Script</th>
                   <th className="px-4 py-2 text-left font-medium text-gray-700">Category</th>
                   <th className="px-4 py-2 text-left font-medium text-gray-700">JLPT Level</th>
                   <th className="px-4 py-2 text-left font-medium text-gray-700">Status</th>
                   <th className="px-4 py-2 text-left font-medium text-gray-700">Actions</th>
                   <th className="px-4 py-2 text-left font-medium text-gray-700">Created At</th>
                   <th className="px-4 py-2 text-left font-medium text-gray-700">Updated At</th>
+                  <th className="px-4 py-2 text-left font-medium text-gray-700 min-w-[120px]">JP Script</th>
+                  <th className="px-4 py-2 text-left font-medium text-gray-700 min-w-[120px]">VN Script</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
@@ -511,8 +512,6 @@ function ListeningContentManagement() {
                         </audio>
                       )}
                     </td>
-                    <td className="px-4 py-2 text-gray-900">{content.scriptJp}</td>
-                    <td className="px-4 py-2 text-gray-700">{content.scriptVn}</td>
                     <td className="px-4 py-2">{content.category}</td>
 
                     {/* JLPT Level */}
@@ -534,15 +533,13 @@ function ListeningContentManagement() {
                       </span>
                     </td>
                     <td className="px-4 py-2 space-y-1">
-                      {isContentManagerment && (
-                        <Link
-                          to={`/admin/content_listening/${content.contentListeningId}/question`}
-                          className="flex items-center text-blue-600 hover:underline mb-1"
-                        >
-                          <MessageCircleQuestion size={14} className="mr-1" />
-                          Question
-                        </Link>
-                      )}
+                      <Link
+                        to={`/admin/content_listening/${content.contentListeningId}/question`}
+                        className="flex items-center text-blue-600 hover:underline mb-1"
+                      >
+                        <MessageCircleQuestion size={14} className="mr-1" />
+                        Question
+                      </Link>
                       <div className="flex space-x-2">
                         {isStaff && content.status != 'PUBLIC' && (
                           <button
@@ -618,6 +615,8 @@ function ListeningContentManagement() {
                         ? new Date(content.updatedAt).toLocaleDateString()
                         : "Never update"}
                     </td>
+                    <td className="px-4 py-2 text-gray-900 max-w-[300px] truncate">{content.scriptJp}</td>
+                    <td className="px-4 py-2 text-gray-700 max-w-[300px] truncate">{content.scriptVn}</td>
                   </tr>
                 ))}
               </tbody>
