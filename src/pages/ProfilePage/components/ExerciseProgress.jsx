@@ -16,7 +16,6 @@ function ExerciseProgress({ progress }) {
         var res = await getProgressExerciseFromAPI();
         if (res && res.data) {
             setExerciseProgress(res.data);
-            console.log("Exercise Progress Data:", res.data);
         }
     }
 
