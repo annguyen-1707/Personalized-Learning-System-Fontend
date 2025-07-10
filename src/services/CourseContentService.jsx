@@ -82,12 +82,53 @@ const getExercisesByLessonId = async (lessonId) => {
     throw new Error("Failed to fetch exercises");
   }
 };
+
+const handleStartLesson = async (lessonId) => {
+  try {
+    const response = await axios.post(
+      `/api/progress-lessons?lessonId=${lessonId}`,
+      {},
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          'authorization': `Bearer ${localStorage.getItem('accessToken')}`
+        }
+      }
+    );
+    return response;
+  } catch (error) {
+    console.error("Error starting lesson:", error);
+    throw new Error("Failed to start lesson");
+  }
+};
+
+const markCourseComplete = async (subjectId) => {
+  try {
+    const response = await axios.patch(
+      `/api/progress-subjects/complete?subjectId=${subjectId}`,
+      {},
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          'authorization': `Bearer ${localStorage.getItem('accessToken')}`
+        }
+      }
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Error marking course complete:", error);
+    throw new Error("Failed to mark course complete");
+  }
+}
+
 export const CourseContentService = {
   getCourseContentById,
   getProgressCourseBySubjectId,
   getLessonsBySubjectId,
   getProgressByLessonId,
   getExercisesByLessonId,
+  handleStartLesson,
+  markCourseComplete
 };
 
 export default CourseContentService;

@@ -21,23 +21,42 @@ function DoExercise() {
   const [answers, setAnswers] = useState({});
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [showResults, setShowResults] = useState(false);
-  const [timeRemaining, setTimeRemaining] = useState(); 
-  const {exerciseId, subjectId} = useParams();
+  const [timeRemaining, setTimeRemaining] = useState();
+  const { exerciseId } = useParams();
   const [exercise, setExercise] = useState({});
   const { user } = useAuth();
+  const [isSubmitted, setIsSubmitted] = useState(false);
+  const [formExerciseResult, setFormExerciseResult] = useState({
+    userId: "",
+    exerciseId: "",
+    totalQuestions: 0,
+    correctAnswers: 0,
+  });
+
+  const [formExerciseResultDetails, setFormExerciseResultDetails] = useState({
+    userId: "",
+    exerciseId: "",
+    totalTime: 0,
+    userQuestionResponseRequests: [
+      {
+        questionId: "",
+        selectedAnswerId: "",
+      },
+    ],
+  });
 
   useEffect(() => {
     if (timeRemaining > 0 && !showResults) {
       const timer = setTimeout(() => setTimeRemaining(timeRemaining - 1), 1000);
       return () => clearTimeout(timer);
-    } else if (timeRemaining === 0) {
+    } else if (timeRemaining === 0 && !showResults && !isSubmitted) {
       handleSubmit();
     }
-  }, [timeRemaining, showResults]);
+  }, [timeRemaining, showResults, isSubmitted]);
 
   useEffect(() => {
     const fetchData = async () => {
-      try{
+      try {
         const exercise = await DoExerciseService.getSource(exerciseId);
         setExercise({
           id: exercise?.id,
@@ -47,39 +66,67 @@ function DoExercise() {
           content: exercise?.content,
         });
         setTimeRemaining(exercise?.duration || 0); // Set initial time remaining
-      }catch(error){
+      } catch (error) {
         console.error("Error fetching exercise data:", error);
       }
-    }
+    };
     fetchData();
-
   }, []);
 
   const handleSubmit = () => {
-    setShowResults(true);
+  if (isSubmitted) return;
+  setIsSubmitted(true);
+
+  const finalFormResult = {
+    userId: user?.userId,
+    exerciseId: exerciseId,
+    totalQuestions: exercise?.content?.length || 0,
+    correctAnswers: getCorrectCount(),
   };
+
+  const finalFormDetails = {
+    userId: user?.userId,
+    exerciseId: exerciseId,
+    totalTime: exercise?.duration - timeRemaining,
+    userQuestionResponseRequests: Object.keys(answers).map((questionId) => ({
+      questionId,
+      selectedAnswerId: answers[questionId],
+    })),
+  };
+
+  DoExerciseService.submitExerciseResult(finalFormResult, finalFormDetails)
+    .then((response) => {
+      setFormExerciseResult(finalFormResult);
+      setFormExerciseResultDetails(finalFormDetails);
+      setShowResults(true);
+      console.log("Exercise result submitted successfully:", response);
+    })
+    .catch((error) => {
+      console.error("Error submitting exercise result:", error);
+    });
+};
 
   const getCorrectCount = () => {
     if (!exercise?.content) return 0;
     return exercise.content.filter((question) => {
-    const selectedAnswer = answers[question.exerciseQuestionId];
-    const correctAnswer = question.answerQuestions.find((a) => a.correct);
-    return selectedAnswer === correctAnswer?.answerId;
-  }).length;
+      const selectedAnswer = answers[question.exerciseQuestionId];
+      const correctAnswer = question.answerQuestions.find((a) => a.correct);
+      return selectedAnswer === correctAnswer?.answerId;
+    }).length;
   };
 
   const formatTime = (seconds) => {
-   const minutes = Math.floor(seconds / 60);
-  const remainingSeconds = seconds % 60;
-  return `${minutes.toString().padStart(2, "0")}:${remainingSeconds
-    .toString()
-    .padStart(2, "0")}`;
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = seconds % 60;
+    return `${minutes.toString().padStart(2, "0")}:${remainingSeconds
+      .toString()
+      .padStart(2, "0")}`;
   };
 
   const getQuestionStatus = (index) => {
-  if (!exercise?.content) return "unanswered";
-  const questionId = exercise.content[index].exerciseQuestionId;
-  return answers[questionId] ? "answered" : "unanswered";
+    if (!exercise?.content) return "unanswered";
+    const questionId = exercise.content[index].exerciseQuestionId;
+    return answers[questionId] ? "answered" : "unanswered";
   };
 
   const getStatusColor = (status) => {
@@ -103,7 +150,9 @@ function DoExercise() {
   if (!exercise?.content || exercise?.content?.length === 0) {
     return (
       <div className="text-center py-8">
-        <p className="text-gray-500">No questions available for this exercise.</p>
+        <p className="text-gray-500">
+          No questions available for this exercise.
+        </p>
       </div>
     );
   }
@@ -141,7 +190,9 @@ function DoExercise() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="space-y-6">
             {exercise?.content?.map((question, index) => {
-              const isCorrect = answers[question?.exerciseQuestionId] === question?.answerQuestions?.find(a => a.correct)?.answerId;
+              const isCorrect =
+                answers[question?.exerciseQuestionId] ===
+                question?.answerQuestions?.find((a) => a.correct)?.answerId;
 
               return (
                 <div
@@ -186,6 +237,18 @@ function DoExercise() {
               Take Another Quiz
             </Link>
           </div>
+          <div className="mt-6 text-center">
+            <p className="text-gray-600">
+              Want to see how you did? Check out your{" "}
+              <Link
+                to={`/exercises/${exerciseId}/results-details`}
+                className="text-primary-600"
+              >
+                Detailed Results
+              </Link>
+              .
+            </p>
+          </div>
         </div>
       </div>
     );
@@ -196,6 +259,7 @@ function DoExercise() {
       [questionId]: answer,
     }));
   };
+
   const cuQuestion = exercise?.content[currentQuestion];
 
   return (
@@ -305,7 +369,6 @@ function DoExercise() {
                   <h2 className="text-xl font-medium text-gray-900">
                     Question {currentQuestion + 1}
                   </h2>
-                
                 </div>
 
                 <p className="text-lg text-gray-800 leading-relaxed">
@@ -318,7 +381,8 @@ function DoExercise() {
                   <label
                     key={i}
                     className={`flex items-center p-4 rounded-lg border-2 cursor-pointer transition-all ${
-                      answers[cuQuestion?.exerciseQuestionId] === option.answerId
+                      answers[cuQuestion?.exerciseQuestionId] ===
+                      option.answerId
                         ? "border-primary-500 bg-primary-50"
                         : "border-gray-200 hover:border-gray-300 hover:bg-gray-50"
                     }`}
@@ -327,11 +391,21 @@ function DoExercise() {
                       type="radio"
                       name={`question-${cuQuestion?.exerciseQuestionId}`}
                       value={option}
-                      checked={answers[cuQuestion?.exerciseQuestionId] === option.answerId}
-                      onChange={() => handleAnswer(cuQuestion?.exerciseQuestionId, option.answerId)}
+                      checked={
+                        answers[cuQuestion?.exerciseQuestionId] ===
+                        option.answerId
+                      }
+                      onChange={() =>
+                        handleAnswer(
+                          cuQuestion?.exerciseQuestionId,
+                          option.answerId
+                        )
+                      }
                       className="h-4 w-4 text-primary-500 focus:ring-primary-500 border-gray-300"
                     />
-                    <span className="ml-3 text-gray-900">{option.answerText}</span>
+                    <span className="ml-3 text-gray-900">
+                      {option.answerText}
+                    </span>
                   </label>
                 ))}
               </div>
@@ -369,6 +443,7 @@ function DoExercise() {
             <div className="flex space-x-4">
               <button
                 onClick={handleSubmit}
+                disabled={isSubmitted}
                 className="btn btn-primary flex items-center"
               >
                 <FiSend className="h-4 w-4 mr-2" />

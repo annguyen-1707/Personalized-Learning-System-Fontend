@@ -4,6 +4,7 @@ import Header from './Header'
 import Sidebar from './Sidebar'
 import Footer from './Footer'
 import { motion } from 'framer-motion'
+import TestimonialSection from '../../pages/HomePage/components/TestimonialSection'
 
 function LayoutParent({ onNotificationClick })  {
     const [sidebarOpen, setSidebarOpen] = useState(false)
@@ -25,7 +26,6 @@ function LayoutParent({ onNotificationClick })  {
             <Outlet />
           </motion.div>
         </main>
-        
         <Footer />
       </div>
     </div>

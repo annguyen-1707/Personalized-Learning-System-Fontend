@@ -5,11 +5,11 @@ import {
   FiArrowLeft,
   FiPlay,
   FiCheck,
-  FiClock,
   FiBook,
   FiUsers,
 } from "react-icons/fi";
 import { CourseContentService } from "../../../services/CourseContentService";
+import { toast } from "react-toastify";
 
 function CourseContentPage() {
   const { subjectId } = useParams();
@@ -17,7 +17,7 @@ function CourseContentPage() {
   const [loading, setLoading] = useState(true);
   const [completedLessons, setCompletedLessons] = useState([]);
   const [lessons, setLessons] = useState([]);
-  const { getCourseContentById, getLessonsBySubjectId, getProgressByLessonId, } =
+  const { getCourseContentById, getLessonsBySubjectId, getProgressByLessonId, handleStartLesson, } =
     CourseContentService;
 
   const fetchCourseContent = async () => {
@@ -31,28 +31,55 @@ function CourseContentPage() {
     }
   };
 
-  const fetchLessons = async () => {
-    try {
-      const lessonsData = await getLessonsBySubjectId(subjectId);
-      setLessons(lessonsData.data);
-      const progressPromises = lessonsData.data.map((lesson) =>
-        getProgressByLessonId(lesson.lessonId)
-      );
-      const progressResults = await Promise.all(progressPromises);
-      setCompletedLessons(
-        progressResults
-          .filter((result) => result?.data?.status === "COMPLETED")
-          .map((result) => result?.data?.lesson?.lessonId)
-      );
-    } catch (error) {
-      console.error("Error fetching lessons:", error);
+const fetchLessons = async () => {
+  try {
+    const lessonsData = await getLessonsBySubjectId(subjectId);
+    const lessonsList = lessonsData?.data || [];
+    setLessons(lessonsList);
+
+    if (lessonsList.length === 0) {
+      setCompletedLessons([]);
+      return;
+    }
+
+    // Chờ toàn bộ kết quả getProgressByLessonId trả về
+    const progressResults = await Promise.all(
+      lessonsList.map((lesson) =>
+        getProgressByLessonId(lesson.lessonId).catch((err) => {
+          console.error(`Failed to get progress for lesson ${lesson.lessonId}`, err);
+          return null; // fallback để tránh crash
+        })
+      )
+    );
+    console.log("Progress results:", progressResults);
+
+    const completed = progressResults
+      ?.filter((result) => result?.data?.status === "COMPLETED")
+      ?.map((result) => result?.data?.lesson?.lessonId);
+
+    setCompletedLessons(completed);
+  } catch (error) {
+    console.error("Error fetching lessons:", error);
+    setCompletedLessons([]);
+  }
+};
+
+
+  const startLesson =  async (lessonId) => {
+      // Navigate to the lesson content page
+      const res = await handleStartLesson(lessonId);
+      if (res?.status === 200) {
+        console.log("Lesson started successfully:", lessonId);
+      window.location.href = `/learning/${subjectId}/lesson/${lessonId}`;
+    } else {
+      console.error("Failed to start lesson:", res?.message || "Unknown error");
+      toast.error("Failed to start lesson. Please try again later.");
     }
   };
 
   useEffect(() => {
     fetchCourseContent();
     fetchLessons();
-    debugger
   }, [subjectId]);
 
   if (loading) {
@@ -106,7 +133,7 @@ function CourseContentPage() {
       >
         <div className="relative">
           <img
-            src={course.thumbnailUrl || "https://via.placeholder.com/800x400"}
+            src={"http://localhost:8080/images/content_learning/" + course.thumbnailUrl}
             alt={course.subjectName}
             className="w-full h-64 object-cover"
           />
@@ -170,7 +197,7 @@ function CourseContentPage() {
             </div>
 
             <div className="divide-y divide-gray-200">
-              {lessons.map((lesson, index) => {
+              {lessons?.map((lesson, index) => {
                 const isCompleted = isLessonCompleted(lesson.lessonId);
 
                 return (
@@ -198,7 +225,7 @@ function CourseContentPage() {
                       </div>
 
                       {/* Lesson Content */}
-                      <div className="flex-1">
+                      <div className="flex-1 min-w-0 pr-6">
                         <div className="flex items-center justify-between">
                           <div>
                             <h3 className="text-lg font-medium text-gray-900">
@@ -212,9 +239,9 @@ function CourseContentPage() {
                           </div>
 
                           {/* Action Button */}
-                          <div className="ml-4">
-                            <Link
-                              to={`/learning/${subjectId}/lesson/${lesson.lessonId}`}
+                          <div className="flex-shrink-0">
+                            <button
+                              onClick={() => startLesson(lesson.lessonId)}
                               className={`inline-flex items-center px-4 py-2 rounded-md text-sm font-medium ${
                                 isCompleted
                                   ? "bg-success-100 text-success-700 hover:bg-success-200"
@@ -222,7 +249,7 @@ function CourseContentPage() {
                               }`}
                             >
                               {isCompleted ? "Review" : "Start Lesson"}
-                            </Link>
+                            </button>
                           </div>
                         </div>
 

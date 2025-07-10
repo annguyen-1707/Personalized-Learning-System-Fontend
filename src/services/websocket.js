@@ -1,74 +1,40 @@
-import SockJS from 'sockjs-client';
-import Stomp from 'stompjs';
+import SockJS from "sockjs-client";
+import { Client } from "@stomp/stompjs";
 
-class WebSocketService {
-    constructor() {
-        this.stompClient = null;
-        this.subscriptions = new Map(); // Sử dụng Map để lưu trữ subscriptions
-    }
+const stompClient = new Client({
+  webSocketFactory: () => new SockJS("http://localhost:8080/ws"),
+  reconnectDelay: 5000,
+  debug: (str) => console.log("[STOMP] " + str)
+});
 
-    connect(url = 'http://localhost:8080/ws') {
-        return new Promise((resolve, reject) => {
-            const socket = new SockJS(url);
-            this.stompClient = Stomp.over(socket);
-            
-            this.stompClient.connect({}, () => {
-                console.log("✅ WebSocket connected");
-                resolve();
-            }, (error) => {
-                console.error("❌ WebSocket connect error", error);
-                reject(error);
-            });
-        });
-    }
+const connect = () => {
+  return new Promise((resolve, reject) => {
+    stompClient.onConnect = (frame) => {
+      console.log("Connected: " + frame);
+      resolve();
+    };
+    stompClient.onStompError = (frame) => {
+      console.error("Broker error: ", frame.headers["message"]);
+      reject(frame.headers["message"]);
+    };
+    stompClient.activate();
+  });
+};
 
-    subscribe(topic, callback) {
-        if (!this.stompClient || !this.stompClient.connected) {
-            console.warn("⚠️ Connect first!");
-            return null;
-        }
-        
-        const subscription = this.stompClient.subscribe(topic, (message) => {
-            try {
-                callback(JSON.parse(message.body));
-            } catch {
-                callback(message.body);
-            }
-        });
-        
-        this.subscriptions.set(topic, subscription);
-        return subscription;
-    }
+const subscribe = (topic, callback) => {
+  stompClient.subscribe(topic, (message) => {
+    callback(message.body);
+  });
+};
 
-    unsubscribe(topic) {
-        if (this.subscriptions.has(topic)) {
-            this.subscriptions.get(topic).unsubscribe();
-            this.subscriptions.delete(topic);
-            console.log(`❎ Unsubscribed from ${topic}`);
-        }
-    }
+const send = (destination, body) => {
+  stompClient.publish({ destination, body });
+};
 
-    send(destination, data) {
-        if (!this.stompClient || !this.stompClient.connected) {
-            console.warn("⚠️ Connect first!");
-            return;
-        }
-        
-        this.stompClient.send(destination, {}, JSON.stringify(data));
-    }
+const disconnect = () => {
+  if (stompClient) {
+    stompClient.deactivate();
+  }
+};
 
-    disconnect() {
-        if (this.stompClient) {
-            // Hủy tất cả subscriptions trước khi ngắt kết nối
-            this.subscriptions.forEach((sub, topic) => {
-                this.unsubscribe(topic);
-            });
-            
-            this.stompClient.disconnect();
-            this.stompClient = null;
-            console.log("🔌 Disconnected");
-        }
-    }
-}
-
-export default new WebSocketService();
+export default { connect, subscribe, send, disconnect };

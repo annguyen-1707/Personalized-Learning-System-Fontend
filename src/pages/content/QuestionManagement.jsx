@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { ArrowLeft, Plus, Edit, Trash2, Check, X, Search } from 'lucide-react';
-import { getQuestionPageByContentListeningId, handleCreateQuestion, handleDeleteQuestion, handleUpdateQuestion } from '../../services/QuestionService';
+import { ArrowLeft, Plus, Edit, Trash2, Check, X, Search, ShieldX } from 'lucide-react';
+import { getQuestionPageByContentListeningId, handleDeleteQuestion, acceptQuestion, rejectQuestion, inActiveQuestion } from '../../services/QuestionService';
 import ReactPaginate from 'react-paginate';
 import { toast } from "react-toastify";
+import { useAuth } from '../../context/AuthContext';
 
 function QuestionManagement() {
   const { contentListeningId } = useParams();
@@ -15,20 +16,27 @@ function QuestionManagement() {
   const [pageCount, setPageCount] = useState(0); // so luong trang page
   const [currentPage, setCurrentPage] = useState(1); // trang page hien tai
   const [size, setSize] = useState(6); // 1trang bn phan tu
-  const [totalElements, setTotalElements] = useState(); // tong phan tu
-  const [errorMessage, setErrorMessage] = useState("");
-  const [formData, setFormData] = useState({
-    questionText: '',
-    answerQuestions: [{ answerText: '', correct: false }],
-    content_listening_id: contentListeningId
-  });
+  const [totalElements, setTotalElements] = useState(); // tong phan 
+  const { user } = useAuth();
+  const isStaff =
+    user &&
+    Array.isArray(user.role) &&
+    user.role.some(role =>
+      ["STAFF"].includes(role)
+    );
+  const isContentManagerment =
+    user &&
+    Array.isArray(user.role) &&
+    user.role.some(role =>
+      ["CONTENT_MANAGER"].includes(role)
+    );
 
   useEffect(() => {
     getQuestionPage(1);
   }, [size]);
 
-  const getQuestionPage = async (page) => {
-    let res = await getQuestionPageByContentListeningId(page, contentListeningId, size);
+  const getQuestionPage = async (page, type) => {
+    let res = await getQuestionPageByContentListeningId(page, contentListeningId, size, type);
     console.log("Data page", res)
     if (res && res.data && res.data.content) {
       setQuestions(res.data.content);
@@ -39,59 +47,10 @@ function QuestionManagement() {
     }
   }
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (isAdding) {
-      try {
-        await handleCreateQuestion(formData);
-        await getQuestionPage(currentPage);
-        // Reset form
-        setFormData({
-          questionText: '',
-          answerQuestions: [{ answerText: '', correct: false }],
-          content_listening_id: contentListeningId
-        });
-        setIsAdding(false);
-        setErrorMessage("");
-        toast.success("Tạo question thành công!");
-      } catch (error) {
-        toast.error("Tạo question thất bại!");
-        setErrorMessage(error.message || "Failed to add question Speaking.");
-      }
-    } else if (isEditing) {
-      try {
-        await handleUpdateQuestion(isEditing, formData);
-        await getQuestionPage(currentPage);
-        // Reset form
-        setFormData({
-          questionText: '',
-          answerQuestions: [{ answerText: '', correct: false }],
-          content_listening_id: contentListeningId
-        });
-        setIsEditing(null);
-        setErrorMessage("");
-        toast.success("Cập nhật question thành công!");
-      } catch (error) {
-        console.error("Error updating question:", error);
-        setErrorMessage(error.message || "Failed to update question Speaking.");
-        toast.error("Cập nhật question thất bại!");
-      }
-    }
-
-  };
-
   const handleDelete = async (id) => {
     await handleDeleteQuestion(id);
     await getQuestionPage(currentPage);
   };
-
-  const startUpdate = (question) => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-    setFormData(question);
-    setIsEditing(question.exerciseQuestionId);
-    setIsAdding(false);
-    setErrorMessage("");
-  }
 
   const filteredQuestions = questions.filter((question) => {
     // Search filter(case insensitive)
@@ -107,11 +66,26 @@ function QuestionManagement() {
     setSize(newSize)
   }
 
-
   const handlePageClick = (event) => {
     const selectedPage = +event.selected + 1;
     setCurrentPage(selectedPage);
     getQuestionPage(selectedPage);
+  }
+
+  const handleAccept = async (id) => {
+    await acceptQuestion(id);
+    await getQuestionPage(currentPage);
+
+  }
+
+  const handleReject = async (id) => {
+    await rejectQuestion(id)
+    await getQuestionPage(currentPage);
+  }
+
+  const handleInActive = async (id) => {
+    await inActiveQuestion(id);
+    await getQuestionPage(currentPage);
   }
 
   return (
@@ -127,14 +101,6 @@ function QuestionManagement() {
             <h1 className="text-2xl font-bold text-gray-900">Question Management</h1>
             <p className="text-gray-500 mt-1">Manage questions for this question</p>
           </div>
-          <button
-            onClick={() => { setIsAdding(true); setIsEditing(null); }}
-            className="btn-primary flex items-center"
-            disabled={isAdding || isEditing}
-          >
-            <Plus size={16} className="mr-1" />
-            Add Question
-          </button>
         </div>
       </div>
 
@@ -169,184 +135,120 @@ function QuestionManagement() {
           </div>
         </div>
       </div>
-      {/* Add/Edit Form */}
-      {(isAdding || isEditing) && (
-        <div className="card p-6 mb-6">
-          <h2 className="text-xl font-medium mb-4">
-            {isAdding ? 'Add New Question' : 'Edit Question'}
-          </h2>
-          {errorMessage && (
-            <div className="mb-4 p-3 rounded bg-red-100 text-red-700 text-sm flex items-center justify-between">
-              <p className="mb-2">{errorMessage}</p>
-              <button className="text-red-700 hover:text-red-900" onClick={() => setErrorMessage("")}>X</button>
-            </div>
-          )}
-          <form onSubmit={handleSubmit}>
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Question
-                </label>
-                <input
-                  type="text"
-                  value={formData.questionText}
-                  onChange={(e) => setFormData({ ...formData, questionText: e.target.value })}
-                  className="w-full"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Answer Questions:
-                </label>
-                <div className="space-y-2">
-                  {formData.answerQuestions.map((answerQuestions, index) => (
-                    <div key={index} className="flex items-center gap-2">
-                      <input
-                        type="text"
-                        value={answerQuestions.answerText}
-                        onChange={(e) => {
-                          const updated = [...formData.answerQuestions];
-                          updated[index].answerText = e.target.value;
-                          setFormData({ ...formData, answerQuestions: updated });
-                        }}
-                        placeholder={`Option ${index + 1}`}
-                        className="flex-20 "
-                      />
-                      {/* Radio để chọn đúng */}
-                      <label className="text-sm text-gray-500">Correct</label>
-                      <input
-                        type="radio"
-                        name="correctAnswer"
-                        checked={answerQuestions.correct === true}
-                        onChange={() => {
-                          const updated = formData.answerQuestions.map((ans, i) => ({
-                            ...ans,
-                            correct: i === index
-                          }));
-                          setFormData({ ...formData, answerQuestions: updated });
-                        }}
-                      />
-                      <span className="text-sm text-gray-500">
-                        Delete </span>
-                      {formData.answerQuestions.length > 1 && (
-                        <button
-                          type="button"
-                          onClick={() => {
-                            const updated = formData.answerQuestions.filter((_, i) => i !== index);
-                            setFormData({ ...formData, answerQuestions: updated });
-                          }}
-                          className="text-error-500 hover:text-error-700"
-                        >
-                          <X size={16} />
-                        </button>
-                      )}
-                    </div>
-                  ))}
-
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setFormData({
-                        ...formData,
-                        answerQuestions: [
-                          ...formData.answerQuestions,
-                          { answerText: '', correct: false }
-                        ]
-                      });
-                    }}
-                    className="text-sm text-primary-600 hover:text-primary-800"
-                  >
-                    Add Option
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            <div className="mt-6 flex justify-end space-x-3">
-              <button
-                type="button"
-                onClick={() => {
-                  setIsAdding(false);
-                  setIsEditing(null);
-                  setFormData({
-                    questionText: '',
-                    answerQuestions: [{ answerText: '', correct: false }],
-                    content_listening_id: contentListeningId
-                  });
-                }}
-                className="btn-outline"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                className="btn-primary"
-              >
-                {isAdding ? 'Add Question' : 'Save Changes'}
-              </button>
-            </div>
-          </form>
-        </div>
-      )}
 
       {/* Questions List */}
       <div className="card">
         {filteredQuestions?.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="space-y-4">
             {filteredQuestions.map((question) => (
-              <div key={question.exerciseQuestionId} className="p-6 border rounded-lg shadow hover:bg-gray-50 flex flex-col justify-between">
-                <div className="flex-1">
-                  <p className="font-medium text-gray-900 mb-2">{question.questionText}</p>
-                  <ul className="space-y-1">
-                    {question.answerQuestions.map((answer, index) => (
-                      <li
-                        key={index}
-                        className={`text-sm ${answer.correct
-                          ? 'text-success-600 font-medium'
-                          : 'text-gray-600'
-                          }`}
-                      >
-                        {answer.answerText}
-                        {answer.correct && ' ✓'}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
+              <div
+                key={question.exerciseQuestionId}
+                className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm hover:shadow-md transition"
+              >
+                <div className="flex flex-col space-y-3">
+                  {/* Question text + status */}
+                  <div className="flex items-center justify-between">
+                    <p className="text-sm font-semibold text-gray-900">
+                      {question.questionText}
+                    </p>
+                    <span
+                      className={`
+                  text-xs font-semibold px-2 py-1 rounded-full
+                  ${question.status === 'DRAFT'
+                          ? 'bg-gray-100 text-gray-700'
+                          : question.status === 'REJECT'
+                            ? 'bg-red-100 text-red-700'
+                            : question.status === 'PUBLIC'
+                              ? 'bg-green-100 text-green-700'
+                              : 'bg-yellow-100 text-yellow-500'}
+                `}
+                    >
+                      {question.status}
+                    </span>
+                  </div>
 
-                <div className="mt-4 flex justify-end items-center">
-                  {showDeleteConfirm === question.exerciseQuestionId ? (
-                    <div className="flex items-center space-x-2">
-                      <span className="text-xs text-gray-500">Delete?</span>
-                      <button
-                        onClick={() => handleDelete(question.exerciseQuestionId)}
-                        className="text-error-500 hover:text-error-700"
+                  {/* Answer list */}
+                  <div className="space-y-2">
+                    {question.answerQuestions.map((answer, aIndex) => (
+                      <div
+                        key={aIndex}
+                        className={`
+                    flex items-center space-x-2 text-sm px-3 py-2 rounded-md border
+                    ${answer.correct
+                            ? 'bg-green-50 text-green-800 border-green-200'
+                            : 'bg-gray-50 text-gray-700 border-gray-200'}
+                  `}
                       >
-                        <Check size={16} />
-                      </button>
-                      <button
-                        onClick={() => setShowDeleteConfirm(null)}
-                        className="text-gray-500 hover:text-gray-700"
-                      >
-                        <X size={16} />
-                      </button>
-                    </div>
-                  ) : (
-                    <>
-                      <button
-                        onClick={() => startUpdate(question)}
-                        className="text-primary-600 hover:text-primary-800 mr-2"
-                      >
-                        <Edit size={16} />
-                      </button>
-                      <button
-                        onClick={() => setShowDeleteConfirm(question.exerciseQuestionId)}
-                        className="text-error-500 hover:text-error-700"
-                      >
-                        <Trash2 size={16} />
-                      </button>
-                    </>
-                  )}
+                        <span className="flex-shrink-0 h-5 w-5 rounded-full border flex items-center justify-center text-xs font-bold bg-white">
+                          {String.fromCharCode(65 + aIndex)}
+                        </span>
+                        <span className="flex-1">{answer.answerText}</span>
+                        {answer.correct && (
+                          <Check className="h-4 w-4 text-green-600" />
+                        )}
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Action buttons */}
+                  <div className="flex justify-end pt-2 space-x-2">
+                    {(isContentManagerment && question.status === 'PUBLIC') && (
+                      <div className="flex gap-4 mt-2">
+                        <button
+                          onClick={() => handleInActive(question.exerciseQuestionId)}
+                          className="flex items-center bg-yellow-600 hover:bg-yellow-700 text-white px-1 py-1 rounded"
+                        >
+                          <ShieldX size={16} className="mr-1" />
+                          In Active
+                        </button>
+                      </div>
+                    )}
+                    {(isContentManagerment && question.status === 'DRAFT') && (
+                      <div className="flex gap-3 mt-2">
+                        <button
+                          onClick={() => handleAccept(question.exerciseQuestionId)}
+                          className="flex items-center bg-green-600 hover:bg-green-700 text-white px-1 py-1 rounded"
+                        >
+                          <Check size={16} className="mr-1" />
+                          Accept
+                        </button>
+
+                        <button
+                          onClick={() => handleReject(question.exerciseQuestionId)}
+                          className="flex items-center bg-red-600 hover:bg-red-700 text-white px-1 py-1 rounded"
+                        >
+                          <X size={16} className="mr-1" />
+                          Reject
+                        </button>
+                      </div>
+                    )}
+                    {showDeleteConfirm === question.exerciseQuestionId ? (
+                        <>
+                          <button
+                            onClick={() => {
+                              handleDelete(question.exerciseQuestionId);
+                              setShowDeleteConfirm(null);
+                            }}
+                            className="text-error-500 hover:text-error-700"
+                          >
+                            <Check size={16} />
+                          </button>
+                          <button
+                            onClick={() => setShowDeleteConfirm(null)}
+                            className="text-gray-500 hover:text-gray-700"
+                          >
+                            <X size={16} />
+                          </button>
+                        </>
+                      ) : (
+                    <button
+                      onClick={() => setShowDeleteConfirm(question.exerciseQuestionId)}
+                      className="text-red-500 hover:text-red-700"
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                    )}
+                  </div>
                 </div>
               </div>
             ))}
@@ -381,7 +283,7 @@ function QuestionManagement() {
           renderOnZeroPageCount={null}
         />
       </div>
-    </div>
+    </div >
   );
 }
 

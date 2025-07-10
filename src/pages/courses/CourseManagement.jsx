@@ -3,6 +3,13 @@ import { Link } from "react-router-dom";
 import { useData } from "../../context/DataContext";
 import { toast } from "react-toastify";
 import ReactPaginate from "react-paginate";
+import { useAuth } from "../../context/AuthContext";
+import {
+  acceptCourse,
+  rejectCourse,
+  inactiveCourse,
+} from "../../services/ContentBankService";
+
 import {
   Edit,
   Trash2,
@@ -14,12 +21,18 @@ import {
   Check,
   X,
 } from "lucide-react";
-import { a, sub } from "framer-motion/client";
+import { a, div, sub } from "framer-motion/client";
 
 function CourseManagement() {
-  // Replace courses with subjects and update methods accordingly
-  const { addSubject, updateSubject, deleteSubject, addLog, fetchSubjects } =
-    useData();
+  const {
+    addSubject,
+    updateSubject,
+    deleteSubject,
+    addLog,
+    fetchSubjects,
+    fetchSubjectStatus,
+  } = useData();
+  const { user } = useAuth();
   const [isAdding, setIsAdding] = useState(false);
   const [isEditing, setIsEditing] = useState(null);
   const [search, setSearch] = useState("");
@@ -29,18 +42,38 @@ function CourseManagement() {
   const [currentPage, setCurrentPage] = useState(0);
   const [totalElements, setTotalElements] = useState(0);
   const [subjects, setSubjects] = useState([]);
+  const [status, setStatus] = useState([]);
   const [formData, setFormData] = useState({
     subjectCode: "",
     subjectName: "",
     description: "",
-    status: "ACTIVE",
+    status: "DRAFT",
     thumbnailFile: null,
     thumbnailPreview: null,
   });
 
+  const isStaff =
+    user &&
+    Array.isArray(user.role) &&
+    user.role.some((role) => ["STAFF"].includes(role));
+  const isContentManagerment =
+    user &&
+    Array.isArray(user.role) &&
+    user.role.some((role) => ["CONTENT_MANAGER"].includes(role));
+
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(null);
 
-  const status = ["ACTIVE", "DRAFT"];
+  const getSubjectStatus = async () => {
+    try {
+      const status = await fetchSubjectStatus();
+      setStatus(status);
+    } catch (error) {
+      console.error("Failed to fetch subject status:", error);
+      toast.error("Failed to fetch subject status.");
+      return [];
+    }
+  };
+
   const loadSubjects = async () => {
     const result = await fetchSubjects(currentPage);
     setSubjects(result.content);
@@ -53,10 +86,7 @@ function CourseManagement() {
 
   useEffect(() => {
     loadSubjects();
-    console.log("Subjects loaded:", subjects);
-    console.log("Total Pages:", totalPages);
-    console.log("Current Page:", currentPage);
-    console.log("Total Elements:", totalElements);
+    getSubjectStatus();
   }, [currentPage, totalElements, totalPages]);
 
   //Filter subjects based on search and status
@@ -103,7 +133,7 @@ function CourseManagement() {
         subjectCode: "",
         subjectName: "",
         description: "",
-        status: "ACTIVE",
+        status: "DRAFT",
         thumbnailFile: null,
         thumbnailPreview: null,
       });
@@ -130,7 +160,7 @@ function CourseManagement() {
         subjectCode: "",
         subjectName: "",
         description: "",
-        status: "ACTIVE",
+        status: "DRAFT",
         thumbnailFile: null,
         thumbnailPreview: null,
       });
@@ -153,10 +183,6 @@ function CourseManagement() {
       await loadSubjects();
     } catch (error) {
       console.error("Failed to delete subject:", error);
-      const message =
-        error?.response?.data?.message ||
-        error?.message ||
-        "Failed to delete subject.";
       toast.error("Subject has many lessons, cannot delete.");
       showDeleteConfirm(null);
     }
@@ -191,21 +217,50 @@ function CourseManagement() {
       subjectCode: "",
       subjectName: "",
       description: "",
-      status: "ACTIVE",
+      status: "DRAFT",
       thumbnailFile: null,
       thumbnailPreview: null,
     });
   };
 
+  const handleAccept = async (id) => {
+    try {
+      await acceptCourse(id);
+      loadSubjects();
+    } catch (error) {
+      toast.error(error.message);
+    }
+  };
+
+  const handleReject = async (id) => {
+    try {
+      await rejectCourse(id);
+      loadSubjects();
+    } catch (error) {
+      console.error("Failed to reject course:", error);
+    }
+  };
+
+  const handleInactive = async (id) => {
+    try {
+      await inactiveCourse(id);
+      loadSubjects();
+    } catch (error) {
+      console.error("Failed to inactive course:", error);
+    }
+  };
+
   // Helper to get status badge color
   const getStatusBadgeClass = (status) => {
     switch (status) {
-      case "ACTIVE":
+      case "PUBLIC":
         return "bg-success-50 text-success-700";
       case "DRAFT":
-        return "bg-warning-50 text-warning-700";
-      default:
         return "bg-gray-100 text-gray-700";
+      case "IN_ACTIVE":
+        return "bg-warning-50 text-warning-700";
+      case "REJECTED":
+        return "bg-error-50 text-error-700";
     }
   };
 
@@ -215,17 +270,19 @@ function CourseManagement() {
         <h1 className="text-2xl font-bold text-gray-900 mb-2 sm:mb-0">
           Subject Management
         </h1>
-        <button
-          onClick={() => {
-            setIsAdding(true);
-            setIsEditing(null);
-          }}
-          className="btn-primary flex items-center"
-          disabled={isAdding || isEditing}
-        >
-          <Plus size={16} className="mr-1" />
-          Add Subject
-        </button>
+        {isStaff && (
+          <button
+            onClick={() => {
+              setIsAdding(true);
+              setIsEditing(null);
+            }}
+            className="btn-primary flex items-center"
+            disabled={isAdding || isEditing}
+          >
+            <Plus size={16} className="mr-1" />
+            Add Subject
+          </button>
+        )}
       </div>
 
       {/* Search and Filter Bar */}
@@ -443,33 +500,6 @@ function CourseManagement() {
                   </div>
                 </div>
               </div>
-
-              {/* Status */}
-              <div>
-                <label
-                  htmlFor="status"
-                  className="block text-sm font-medium text-gray-700 mb-1"
-                >
-                  Status <span className="text-red-500">*</span>
-                </label>
-                <select
-                  id="status"
-                  value={formData.status}
-                  onChange={(e) =>
-                    setFormData({ ...formData, status: e.target.value })
-                  }
-                  className="block w-full rounded-md border-gray-300 focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
-                >
-                  {status.map((s) => (
-                    <option key={s} value={s}>
-                      {s}
-                    </option>
-                  ))}
-                </select>
-                <p className="mt-1 text-sm text-gray-500">
-                  Set the current status of the subject
-                </p>
-              </div>
             </div>
 
             <div className="flex justify-end space-x-3 pt-4 border-t">
@@ -501,6 +531,7 @@ function CourseManagement() {
                 <th scope="col">Subject Code</th>
                 <th scope="col">Students</th>
                 <th scope="col">Status</th>
+                <th scope="col">Created At</th>
                 <th scope="col">Last Updated</th>
                 <th scope="col">Actions</th>
               </tr>
@@ -555,9 +586,12 @@ function CourseManagement() {
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      {new Date(subject.createdAt).toLocaleDateString()}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       {new Date(subject.updatedAt).toLocaleDateString()}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                    <td className="px-6 py-2 whitespace-nowrap text-right text-sm font-medium">
                       {showDeleteConfirm === subject.subjectId ? (
                         <div className="flex items-center space-x-2">
                           <span className="text-xs text-gray-500">
@@ -577,32 +611,80 @@ function CourseManagement() {
                           </button>
                         </div>
                       ) : (
-                        <div className="flex items-center space-x-2">
-                          <Link
-                            to={`/admin/courses/${subject.subjectId}/lessons?subjectPage=${currentPage}`}
-                            className="text-secondary-600 hover:text-secondary-800"
-                            title="Manage Lessons"
-                          >
-                            <Layers size={16} />
-                          </Link>
-                          <button
-                            onClick={() => startEdit(subject)}
-                            className="text-primary-600 hover:text-primary-800"
-                            disabled={isAdding || isEditing}
-                            title="Edit Subject"
-                          >
-                            <Edit size={16} />
-                          </button>
-                          <button
-                            onClick={() =>
-                              setShowDeleteConfirm(subject.subjectId)
-                            }
-                            className="text-error-500 hover:text-error-700"
-                            disabled={isAdding || isEditing}
-                            title="Delete Subject"
-                          >
-                            <Trash2 size={16} />
-                          </button>
+                        <div className="grid grid-cols-1 gap-2 sm:grid-cols-1">
+                          {/* Hàng 1: Manage / Edit / Delete */}
+                          <div className="flex flex-wrap gap-3">
+                            <Link
+                              to={`/admin/courses/${subject.subjectId}/lessons?subjectPage=${currentPage}`}
+                              className="text-secondary-600 hover:text-secondary-800 flex items-center"
+                              title="Manage Lessons"
+                            >
+                              <Layers size={16} className="mr-1" />
+                            </Link>
+
+                            {isStaff && subject.status != "PUBLIC" && (
+                              <button
+                                onClick={() => startEdit(subject)}
+                                className="text-primary-600 hover:text-primary-800 flex items-center"
+                                disabled={isAdding || isEditing}
+                                title="Edit Subject"
+                              >
+                                <Edit size={16} className="mr-1" />
+                              </button>
+                            )}
+
+                            {isContentManagerment && (
+                              <button
+                                onClick={() =>
+                                  setShowDeleteConfirm(subject.subjectId)
+                                }
+                                className="text-error-500 hover:text-error-700 flex items-center"
+                                disabled={isAdding || isEditing}
+                                title="Delete Subject"
+                              >
+                                <Trash2 size={16} className="mr-1" />
+                              </button>
+                            )}
+                          </div>
+
+                          {/* Hàng 2: Accept / Reject */}
+                          {isContentManagerment && (
+                            <div className="flex flex-wrap gap-2">
+                              {subject.status === "DRAFT" && (
+                                <>
+                                  <button
+                                    onClick={() =>
+                                      handleAccept(subject.subjectId)
+                                    }
+                                    className="flex items-center bg-green-600 hover:bg-green-700 text-white px-2 py-1 rounded"
+                                  >
+                                    <Check size={16} className="mr-1" />
+                                    Accept
+                                  </button>
+                                  <button
+                                    onClick={() =>
+                                      handleReject(subject.subjectId)
+                                    }
+                                    className="flex items-center bg-red-600 hover:bg-red-700 text-white px-2 py-1 rounded"
+                                  >
+                                    <X size={16} className="mr-1" />
+                                    Reject
+                                  </button>
+                                </>
+                              )}
+
+                              {subject.status === "PUBLIC" && (
+                                <button
+                                  onClick={() =>
+                                    handleInactive(subject.subjectId)
+                                  }
+                                  className="flex items-center bg-yellow-600 hover:bg-yellow-700 text-white px-3 py-1 rounded"
+                                >
+                                  Inactive
+                                </button>
+                              )}
+                            </div>
+                          )}
                         </div>
                       )}
                     </td>
@@ -628,8 +710,8 @@ function CourseManagement() {
         className="pagination mt-6 justify-center"
         nextLabel="next >"
         onPageChange={handlePageClick}
-        pageRangeDisplayed={3} // giới hạn trang bên trái 1 2 3 .... 99 100
-        marginPagesDisplayed={2} // giới hạn trang bên phải 1 2 3 .... 99 100
+        pageRangeDisplayed={3}
+        marginPagesDisplayed={2}
         pageCount={totalPages}
         previousLabel="< previous"
         pageClassName="page-item"

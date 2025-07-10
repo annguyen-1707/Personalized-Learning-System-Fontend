@@ -4,8 +4,8 @@ import { useAuth } from "../../context/AuthContext";
 
 function OAuthCallBack() {
   const navigate = useNavigate();
-  const { setUser } = useAuth();
-  const calledRef = useRef(false); 
+  const { setUser} = useAuth();
+  const calledRef = useRef(false);
 
   useEffect(() => {
     const handleOAuthCallback = async () => {
@@ -54,7 +54,6 @@ function OAuthCallBack() {
 
         const userData = await userRes.json();
         setUser(userData.data);
-
         navigate("/");
       } catch (error) {
         console.error("Lỗi callback OAuth:", error);

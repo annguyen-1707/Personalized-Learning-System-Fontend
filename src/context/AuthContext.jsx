@@ -9,11 +9,19 @@ export function useAuth() {
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [isAdmin, setIsAdmin] = useState(false);
+  const [errors, setErrors] = useState({});
+  const [loading, setLoading] = useState(true);
+  const [isAdmin, setIsAdmin] = useState(() => {
+    return localStorage.getItem("isAdmin") === "true"; // hoặc false nếu không có
+  });
   const navigate = useNavigate(); // ✅ thêm dòng này
 
   useEffect(() => {
+    console.log("AuthProvider mounted", localStorage.getItem("accessToken") + user);
+    if (!localStorage.getItem("accessToken")) {
+      localStorage.removeItem("isAdmin");
+    }
+    setLoading(true);
     if (!isAdmin) {
       const checkLogin = async () => {
         try {
@@ -21,7 +29,6 @@ export function AuthProvider({ children }) {
             method: "GET",
             credentials: "include",
           });
-
           if (response.ok) {
             const data = await response.json();
             const accessToken = data?.data?.accessToken;
@@ -29,7 +36,6 @@ export function AuthProvider({ children }) {
               console.warn("Không tìm thấy accessToken trong phản hồi", data);
               return;
             }
-
             localStorage.setItem("accessToken", accessToken);
 
             const userRes = await fetch("http://localhost:8080/auth/user", {
@@ -47,6 +53,9 @@ export function AuthProvider({ children }) {
         } catch (err) {
           console.error(err);
         }
+        finally {
+          setLoading(false);
+        }
       };
       checkLogin();
     }
@@ -57,7 +66,6 @@ export function AuthProvider({ children }) {
             method: "GET",
             credentials: "include",
           });
-
           if (response.ok) {
             const data = await response.json();
             const accessToken = data?.data?.accessToken;
@@ -74,23 +82,36 @@ export function AuthProvider({ children }) {
 
             const userData = await userRes.json();
             setUser(userData.data);
-
-
           }
           else {
             console.warn("Phản hồi check-login không ok:", response.status);
           }
-
         } catch (err) {
           console.error(err);
+        } finally {
+          setLoading(false);
         }
       };
       checkLogin();
     }
   }, []);
 
+  const handleLogout = async () => {
+    try {
+      await fetch("http://localhost:8080/auth/logout", {
+        method: "POST",
+        credentials: "include",
+      });
+      localStorage.removeItem("isAdmin");
+      localStorage.removeItem("accessToken");
+      navigate("/"); // ✅ điều hướng về login
+    } catch (error) {
+      console.error("Logout failed:", error);
+    }
+  };
+
   useEffect(() => {
-    if (user && !isAdmin) {
+    if (user !== null && !isAdmin) {
       const role = user.roleName;
       if (location.pathname === "/") {
         if (role === "PARENT") {
@@ -99,25 +120,26 @@ export function AuthProvider({ children }) {
           navigate("/");
         }
         else {
-          navigate("/login");
+          navigate("/admin");
         }
       }
     }
-    if (isAdmin) {
+    if (isAdmin && location.pathname === "/admin") {
       navigate("/admin");
     }
   }, [user]);
 
   //login
   const login = async (email, password, isAdminLogin) => {
-    setIsAdmin(isAdminLogin)
     setLoading(true);
     let api = 'http://localhost:8080/auth/login'
     let apiUser = 'http://localhost:8080/auth/user'
+    localStorage.setItem("isAdmin", "false");
     try {
       if (isAdminLogin) {
         api = 'http://localhost:8080/admin/login'
         apiUser = 'http://localhost:8080/admin/user'
+        localStorage.setItem("isAdmin", "true");
       }
       const res = await fetch(api, {
         method: 'Post',
@@ -141,8 +163,8 @@ export function AuthProvider({ children }) {
         throw new Error(userData.message || 'Failed to fetch user data');
       }
       setUser(userData.data);
+      console.log("User data:", user);
       const role = userData.data.roleName;
-      console.log("ádasddasd", userData.data.parents)
       if (role === "PARENT") {
         navigate("/parentpage");
       } else if (role === "USER") {
@@ -180,10 +202,10 @@ export function AuthProvider({ children }) {
   const register2 = async (email, fullName, dob, address, gender, phone, role) => {
     setLoading(true);
     try {
-      console.log("✅ Register2 called with email:", email);
-      if (email === null || email === undefined) {
-        email = localStorage.getItem("email")
+      if (!email) {
+        email = localStorage.getItem("email");
       }
+
       const response = await fetch(`http://localhost:8080/auth/complete-profile?email=${email}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -191,20 +213,32 @@ export function AuthProvider({ children }) {
         credentials: 'include',
       });
 
-      if (!response.ok) throw new Error('Failed to complete profile');
-
-      // Optional: update user state if backend returns updated info
       const result = await response.json();
-      const updatedUser = result.data;
-      navigate("/login");
-      setUser(updatedUser);
+
+      if (!response.ok) {
+        if (result.status === "error" && result.data) {
+          const errorMap = {};
+          result.data.forEach(err => {
+            errorMap[err.field] = err.message;
+          });
+
+          console.error("🛑 Field validation errors:", errorMap);
+          return errorMap; // ✅ QUAN TRỌNG: return lỗi thay vì throw
+        }
+
+        return { general: result.message || "Unknown error" }; // return lỗi chung
+      }
+
+      // Thành công, không lỗi
+      return null;
     } catch (error) {
-      console.error('Profile update failed:', error);
-      throw error;
+      console.error('Registration failed:', error);
+      return { general: error.message || "Unexpected error" };
     } finally {
       setLoading(false);
     }
   };
+
 
 
   const register1 = async (email, password) => {
@@ -254,13 +288,17 @@ export function AuthProvider({ children }) {
   const value = {
     user,
     setUser,
+    errors,
+    setErrors,
     loading,
     isAdmin,
+    setIsAdmin,
     login,
     loginWithProvider,
     register1,
     register2,
-    forgotPassword
+    forgotPassword,
+    handleLogout
   };
 
   return (

@@ -1,9 +1,12 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { FiVolume2, FiPlus, FiCheck } from "react-icons/fi";
+import FlashCardsLessonPage from "../../FlashcardsPage/FlashCardsLessonPage";
+import { useParams } from "react-router-dom";
 
 function LessonVocabulary({ lesson }) {
   const [savedWords, setSavedWords] = useState([]);
+  const { lessonId } = useParams();
 
   const toggleSaveWord = (wordId) => {
     if (savedWords.includes(wordId)) {
@@ -44,6 +47,9 @@ function LessonVocabulary({ lesson }) {
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-bold text-gray-900">Vocabulary</h2>
+      </div>
+      <div className="mb-4">
+        <FlashCardsLessonPage words={lesson.vocabularies} lessonId={lessonId} />
       </div>
 
       {lesson.vocabularies && lesson.vocabularies.length > 0 ? (

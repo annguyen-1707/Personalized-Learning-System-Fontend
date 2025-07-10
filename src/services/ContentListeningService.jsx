@@ -19,22 +19,10 @@ const handleCreateContent = async (data) => {
     if (data.category === "") {
         throw new Error("choose category")
     }
-    if (data.status === "") {
-        throw new Error("choose status")
-    }
     if (data.jlptLevel === "") {
         throw new Error("choose jlptLevel")
     }
     try {
-        if (data.image === null || data.image === "") {
-            throw new Error("upload image before create");
-        }
-        if (data.audioFile === null || data.audioFile === "") {
-            throw new Error("upload audioFile before create");
-        }
-        if (data.category === "") {
-            throw new Error("choose category")
-        }
         // 1. Upload ảnh trước
         const imageUrl = await uploadFile(data.image, "images/content_listening");
         const audio = await uploadFile(data.audioFile, "audio/content_listening");
@@ -53,9 +41,12 @@ const handleCreateContent = async (data) => {
         const response = await axios.post(`/api/content_listening`, formData);
         return response;
     } catch (error) {
-        const allErrors = error.response?.data?.data?.map(e => `${e.message}`).join(", ");
-        console.error("All error", allErrors)
-        throw new Error(allErrors || "can not create");
+        console.log("Error", error)
+        let allErrors = error.response?.data?.data?.map(e => e.message).join(", ");
+        if (!allErrors) {
+            allErrors = error?.response?.data?.message || "Failed to create content";
+        } console.error("All error", allErrors)
+        throw new Error(allErrors);
     }
 };
 
@@ -97,9 +88,11 @@ const handleUpdateContent = async (id, data) => {
         const response = await axios.patch(`/api/content_listening/${id}`, formData);
         return response;
     } catch (error) {
-        const allErrors = error.response?.data?.data?.map(e => `${e.message}`).join(", ");
-        console.error("All error", allErrors)
-        throw new Error(allErrors || "Can not update ");
+        let allErrors = error.response?.data?.data?.map(e => e.message).join(", ");
+        if (!allErrors) {
+            allErrors = error?.response?.data?.message || "Failed to update content";
+        } console.error("All error", allErrors)
+        throw new Error(allErrors);
     }
 }
 
@@ -115,11 +108,25 @@ const getJlptLevel = () => {
     return axios.get(`/api/vocabularies/levels`)
 }
 
-const acceptContent = (id) => {
-    return axios.patch(`/api/content_listening/accept/${id}`)
+const acceptContent = async (id) => {
+    try {
+        return await axios.patch(`/api/content_listening/accept/${id}`)
+    } catch (error) {
+        const allErrors = error.response?.data?.message
+        throw new Error(allErrors || "can not accept");
+    }
+}
+
+const rejectContent = (id) => {
+    return axios.patch(`/api/content_listening/reject/${id}`)
+}
+
+const inActiveContent = (id) => {
+    return axios.patch(`/api/content_listening/inactive/${id}`)
 }
 
 export {
     getPageContentListening, handleUpdateContent, fetchAllContentListening, fetchAllContentCategoryListening,
-    handleCreateContent, handleDeleteContent, getStatus, getJlptLevel, acceptContent
+    handleCreateContent, handleDeleteContent, getStatus, getJlptLevel, acceptContent, rejectContent,
+    inActiveContent
 }

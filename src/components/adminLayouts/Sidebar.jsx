@@ -7,15 +7,17 @@ import {
   Activity,
   Book,
   FileText,
-  Home,
   Layout,
-  User,
   UserCog,
   Database,
   Newspaper,
   Mic,
   Headphones,
   ChevronDown,
+  Pencil,
+  BookCheck,
+  MessageCircleQuestion,
+  MessageSquare
 } from "lucide-react";
 
 function Sidebar({ open, setOpen }) {
@@ -54,15 +56,27 @@ function Sidebar({ open, setOpen }) {
             },
           ],
         },
+        {
+          name: "Content Bank",
+          icon: FileText,
+          children: [
+            {name: "Vocabulary", href: "/admin/vocabulary-bank", icon: BookCheck},
+            { name: "Grammar", href: "/admin/grammar-bank", icon: Pencil },
+            { name: "Question", href: "/admin/question-bank", icon: MessageCircleQuestion },
+            { name: "Dialogue", href: "/admin/dialogue-bank", icon: MessageSquare },
+          ],
+        }
       ],
     },
   ];
 
   const isActive = (path) => {
-    return (
-      location.pathname === path || location.pathname.startsWith(`${path}/`)
-    );
+    if (path === "/admin") {
+      return location.pathname === "/admin"; // chỉ active đúng "/admin"
+    }
+    return location.pathname.startsWith(path);
   };
+
 
   // Dropdown component for sub-children (Practice)
   function Dropdown({ subChildren, isActive }) {
@@ -119,7 +133,6 @@ function Sidebar({ open, setOpen }) {
             <span className="text-lg font-bold text-gray-900">LearnSys</span>
           </Link>
         </div>
-
         {/* content managementent */}
         <div className="mt-5 px-4 h-[calc(100vh-64px)] overflow-y-auto">
           <nav className="space-y-1">
