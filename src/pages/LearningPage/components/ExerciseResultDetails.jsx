@@ -24,17 +24,19 @@ function ExerciseResultDetails() {
   }
 
   const getUserAnswer = (questionId) => {
-    return details.userQuestionResponseRequests.find(
-      (res) => res.questionId === questionId
+    return details?.userQuestionResponseRequests.find(
+      (res) => res.questionId == questionId
     )?.selectedAnswerId;
   };
 
   const isCorrectAnswer = (question) => {
     const correct = question.answerQuestions.find((a) => a.correct)?.answerId;
     const selected = getUserAnswer(question.exerciseQuestionId);
+    console.log("selected:", selected);
     return correct === selected;
   };
-
+  console.log("exercise:", exercise);
+  console.log("details:", details);
   return (
     <div className="min-h-screen bg-gray-50 pb-12">
       {/* Header */}
@@ -83,7 +85,8 @@ function ExerciseResultDetails() {
           const correctAnswerId = question.answerQuestions.find(
             (a) => a.correct
           )?.answerId;
-          const selectedAnswerId = getUserAnswer(question.exerciseQuestionId);
+          console.log("exerciseQuestionId:", question.exerciseQuestionId);
+          const selectedAnswerId = getUserAnswer(question?.exerciseQuestionId);
           const isCorrect = selectedAnswerId === correctAnswerId;
 
           return (
