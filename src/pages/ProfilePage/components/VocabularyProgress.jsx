@@ -16,7 +16,6 @@ function VocabularyProgress({ progress }) {
     var res = await getProgressVocabularyFromAPI();
     if (res && res.data) {
       setVocabularyProgress(res.data);
-      console.log("Vocabulary Progress Data:", res.data);
     }
   }
 

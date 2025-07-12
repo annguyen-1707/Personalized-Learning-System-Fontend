@@ -14,7 +14,6 @@ function StudentInformation() {
     const res = await getStudentInfoFromAPI()
     if (res && res.data) {
       setStudentInfo(res.data)
-      console.log("Student Info:", res.data)
     }
   }
 

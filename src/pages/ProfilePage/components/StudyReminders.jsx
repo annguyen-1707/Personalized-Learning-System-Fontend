@@ -20,7 +20,6 @@ function StudyReminders() {
 
   const getStudyReminder = async () => {
     var res = await getStudyReminderFromAPI();
-    console.log("study reminder", res)
     if (res && res.data) {
       setReminders(res.data)
     }
@@ -28,7 +27,6 @@ function StudyReminders() {
 
   const createReminder = async () => {
     // Gọi API ở đây nếu có (giả sử: await createStudyReminderAPI(newReminder))
-    console.log('Creating reminder:', newReminder);
     setShowForm(false);
     await handleCreateStudyReminderFromAPI(newReminder)
     setNewReminder({ time: '', note: '', daysOfWeek: [], isActive: 'true' });
