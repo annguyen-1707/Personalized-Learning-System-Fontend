@@ -101,11 +101,11 @@ function App() {
 
               <Route path="quiz" element={<QuizPage />} />
 
-            { /*Speaking */}
-            <Route path="speaking" element={<SpeakingPage />} />
-            <Route path="speaking/detail/:contentSpeakingId" element={<SpeakingDetailPage />} />
+              { /*Speaking */}
+              <Route path="speaking" element={<SpeakingPage />} />
+              <Route path="speaking/detail/:contentSpeakingId" element={<SpeakingDetailPage />} />
 
-            {/* Routes cho người dùng đã đăng nhập */}
+              {/* Routes cho người dùng đã đăng nhập */}
 
             </Route>
           </Route>
@@ -157,13 +157,13 @@ function App() {
             />
             <Route
               path="question-bank"
-              element={<AdminRoute allowedRoles={["STAFF", "SUPER_ADMIN","CONTENT_MANAGER"]}>
+              element={<AdminRoute allowedRoles={["STAFF", "SUPER_ADMIN", "CONTENT_MANAGER"]}>
                 <QuestionBank />
               </AdminRoute>}
             />
             <Route
               path="dialogue-bank"
-              element={<AdminRoute allowedRoles={["STAFF", "SUPER_ADMIN","CONTENT_MANAGER"]}>
+              element={<AdminRoute allowedRoles={["STAFF", "SUPER_ADMIN", "CONTENT_MANAGER"]}>
                 <DialogueBank />
               </AdminRoute>}
             />
@@ -175,7 +175,7 @@ function App() {
             />
             <Route
               path="content_speaking/:contentSpeakingId/dialogue"
-              element={<AdminRoute allowedRoles={["CONTENT_MANAGER", "SUPER_ADMIN","STAFF"]}>
+              element={<AdminRoute allowedRoles={["CONTENT_MANAGER", "SUPER_ADMIN", "STAFF"]}>
                 <DialogueManagement />
               </AdminRoute>}
             />
@@ -187,13 +187,13 @@ function App() {
             />
             <Route
               path="content_reading/:contentReadingId/vocabulary"
-              element={<AdminRoute allowedRoles={["CONTENT_MANAGER", "SUPER_ADMIN","STAFF"]}>
+              element={<AdminRoute allowedRoles={["CONTENT_MANAGER", "SUPER_ADMIN", "STAFF"]}>
                 <VocabularyManagement />
               </AdminRoute>}
             />
             <Route
               path="content_reading/:contentReadingId/grammar"
-              element={<AdminRoute allowedRoles={["CONTENT_MANAGER", "SUPER_ADMIN","STAFF"]}>
+              element={<AdminRoute allowedRoles={["CONTENT_MANAGER", "SUPER_ADMIN", "STAFF"]}>
                 <GrammarManagement />
               </AdminRoute>}
             />

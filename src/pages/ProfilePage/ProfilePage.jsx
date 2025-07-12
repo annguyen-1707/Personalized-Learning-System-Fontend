@@ -25,7 +25,6 @@ function ProfilePage() {
 
   const getLearningProgress = async () => {
     var res = await getLearningProgressFromAPI();
-    console.log("data", res);
     if (res && res.data) {
       setLearningProgress(res.data);
     }
@@ -33,7 +32,6 @@ function ProfilePage() {
 
   const getStudentInformation = async () => {
     var res = await getStudentInfoFromAPI();
-    console.log("Student Info:", res);
     if (res && res.data) {
       setStudentInfo(res.data);
     }
