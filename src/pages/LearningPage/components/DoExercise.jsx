@@ -74,37 +74,37 @@ function DoExercise() {
   }, []);
 
   const handleSubmit = () => {
-  if (isSubmitted) return;
-  setIsSubmitted(true);
+    if (isSubmitted) return;
+    setIsSubmitted(true);
 
-  const finalFormResult = {
-    userId: user?.userId,
-    exerciseId: exerciseId,
-    totalQuestions: exercise?.content?.length || 0,
-    correctAnswers: getCorrectCount(),
+    const finalFormResult = {
+      userId: user?.userId,
+      exerciseId: exerciseId,
+      totalQuestions: exercise?.content?.length || 0,
+      correctAnswers: getCorrectCount(),
+    };
+
+    const finalFormDetails = {
+      userId: user?.userId,
+      exerciseId: exerciseId,
+      totalTime: exercise?.duration - timeRemaining,
+      userQuestionResponseRequests: Object.keys(answers).map((questionId) => ({
+        questionId,
+        selectedAnswerId: answers[questionId],
+      })),
+    };
+
+    DoExerciseService.submitExerciseResult(finalFormResult, finalFormDetails)
+      .then((response) => {
+        setFormExerciseResult(finalFormResult);
+        setFormExerciseResultDetails(finalFormDetails);
+        setShowResults(true);
+        console.log("Exercise result submitted successfully:", response);
+      })
+      .catch((error) => {
+        console.error("Error submitting exercise result:", error);
+      });
   };
-
-  const finalFormDetails = {
-    userId: user?.userId,
-    exerciseId: exerciseId,
-    totalTime: exercise?.duration - timeRemaining,
-    userQuestionResponseRequests: Object.keys(answers).map((questionId) => ({
-      questionId,
-      selectedAnswerId: answers[questionId],
-    })),
-  };
-
-  DoExerciseService.submitExerciseResult(finalFormResult, finalFormDetails)
-    .then((response) => {
-      setFormExerciseResult(finalFormResult);
-      setFormExerciseResultDetails(finalFormDetails);
-      setShowResults(true);
-      console.log("Exercise result submitted successfully:", response);
-    })
-    .catch((error) => {
-      console.error("Error submitting exercise result:", error);
-    });
-};
 
   const getCorrectCount = () => {
     if (!exercise?.content) return 0;
@@ -159,36 +159,37 @@ function DoExercise() {
 
   if (showResults) {
     return (
-      <div className="min-h-screen bg-gray-50">
-        {/* Results Header */}
-        <div className="bg-white shadow-sm border-b">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <h1 className="text-2xl font-bold text-gray-900">
-                  Exam Results
-                </h1>
-                <p className="text-gray-600">{exercise?.title}</p>
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center py-10 px-4">
+        <div className="bg-white w-full max-w-2xl rounded-2xl shadow-lg border border-gray-200 p-8 space-y-6">
+          {/* Header */}
+          <div className="text-center">
+            <h1 className="text-2xl font-bold text-gray-800 mb-1">
+              🎉 Exam Completed
+            </h1>
+            <p className="text-gray-600">{exercise?.title}</p>
+          </div>
+
+          {/* Score Summary */}
+          <div className="flex justify-center items-center gap-6">
+            <div className="text-center border-r pr-6">
+              <div className="text-4xl font-bold text-primary-600">
+                {getCorrectCount()}/{exercise?.content?.length}
               </div>
-              <div className="text-right">
-                <div className="text-3xl font-bold text-primary-600">
-                  {getCorrectCount()}/{exercise?.content?.length}
-                </div>
-                <div className="text-gray-600">
-                  Score:{" "}
-                  {Math.round(
-                    (getCorrectCount() / exercise?.content?.length) * 100
-                  )}
-                  %
-                </div>
+              <div className="text-gray-600 text-sm">Correct Answers</div>
+            </div>
+            <div className="text-center pl-6">
+              <div className="text-4xl font-bold text-green-600">
+                {Math.round(
+                  (getCorrectCount() / exercise?.content?.length) * 100
+                )}
+                %
               </div>
+              <div className="text-gray-600 text-sm">Score</div>
             </div>
           </div>
-        </div>
 
-        {/* Results Content */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="space-y-6">
+          {/* Result List Summary */}
+          {/* <div className="grid grid-cols-2 gap-3">
             {exercise?.content?.map((question, index) => {
               const isCorrect =
                 answers[question?.exerciseQuestionId] ===
@@ -196,63 +197,44 @@ function DoExercise() {
 
               return (
                 <div
-                  key={question?.id}
-                  className={`bg-white border-2 rounded-lg overflow-hidden ${
-                    isCorrect ? "border-success-500" : "border-error-500"
+                  key={question?.exerciseQuestionId}
+                  className={`flex items-center justify-between px-4 py-2 rounded-lg border text-sm ${
+                    isCorrect
+                      ? "bg-success-100 border-success-400 text-success-800"
+                      : "bg-error-100 border-error-400 text-error-800"
                   }`}
                 >
-                  <div
-                    className={`p-4 flex justify-between items-center ${
-                      isCorrect ? "bg-success-50" : "bg-error-50"
-                    }`}
-                  >
-                    <h3 className="text-lg font-medium">
-                      Question {index + 1}
-                    </h3>
-                    <div
-                      className={`flex items-center ${
-                        isCorrect ? "text-success-600" : "text-error-600"
-                      }`}
-                    >
-                      {isCorrect ? (
-                        <>
-                          <FiCheck className="h-5 w-5 mr-1" />
-                          <span>Correct</span>
-                        </>
-                      ) : (
-                        <>
-                          <FiX className="h-5 w-5 mr-1" />
-                          <span>Incorrect</span>
-                        </>
-                      )}
-                    </div>
-                  </div>
+                  <span>Question {index + 1}</span>
+                  <span>{isCorrect ? "✅ Correct" : "❌ Incorrect"}</span>
                 </div>
               );
             })}
-          </div>
+          </div> */}
 
-          <div className="mt-8 flex justify-center space-x-4">
-            <Link onClick={handleBack} className="btn btn-primary">
+          {/* Action Buttons */}
+          <div className="flex flex-col sm:flex-row justify-center gap-4 pt-4">
+            <Link
+              onClick={handleBack}
+              className="btn btn-secondary text-center w-full sm:w-auto"
+            >
               Take Another Quiz
             </Link>
-          </div>
-          <div className="mt-6 text-center">
-            <p className="text-gray-600">
-              Want to see how you did? Check out your{" "}
-              <Link
-                to={`/exercises/${exerciseId}/results-details`}
-                className="text-primary-600"
-              >
-                Detailed Results
-              </Link>
-              .
-            </p>
+            <Link
+              to={`/exercises/${exerciseId}/results-details`}
+              state={{
+                details: formExerciseResultDetails,
+                exercise: exercise,
+              }}
+              className="btn btn-primary text-center w-full sm:w-auto"
+            >
+              View Detailed Results
+            </Link>
           </div>
         </div>
       </div>
     );
   }
+
   const handleAnswer = (questionId, answer) => {
     setAnswers((prevAnswers) => ({
       ...prevAnswers,

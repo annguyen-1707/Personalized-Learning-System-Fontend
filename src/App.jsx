@@ -1,7 +1,7 @@
 import { Routes, Route } from "react-router-dom";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import AdminList from './pages/admin/AdminList';
+import AdminList from "./pages/admin/AdminList";
 import React, { useState } from "react";
 
 import Layout from "./components/layout/Layout";
@@ -31,8 +31,8 @@ import DialogueManagement from "./pages/content/DialogueManagement";
 import OAuthCallBack from "./pages/auth/OAuthCallBack";
 import ContentReadingManagement from "./pages/content/ContentReadingManagement";
 import ListeningContentManagement from "./pages/content/ContentListeningManagement";
-import FavoriteFoldersPage from './pages/FavoriteFoldersPage/FavoriteFoldersPage'
-import FavoriteFolderDetailsPage from './pages/FavoriteFoldersPage/FavoriteFolderDetailsPage.jsx'
+import FavoriteFoldersPage from "./pages/FavoriteFoldersPage/FavoriteFoldersPage";
+import FavoriteFolderDetailsPage from "./pages/FavoriteFoldersPage/FavoriteFolderDetailsPage.jsx";
 import UpgradePage from "./pages/Upgrade/UpgradePage";
 import VnpayReturn from "./pages/Upgrade/VnpayReturn.jsx";
 import ParentPage from "./pages/Parent/ParentPage.jsx";
@@ -46,10 +46,10 @@ import CourseContentPage from "./pages/LearningPage/components/CourseContent.jsx
 import LessonPage from "./pages/LearningPage/LessonPage.jsx";
 import DoExercise from "./pages/LearningPage/components/DoExercise.jsx";
 import FeedbackWidget from "./components/layout/Feedback.jsx";
-import NewsPage from './pages/NewsPage/NewsPage';
+import NewsPage from "./pages/NewsPage/NewsPage";
 import AdminRoute from "./context/AdminRoute.jsx";
-import DenyAdmin from "././pages/auth/DenyAdmin.jsx"
-import FlashcardsPage from './pages/FlashcardsPage/FlashcardsPage.jsx'
+import DenyAdmin from "././pages/auth/DenyAdmin.jsx";
+import FlashcardsPage from "./pages/FlashcardsPage/FlashcardsPage.jsx";
 import QuizPage from "./QuizPage/QuizPage.jsx";
 import QuestionManagement from "./pages/content/QuestionManagement.jsx";
 import VocabularyBank from "./pages/contentBank/VocabularyBank.jsx";
@@ -63,6 +63,7 @@ import SpeakingDetailPage from "./pages/SpeakingPage/SpeakingDetailPage.jsx";
 import AccessDeniedUserPage from "./pages/auth/DenyUser.jsx";
 import UserRoute from "./context/UserRoute.jsx";
 import ChatComponent from "./ChatComponent.jsx";
+import ExerciseResultDetails from "./pages/LearningPage/components/ExerciseResultDetails.jsx";
 
 function App() {
   const [notificationOpen, setNotificationOpen] = useState(false);
@@ -73,28 +74,48 @@ function App() {
         <FeedbackWidget />
         <Routes>
           <Route element={<UserRoute />}>
-            <Route path="/" element={<Layout onNotificationClick={() => setNotificationOpen(true)} />}>
+            <Route
+              path="/"
+              element={
+                <Layout onNotificationClick={() => setNotificationOpen(true)} />
+              }
+            >
               {/* Profile */}
               <Route path="profile" element={<ProfilePage />} />
               <Route path="profile/edit" element={<EditProfilePage />} />
-              <Route path="profile/change-password" element={<ChangePasswordPage />} />
+              <Route
+                path="profile/change-password"
+                element={<ChangePasswordPage />}
+              />
 
               {/* Listening */}
               <Route path="listening" element={<ListeningPage />} />
-              <Route path="listening/detail/:contentListeningId" element={<ListeningDetailPage />} />
+              <Route
+                path="listening/detail/:contentListeningId"
+                element={<ListeningDetailPage />}
+              />
               <Route path="listening/:id" element={<ListeningDetailPage />} />
 
               {/* Learning */}
               <Route path="learning" element={<LearningPage />} />
-              <Route path="learning/:subjectId" element={<CourseContentPage />} />
-              <Route path="learning/:subjectId/lesson/:lessonId" element={<LessonPage />} />
+              <Route
+                path="learning/:subjectId"
+                element={<CourseContentPage />}
+              />
+              <Route
+                path="learning/:subjectId/lesson/:lessonId"
+                element={<LessonPage />}
+              />
 
               {/* Favorites */}
 
               <Route path="favorites" element={<FavoriteFoldersPage />} />
-              <Route path="favorites/:folderId" element={<FavoriteFolderDetailsPage />} />
+              <Route
+                path="favorites/:folderId"
+                element={<FavoriteFolderDetailsPage />}
+              />
 
-              { /* Flashcard */}
+              {/* Flashcard */}
               <Route path="flashcards" element={<FlashcardsPage />} />
               {/* News */}
               <Route path="news" element={<NewsPage />} />
@@ -104,15 +125,16 @@ function App() {
               { /*Speaking */}
               <Route path="speaking" element={<SpeakingPage />} />
               <Route path="speaking/detail/:contentSpeakingId" element={<SpeakingDetailPage />} />
-
-              {/* Routes cho người dùng đã đăng nhập */}
-
             </Route>
           </Route>
-          <Route path="/" element={<Layout onNotificationClick={() => setNotificationOpen(true)} />}>
+          <Route
+            path="/"
+            element={
+              <Layout onNotificationClick={() => setNotificationOpen(true)} />
+            }
+          >
             <Route index element={<HomePage />} />
             <Route path="/websocket" element={<ChatComponent />} />
-
           </Route>
 
           {/* Trang chính */}
@@ -120,9 +142,19 @@ function App() {
           <Route path="vnpay-return" element={<VnpayReturn />} />
 
           {/* Routes cho phụ huynh */}
-          <Route path="/" element={<LayoutParent onNotificationClick={() => setNotificationOpen(true)} />}>
+          <Route
+            path="/"
+            element={
+              <LayoutParent
+                onNotificationClick={() => setNotificationOpen(true)}
+              />
+            }
+          >
             <Route path="parentPage" element={<ParentPage />} />
-            <Route path="parentPage/:studentId/view_children" element={<ViewChildren />} />
+            <Route
+              path="parentPage/:studentId/view_children"
+              element={<ViewChildren />}
+            />
           </Route>
 
           {/* Các route độc lập (không dùng Layout) */}
@@ -132,28 +164,52 @@ function App() {
           <Route path="/register2" element={<RegisterP2 />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/admin/login" element={<Login />} />
-          <Route path="/await-confirmation" element={<AwaitEmailConfirmation />} />
           <Route
-            path="deny"
-            element={<DenyAdmin />}>
-          </Route>
+            path="/await-confirmation"
+            element={<AwaitEmailConfirmation />}
+          />
+          <Route path="deny" element={<DenyAdmin />}></Route>
           {/* Làm bài tập */}
           <Route path="/do-exercise/:exerciseId" element={<DoExercise />} />
+          <Route
+            path="/exercises/:exerciseId/results-details"
+            element={<ExerciseResultDetails />}
+          />
 
-          <Route path="/admin" element={<AdminRoute allowedRoles={["STAFF", "CONTENT_MANAGER", "SUPER_ADMIN", "USER_MANAGER"]}>
-            <MainLayout />
-          </AdminRoute>}>
+          <Route
+            path="/admin"
+            element={
+              <AdminRoute
+                allowedRoles={[
+                  "STAFF",
+                  "CONTENT_MANAGER",
+                  "SUPER_ADMIN",
+                  "USER_MANAGER",
+                ]}
+              >
+                <MainLayout />
+              </AdminRoute>
+            }
+          >
             <Route
               path="vocabulary-bank"
-              element={<AdminRoute allowedRoles={["STAFF", "CONTENT_MANAGER", "SUPER_ADMIN"]}>
-                <VocabularyBank />
-              </AdminRoute>}
+              element={
+                <AdminRoute
+                  allowedRoles={["STAFF", "CONTENT_MANAGER", "SUPER_ADMIN"]}
+                >
+                  <VocabularyBank />
+                </AdminRoute>
+              }
             />
             <Route
               path="grammar-bank"
-              element={<AdminRoute allowedRoles={["STAFF", "CONTENT_MANAGER", "SUPER_ADMIN"]}>
-                <GrammarBank />
-              </AdminRoute>}
+              element={
+                <AdminRoute
+                  allowedRoles={["STAFF", "CONTENT_MANAGER", "SUPER_ADMIN"]}
+                >
+                  <GrammarBank />
+                </AdminRoute>
+              }
             />
             <Route
               path="question-bank"
@@ -165,25 +221,31 @@ function App() {
               path="dialogue-bank"
               element={<AdminRoute allowedRoles={["STAFF", "SUPER_ADMIN", "CONTENT_MANAGER"]}>
                 <DialogueBank />
-              </AdminRoute>}
-            />
+              </AdminRoute>}            />
             <Route
               path="content_speaking"
-              element={<AdminRoute allowedRoles={["STAFF", "CONTENT_MANAGER", "SUPER_ADMIN"]}>
-                <ContentSpeakingManagement />
-              </AdminRoute>}
+              element={
+                <AdminRoute
+                  allowedRoles={["STAFF", "CONTENT_MANAGER", "SUPER_ADMIN"]}
+                >
+                  <ContentSpeakingManagement />
+                </AdminRoute>
+              }
             />
             <Route
               path="content_speaking/:contentSpeakingId/dialogue"
               element={<AdminRoute allowedRoles={["CONTENT_MANAGER", "SUPER_ADMIN", "STAFF"]}>
                 <DialogueManagement />
-              </AdminRoute>}
-            />
+              </AdminRoute>}            />
             <Route
               path="content_reading"
-              element={<AdminRoute allowedRoles={["STAFF", "CONTENT_MANAGER", "SUPER_ADMIN"]}>
-                <ContentReadingManagement />
-              </AdminRoute>}
+              element={
+                <AdminRoute
+                  allowedRoles={["STAFF", "CONTENT_MANAGER", "SUPER_ADMIN"]}
+                >
+                  <ContentReadingManagement />
+                </AdminRoute>
+              }
             />
             <Route
               path="content_reading/:contentReadingId/vocabulary"
@@ -199,20 +261,30 @@ function App() {
             />
             <Route
               path="content_listening"
-              element={<AdminRoute allowedRoles={["STAFF", "CONTENT_MANAGER", "SUPER_ADMIN"]}>
-                <ListeningContentManagement />
-              </AdminRoute>}
+              element={
+                <AdminRoute
+                  allowedRoles={["STAFF", "CONTENT_MANAGER", "SUPER_ADMIN"]}
+                >
+                  <ListeningContentManagement />
+                </AdminRoute>
+              }
             />
             <Route
               path="content_listening/:contentListeningId/question"
-              element={<AdminRoute allowedRoles={["CONTENT_MANAGER", "SUPER_ADMIN", "STAFF"]}>
-                <QuestionManagement />
-              </AdminRoute>}
+              element={
+                <AdminRoute
+                  allowedRoles={["CONTENT_MANAGER", "SUPER_ADMIN", "STAFF"]}
+                >
+                  <QuestionManagement />
+                </AdminRoute>
+              }
             />
             <Route
               path="courses"
               element={
-                <AdminRoute allowedRoles={["STAFF", "CONTENT_MANAGER", "SUPER_ADMIN"]}>
+                <AdminRoute
+                  allowedRoles={["STAFF", "CONTENT_MANAGER", "SUPER_ADMIN"]}
+                >
                   <CourseManagement />
                 </AdminRoute>
               }
@@ -220,7 +292,9 @@ function App() {
             <Route
               path="courses/:subjectId/lessons"
               element={
-                <AdminRoute allowedRoles={["STAFF", "CONTENT_MANAGER", "SUPER_ADMIN"]}>
+                <AdminRoute
+                  allowedRoles={["STAFF", "CONTENT_MANAGER", "SUPER_ADMIN"]}
+                >
                   <LessonManagement />
                 </AdminRoute>
               }
@@ -228,61 +302,92 @@ function App() {
             <Route
               path="courses/:subjectId/lessons/:lessonId/content"
               element={
-                <AdminRoute allowedRoles={["STAFF", "CONTENT_MANAGER", "SUPER_ADMIN"]}>
+                <AdminRoute
+                  allowedRoles={["STAFF", "CONTENT_MANAGER", "SUPER_ADMIN"]}
+                >
                   <ContentManagement />
                 </AdminRoute>
               }
             />
             <Route
               path="content_listening/:contentListeningId/question"
-              element={<AdminRoute allowedRoles={["STAFF", "CONTENT_MANAGER", "SUPER_ADMIN"]}>
-                <QuestionManagement />
-              </AdminRoute>}
+              element={
+                <AdminRoute
+                  allowedRoles={["STAFF", "CONTENT_MANAGER", "SUPER_ADMIN"]}
+                >
+                  <QuestionManagement />
+                </AdminRoute>
+              }
             />
             <Route
               path="courses/:subjectId/lessons/:lessonId/exercises/:exerciseId"
               element={
-                <AdminRoute allowedRoles={["CONTENT_MANAGER", "SUPER_ADMIN", "STAFF"]}>
+                <AdminRoute
+                  allowedRoles={["CONTENT_MANAGER", "SUPER_ADMIN", "STAFF"]}
+                >
                   <ExerciseManagement />
                 </AdminRoute>
               }
             />
             <Route
               path="content/reading/:contentId/vocabulary"
-              element={<AdminRoute allowedRoles={["STAFF", "CONTENT_MANAGER", "SUPER_ADMIN"]}>
-                <VocabularyManagement />
-              </AdminRoute>}
+              element={
+                <AdminRoute
+                  allowedRoles={["STAFF", "CONTENT_MANAGER", "SUPER_ADMIN"]}
+                >
+                  <VocabularyManagement />
+                </AdminRoute>
+              }
             />
             <Route
               path="content/reading/:contentId/grammar"
-              element={<AdminRoute allowedRoles={["STAFF", "CONTENT_MANAGER", "SUPER_ADMIN"]}>
-                <GrammarManagement />
-              </AdminRoute>}
+              element={
+                <AdminRoute
+                  allowedRoles={["STAFF", "CONTENT_MANAGER", "SUPER_ADMIN"]}
+                >
+                  <GrammarManagement />
+                </AdminRoute>
+              }
             />
             {/* Dashboard & System Admin Pages */}
             <Route
               index
-              element={<AdminRoute allowedRoles={["STAFF", "CONTENT_MANAGER", "SUPER_ADMIN", "USER_MANAGER"]}>
-                <Dashboard />
-              </AdminRoute>}
+              element={
+                <AdminRoute
+                  allowedRoles={[
+                    "STAFF",
+                    "CONTENT_MANAGER",
+                    "SUPER_ADMIN",
+                    "USER_MANAGER",
+                  ]}
+                >
+                  <Dashboard />
+                </AdminRoute>
+              }
             />
             <Route
               path="admins"
-              element={<AdminRoute allowedRoles={["SUPER_ADMIN"]}>
-                <AdminList />
-              </AdminRoute>}
+              element={
+                <AdminRoute allowedRoles={["SUPER_ADMIN"]}>
+                  <AdminList />
+                </AdminRoute>
+              }
             />
             <Route
               path="system-logs"
-              element={<AdminRoute allowedRoles={["SUPER_ADMIN"]}>
-                <SystemLogs />
-              </AdminRoute>}
+              element={
+                <AdminRoute allowedRoles={["SUPER_ADMIN"]}>
+                  <SystemLogs />
+                </AdminRoute>
+              }
             />
             <Route
               path="users"
-              element={<AdminRoute allowedRoles={["SUPER_ADMIN", "USER_MANAGER"]}>
-                <UserManagement />
-              </AdminRoute>}
+              element={
+                <AdminRoute allowedRoles={["SUPER_ADMIN", "USER_MANAGER"]}>
+                  <UserManagement />
+                </AdminRoute>
+              }
             />
           </Route>
           <Route path="*" element={<NotFound />} />
@@ -305,12 +410,9 @@ function App() {
           pauseOnHover
           theme="light"
         />
-
       </DataProvider>
-    </AuthProvider >
-
+    </AuthProvider>
   );
-
 }
 
 export default App;
