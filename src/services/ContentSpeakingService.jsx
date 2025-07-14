@@ -83,14 +83,29 @@ const getPageContentSpeaking = async (page, size) => {
     return axios.get(`/api/content_speaking?page=${page}&size=${size}`)
 }
 
-const acceptContent = (id) => {
-    return axios.patch(`/api/content_speaking/accept/${id}`)
+const acceptContent = async (id) => {
+    try {
+        return await axios.patch(`/api/content_speaking/accept/${id}`)
+    } catch (error) {
+        const allErrors = error.response?.data?.message
+        throw new Error(allErrors || "can not accept");
+    }
 }
 
 const rejectContent = (id) => {
     return axios.patch(`/api/content_speaking/reject/${id}`)
 }
+
+const getContentSpeakingByLever = (jlptLevel) => {
+    return axios.get(`/api/content_speaking/jlptLevel?jlptLevel=${jlptLevel}`)
+}
+
+const inActiveContent = (id) => {
+    return axios.patch(`/api/content_speaking/inactive/${id}`)
+}
+
 export {
     getPageContentSpeaking, handleUpdateContent, fetchAllContentSpeaking, fetchAllContentCategorySpeaking,
-    handleCreateContent, handleDeleteContent, acceptContent,rejectContent
+    handleCreateContent, handleDeleteContent, acceptContent, rejectContent, getContentSpeakingByLever,
+    inActiveContent
 };

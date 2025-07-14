@@ -1,72 +1,118 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { ArrowLeft, Plus, Edit, Trash2, Check, X, MessageSquare, Languages, Search } from 'lucide-react';
+import { ArrowLeft, Plus, Edit, Trash2, Check, X, MessageSquare, Languages, Search, ShieldX } from 'lucide-react';
 import {
-    getDialoguePageByContentSpeakingId,
+    fetchDialoguePage,
     handleCreateDialogue,
     handleDeleteDialogue,
-    handleUpdateDialogue
+    handleUpdateDialogue,
+    inActiveDialogue,
+    acceptDialogue,
+    rejectDialogue
 } from '../../services/DialogueService';
 import ReactPaginate from 'react-paginate';
+import { getJlptLevel, getStatus } from '../../services/ContentListeningService';
+import { getContentSpeakingByLever } from '../../services/ContentSpeakingService';
+import { toast } from "react-toastify";
+import { useAuth } from '../../context/AuthContext';
 
 function DialogueManagement() {
+    const [errorMessage, setErrorMessage] = useState("");
     const [dialogues, setDialogues] = useState([]);
     const [search, setSearch] = useState('');
     const [isAdding, setIsAdding] = useState(false);
     const [isEditing, setIsEditing] = useState(null);
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(null);
-    const { contentSpeakingId } = useParams();
     const [pageCount, setPageCount] = useState(0); // so luong trang page
     const [currentPage, setCurrentPage] = useState(1); // trang page hien tai
     const [size, setSize] = useState(6); // 1trang bn phan tu
     const [totalElements, setTotalElements] = useState(); // tong phan tu
+    const [listStatus, setListStatus] = useState([]);
+    const [listContentSpeaking, setListContentSpeaking] = useState([]);
+    const [listLever, setListLever] = useState([]);
     const [formData, setFormData] = useState({
         questionJp: '',
         questionVn: '',
         answerJp: '',
         answerVn: '',
-        contentSpeakingId: contentSpeakingId
+        contentSpeakingId: ''
     });
+    const [formChoose, setFormChoose] = useState({
+        jlptLevel: '',
+        contentSpeakingId: ''
+    })
+    const { user } = useAuth();
+    const isStaff =
+        user &&
+        Array.isArray(user.role) &&
+        user.role.some(role =>
+            ["STAFF"].includes(role)
+        );
+    const isContentManagerment =
+        user &&
+        Array.isArray(user.role) &&
+        user.role.some(role =>
+            ["CONTENT_MANAGER"].includes(role)
+        );
     useEffect(() => {
         getDialoguePage(1);
+        getListLever();
     }, [size]);
+
     const handleSubmit = async (e) => {
         e.preventDefault();
+        const updatedFormData = {
+            ...formData,
+            contentSpeakingId: Number(formChoose.contentSpeakingId),
+        };
         if (isEditing) {
             try {
-                await handleUpdateDialogue(isEditing, formData);
+                await handleUpdateDialogue(isEditing, updatedFormData);
                 await getDialoguePage(currentPage);
                 setIsAdding(false);
                 setIsEditing(null);
+                handleSetNullAll();
+                toast.success("Success to update Dialogue.!");
             } catch (error) {
-                console.error("Error updating dialogue:", error);
+                setErrorMessage(error.message || "Failed to update Dialogue.");
+                toast.error("Failed to update Dialogue.!");
             }
         } else {
             try {
-                await handleCreateDialogue(formData);
+                console.log("updatedFormData:", updatedFormData)
+                await handleCreateDialogue(updatedFormData);
                 await getDialoguePage(1);
                 setIsAdding(false);
                 setIsEditing(null);
+                handleSetNullAll();
+                toast.success("Success creating dialogue!");
             } catch (error) {
                 console.error("Error creating dialogue:", error);
-                if (error.response && error.response.data) {
-                    alert(error.response.data.message || "Failed to create dialogue");
-                } else {
-                    alert("An unexpected error occurred");
-                }
+                toast.error("Error creating dialogue!");
+                setErrorMessage(error.message || "Failed to add content Speaking.");
             }
         }
-        setFormData({
-            questionJp: '',
-            questionVn: '',
-            answerJp: '',
-            answerVn: '',
-            contentSpeakingId: contentSpeakingId
-        });
     };
 
-    const getAll = async() => {
-        
+    const getListLever = async () => {
+        let res = await getJlptLevel();
+        if (res && res.data) {
+            setListLever(res.data)
+        }
+    }
+
+    const getListStatus = async () => {
+        let res = await getStatus();
+        if (res && res.data) {
+            setListStatus(res.data)
+        }
+    }
+
+    const getListContentLisSpeaking = async (newLever) => {
+        let res = await getContentSpeakingByLever(newLever);
+        if (res && res.data) {
+            setListContentSpeaking(res.data)
+        }
     }
 
     const handleDelete = async (id) => {
@@ -82,7 +128,8 @@ function DialogueManagement() {
     };
 
     const getDialoguePage = async (page) => {
-        let res = await getDialoguePageByContentSpeakingId(page, contentSpeakingId, size);
+        console.log("Fetching page", page, "with size", size);
+        let res = await fetchDialoguePage(page, size);
         console.log("Data page", res)
         if (res && res.data && res.data.content) {
             setDialogues(res.data.content);
@@ -111,6 +158,53 @@ function DialogueManagement() {
         const selectedPage = +event.selected + 1;
         setCurrentPage(selectedPage);
         getDialoguePage(selectedPage);
+    }
+
+    const handleSetNullAll = () => {
+        setFormChoose({
+            jlptLevel: '',
+            conetntSpeaking: ''
+        });
+        setFormData({
+            questionJp: '',
+            questionVn: '',
+            answerJp: '',
+            answerVn: '',
+            contentSpeakingId: ''
+        })
+        setErrorMessage("");
+    }
+
+    const handleWhenChooseLever = async (newLever) => {
+        setFormChoose(prev => ({
+            ...prev,
+            contentSpeakingId: '',
+            jlptLevel: newLever,
+        }));
+        await getListContentLisSpeaking(newLever);
+    }
+
+    const handleAccept = async (id) => {
+        await acceptDialogue(id);
+        await getDialoguePage(currentPage);
+
+    }
+
+    const handleReject = async (id) => {
+        await rejectDialogue(id)
+        await getDialoguePage(currentPage);
+    }
+
+    const handleInActive = async (id) => {
+        await inActiveDialogue(id);
+        await getDialoguePage(currentPage);
+    }
+
+    const handleWhenChooseContentSpeaking = async (newContent) => {
+        setFormChoose(prev => ({
+            ...prev,
+            contentSpeakingId: newContent,
+        }));
     }
 
 
@@ -177,6 +271,12 @@ function DialogueManagement() {
                     <h2 className="text-xl font-medium mb-4">
                         {isAdding ? 'Add New Dialogue' : 'Edit Dialogue'}
                     </h2>
+                    {errorMessage && (
+                        <div className="mb-4 p-3 rounded bg-red-100 text-red-700 text-sm flex items-center justify-between">
+                            <p className="mb-2">{errorMessage}</p>
+                            <button className="text-red-700 hover:text-red-900" onClick={() => setErrorMessage("")}>X</button>
+                        </div>
+                    )}
                     <form onSubmit={handleSubmit}>
                         <div className="space-y-4">
                             <div>
@@ -185,7 +285,7 @@ function DialogueManagement() {
                                 </label>
                                 <input
                                     type="text"
-                                    required
+
                                     value={formData.questionJp}
                                     onChange={(e) => setFormData({ ...formData, questionJp: e.target.value })}
                                     className="w-full"
@@ -199,7 +299,7 @@ function DialogueManagement() {
                                 </label>
                                 <input
                                     type="text"
-                                    required
+
                                     value={formData.questionVn}
                                     onChange={(e) => setFormData({ ...formData, questionVn: e.target.value })}
                                     className="w-full"
@@ -213,7 +313,7 @@ function DialogueManagement() {
                                 </label>
                                 <input
                                     type="text"
-                                    required
+
                                     value={formData.answerJp}
                                     onChange={(e) => setFormData({ ...formData, answerJp: e.target.value })}
                                     className="w-full"
@@ -227,13 +327,45 @@ function DialogueManagement() {
                                 </label>
                                 <input
                                     type="text"
-                                    required
+
                                     value={formData.answerVn}
                                     onChange={(e) => setFormData({ ...formData, answerVn: e.target.value })}
                                     className="w-full"
                                     placeholder="Tên tôi là Tanaka."
                                 />
                             </div>
+                            <>
+                                <div>
+                                    <label>JLPT Level:</label>
+                                    <select
+                                        value={formChoose.jlptLevel}
+                                        onChange={(e) => handleWhenChooseLever(e.target.value)}
+                                        className="border p-2 ml-2"
+                                    >
+                                        <option value="">-- Select Level --</option>
+                                        {listLever.map((level) => (
+                                            <option key={level} value={level}>{level}</option>
+                                        ))}
+                                    </select>
+                                </div>
+
+                                {/* Nếu đã chọn level thì hiển thị chọn content */}
+                                {formChoose.jlptLevel && (
+                                    <div>
+                                        <label>Content Speaking:</label>
+                                        <select
+                                            value={formChoose.contentSpeakingId}
+                                            onChange={(e) => handleWhenChooseContentSpeaking(e.target.value)}
+                                            className="border p-2 ml-2"
+                                        >
+                                            <option value="">-- Select Content --</option>
+                                            {listContentSpeaking.map((content) => (
+                                                <option key={content.contentSpeakingId} value={content.contentSpeakingId}>{content.title}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                )}
+                            </>
                         </div>
 
                         <div className="mt-6 flex justify-end space-x-3">
@@ -242,13 +374,7 @@ function DialogueManagement() {
                                 onClick={() => {
                                     setIsAdding(false);
                                     setIsEditing(null);
-                                    setFormData({
-                                        questionJp: '',
-                                        questionVn: '',
-                                        answerJp: '',
-                                        answerVn: '',
-                                        contentSpeakingId: contentSpeakingId
-                                    });
+                                    handleSetNullAll();
                                 }}
                                 className="btn-outline"
                             >
@@ -272,10 +398,27 @@ function DialogueManagement() {
                         {filteredDialogues.map((dialogue, index) => (
                             <div key={dialogue.dialogueId || index} className="p-6 border rounded-lg shadow hover:bg-gray-50">
                                 <div className="flex flex-col h-full">
-                                    <div className="flex items-center mb-4">
-                                        <MessageSquare className="h-5 w-5 text-primary-600 mr-2" />
-                                        <span className="badge bg-primary-50 text-primary-700">
-                                            {dialogue?.contentSpeaking?.category}
+                                    <div className="flex items-center justify-between mb-4">
+                                        {/* Category badge */}
+                                        <div className="flex items-center">
+                                            <MessageSquare className="h-5 w-5 text-primary-600 mr-2" />
+                                            <span className="badge bg-primary-50 text-primary-700">
+                                                {dialogue?.contentSpeaking?.category}
+                                            </span>
+                                        </div>
+
+                                        {/* Status badge */}
+                                        <span
+                                            className={`text-xs px-2 py-1 rounded font-medium ${dialogue.status === "PUBLIC"
+                                                ? "bg-green-100 text-green-700"
+                                                : dialogue.status === "REJECT"
+                                                    ? "bg-red-100 text-red-700"
+                                                    : dialogue.status === "IN_ACTIVE"
+                                                        ? "bg-yellow-100 text-yellow-700"
+                                                        : "bg-gray-100 text-gray-700"
+                                                }`}
+                                        >
+                                            {dialogue.status}
                                         </span>
                                     </div>
 
@@ -299,6 +442,44 @@ function DialogueManagement() {
                                     </div>
 
                                     <div className="mt-auto flex justify-end pt-4">
+                                        {isStaff && dialogue.status != "PUBLIC" && (
+                                            <button
+                                                onClick={() => startUpdate(dialogue)}
+                                                className="text-primary-600 hover:text-primary-800 mr-2"
+                                            >
+                                                <Edit size={16} />
+                                            </button>
+                                        )}
+                                        {isContentManagerment && dialogue.status === "DRAFT" && (
+                                            <div className="flex gap-3 mt-2">
+                                                <button
+                                                    onClick={() => handleAccept(dialogue.dialogueId)}
+                                                    className="flex items-center bg-green-600 hover:bg-green-700 text-white px-1 py-1 rounded"
+                                                >
+                                                    <Check size={16} className="mr-1" />
+                                                    Accept
+                                                </button>
+
+                                                <button
+                                                    onClick={() => handleReject(dialogue.dialogueId)}
+                                                    className="flex items-center bg-red-600 hover:bg-red-700 text-white px-1 py-1 rounded"
+                                                >
+                                                    <X size={16} className="mr-1" />
+                                                    Reject
+                                                </button>
+                                            </div>
+                                        )}
+                                        {isContentManagerment && dialogue.status === "PUBLIC" && (
+                                            <div className="flex gap-3 mt-2">
+                                                <button
+                                                    onClick={() => handleInActive(dialogue.dialogueId)}
+                                                    className="flex items-center bg-yellow-600 hover:bg-yellow-700 text-white px-1 py-1 rounded"
+                                                >
+                                                    <ShieldX size={16} className="mr-1" />
+                                                    In Active
+                                                </button>
+                                            </div>
+                                        )}
                                         {showDeleteConfirm === dialogue.dialogueId ? (
                                             <div className="flex items-center space-x-2">
                                                 <span className="text-xs text-gray-500">Delete?</span>
@@ -316,20 +497,12 @@ function DialogueManagement() {
                                                 </button>
                                             </div>
                                         ) : (
-                                            <>
-                                                <button
-                                                    onClick={() => startUpdate(dialogue)}
-                                                    className="text-primary-600 hover:text-primary-800 mr-2"
-                                                >
-                                                    <Edit size={16} />
-                                                </button>
-                                                <button
-                                                    onClick={() => setShowDeleteConfirm(dialogue.dialogueId)}
-                                                    className="text-error-500 hover:text-error-700"
-                                                >
-                                                    <Trash2 size={16} />
-                                                </button>
-                                            </>
+                                            <button
+                                                onClick={() => setShowDeleteConfirm(dialogue.dialogueId)}
+                                                className="text-error-500 hover:text-error-700 ml-2"
+                                            >
+                                                <Trash2 size={16} />
+                                            </button>
                                         )}
                                     </div>
                                 </div>

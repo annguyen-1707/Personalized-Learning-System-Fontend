@@ -7,6 +7,7 @@ import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { MultiSectionDigitalClock } from "@mui/x-date-pickers/MultiSectionDigitalClock";
 import dayjs from "dayjs";
 import HandleAddVocabularyInLesson from "./HandleAddVocabularyInLesson";
+import { useAuth } from "../../context/AuthContext";
 
 import {
   ArrowLeft,
@@ -73,6 +74,17 @@ function ContentManagement() {
   const [filter, setFilter] = useState("all");
   const [grammars, setGrammars] = useState([]);
   const [lessonExercises, setLessonExercises] = useState([]);
+  const { user } = useAuth();
+
+  const isStaff =
+    user &&
+    Array.isArray(user.role) &&
+    user.role.some((role) => ["STAFF"].includes(role));
+
+  const isContentManagerment =
+    user &&
+    Array.isArray(user.role) &&
+    user.role.some((role) => ["CONTENT_MANAGER"].includes(role));
 
   // Add these new state variables
   const [showAddQuestion, setShowAddQuestion] = useState(false);
@@ -228,8 +240,8 @@ function ContentManagement() {
   };
 
   useEffect(() => {
-  setCurrentPage(0); // Reset page về 0
-}, [activeTab]);
+    setCurrentPage(0); // Reset page về 0
+  }, [activeTab]);
 
   // Reset form when changing tabs
   useEffect(() => {
@@ -242,9 +254,8 @@ function ContentManagement() {
     getPartOfSpeech();
     // Set default form data based on active tab
     switch (activeTab) {
-      case "vocabulary":
-        {
-          setFormData({
+      case "vocabulary": {
+        setFormData({
           kanji: "",
           kana: "",
           romaji: "",
@@ -257,11 +268,10 @@ function ContentManagement() {
         });
         getVocabulary();
         break;
-
       }
-      case "grammar":{
+      case "grammar": {
         getGrammar();
-         setFormData({
+        setFormData({
           titleJp: "",
           structure: "",
           meaning: "",
@@ -272,9 +282,8 @@ function ContentManagement() {
         });
         break;
       }
-       
-      case "exercises":
-        {
+
+      case "exercises": {
         getLessonExercises();
         setFormData({
           title: "",
@@ -283,8 +292,8 @@ function ContentManagement() {
           lessonId: lessonId,
         });
         break;
-        }
-        
+      }
+
       default:
         setFormData({});
     }
@@ -662,13 +671,16 @@ function ContentManagement() {
         return (
           <HandleAddVocabularyInLesson
             lessonId={lessonId}
-             onSuccess={getVocabulary}
+            onSuccess={getVocabulary}
           />
         );
 
       case "grammar":
         return (
-          <HandleAddGrammarInLesson onSuccess={getGrammar} lessonId={lessonId} />
+          <HandleAddGrammarInLesson
+            onSuccess={getGrammar}
+            lessonId={lessonId}
+          />
         );
 
       case "exercises":
@@ -734,7 +746,7 @@ function ContentManagement() {
                         }}
                       />
                       <div className="mt-2 text-sm text-gray-500">
-                        Đã chọn: {formData.duration || 0} phút
+                        Duration: {formData.duration || 0} minutes
                       </div>
                     </div>
                   </DemoItem>
@@ -880,6 +892,9 @@ function ContentManagement() {
                       <td className="px-4 py-2 text-center">
                         {showDeleteConfirm === item.vocabularyId ? (
                           <div className="flex items-center justify-center space-x-2">
+                            <span className="text-xs text-gray-500">
+                              Delete?
+                            </span>
                             <button
                               onClick={() => handleDelete(item.vocabularyId)}
                               className="text-error-500 hover:text-error-700"
@@ -895,15 +910,17 @@ function ContentManagement() {
                           </div>
                         ) : (
                           <div className="flex justify-center items-center space-x-2">
-                            <button
-                              onClick={() =>
-                                setShowDeleteConfirm(item.vocabularyId)
-                              }
-                              className="text-error-500 hover:text-error-700"
-                              disabled={isAdding || isEditing}
-                            >
-                              <Trash2 size={16} />
-                            </button>
+                            {isStaff && (
+                              <button
+                                onClick={() =>
+                                  setShowDeleteConfirm(item.vocabularyId)
+                                }
+                                className="text-error-500 hover:text-error-700"
+                                disabled={isAdding || isEditing}
+                              >
+                                <Trash2 size={16} />
+                              </button>
+                            )}
                           </div>
                         )}
                       </td>
@@ -1001,6 +1018,9 @@ function ContentManagement() {
                         <td className="px-4 py-2 text-center">
                           {showDeleteConfirm === item.grammarId ? (
                             <div className="flex justify-center items-center space-x-2">
+                              <span className="text-xs text-gray-500">
+                                Delete?
+                              </span>
                               <button
                                 onClick={() => handleDelete(item.grammarId)}
                                 className="text-error-500 hover:text-error-700"
@@ -1016,15 +1036,17 @@ function ContentManagement() {
                             </div>
                           ) : (
                             <div className="flex justify-center items-center space-x-2">
-                              <button
-                                onClick={() =>
-                                  setShowDeleteConfirm(item.grammarId)
-                                }
-                                className="text-error-500 hover:text-error-700"
-                                disabled={isAdding || isEditing}
-                              >
-                                <Trash2 size={16} />
-                              </button>
+                              {isStaff && (
+                                <button
+                                  onClick={() =>
+                                    setShowDeleteConfirm(item.grammarId)
+                                  }
+                                  className="text-error-500 hover:text-error-700"
+                                  disabled={isAdding || isEditing}
+                                >
+                                  <Trash2 size={16} />
+                                </button>
+                              )}
                             </div>
                           )}
                         </td>
@@ -1106,20 +1128,25 @@ function ContentManagement() {
                           >
                             <Layers size={16} />
                           </Link>
-                          <button
-                            onClick={() => startEdit(item)}
-                            className="text-primary-600 hover:text-primary-800 mr-2"
-                            disabled={isAdding || isEditing}
-                          >
-                            <Edit size={16} />
-                          </button>
-                          <button
-                            onClick={() => setShowDeleteConfirm(item.id)}
-                            className="text-error-500 hover:text-error-700"
-                            disabled={isAdding || isEditing}
-                          >
-                            <Trash2 size={16} />
-                          </button>
+
+                          {isStaff && (
+                            <>
+                              <button
+                                onClick={() => startEdit(item)}
+                                className="text-primary-600 hover:text-primary-800 mr-2"
+                                disabled={isAdding || isEditing}
+                              >
+                                <Edit size={16} />
+                              </button>
+                              <button
+                                onClick={() => setShowDeleteConfirm(item.id)}
+                                className="text-error-500 hover:text-error-700"
+                                disabled={isAdding || isEditing}
+                              >
+                                <Trash2 size={16} />
+                              </button>
+                            </>
+                          )}
                         </div>
                       )}
                     </div>
@@ -1323,17 +1350,19 @@ function ContentManagement() {
               Manage learning content for this lesson
             </p>
           </div>
-          <button
-            onClick={() => {
-              setIsAdding(true);
-              setIsEditing(null);
-            }}
-            className="btn-primary flex items-center"
-            disabled={isAdding || isEditing}
-          >
-            <Plus size={16} className="mr-1" />
-            Add {activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}
-          </button>
+          {isStaff && (
+            <button
+              onClick={() => {
+                setIsAdding(true);
+                setIsEditing(null);
+              }}
+              className="btn-primary flex items-center"
+              disabled={isAdding || isEditing}
+            >
+              <Plus size={16} className="mr-1" />
+              Add {activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}
+            </button>
+          )}
         </div>
       </div>
 

@@ -233,7 +233,6 @@ function ArticleViewer({ article }) {
       <div className="prose max-w-none">
         {article.content.map((section, index) => (
           <div key={index} className="mb-6">
-            <p className="text-gray-900 mb-2">{section.japanese}</p>
             {!showTranslation && <p className="text-gray-600 text-sm">Click 'View Translation' to see translation.</p>}
           </div>
         ))}
@@ -271,8 +270,6 @@ function ArticleViewer({ article }) {
         <div className="mt-6 space-y-6">
           {article.content.map((section, index) => (
             <div key={index} className="bg-gray-50 rounded-lg p-4">
-              <div className="text-lg text-primary-900 mb-2 font-bold">{section.japanese}</div>
-              <div className="text-gray-900 mb-1">{section.japanese}</div>
               <div className="text-gray-700">{section.english}</div>
             </div>
           ))}

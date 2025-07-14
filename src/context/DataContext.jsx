@@ -83,6 +83,23 @@ export function DataProvider({ children }) {
   };
 
   // Subject CRUD operations
+const fetchSubjectStatus = async () => {
+    try {
+      const response = await fetch("/api/subjects/status", {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+        },
+      });
+      if (!response.ok)
+        throw new Error(`HTTP error! status: ${response.status}`);
+      const data = await response.json();
+      return data.data;
+    } catch (error) {
+      console.error("Error fetching lesson status:", error);
+    }
+  };
+
 
   const getSubjectById = async (id) => {
     try {
@@ -522,7 +539,7 @@ export function DataProvider({ children }) {
 
   const getLessonExercisesById = async (lessonId, page = 1) => {
     try {
-    const response = await fetch(`http://localhost:8080/exercise-questions?lessonId=${lessonId}&page=${page}`, {
+    const response = await fetch(`/api/exercise-questions?lessonId=${lessonId}&page=${page}`, {
       headers: {
         "Content-Type": "application/json",
         "Authorization": `Bearer ${localStorage.getItem('accessToken')}`
@@ -592,7 +609,6 @@ export function DataProvider({ children }) {
       if (!exerciseData.lessonId) {
         throw new Error("lessonId is required for creating an exercise");
       }
-
 
       console.log("Exercise Data to Send:", exerciseData);
       console.log("Stringified:", JSON.stringify(exerciseData));
@@ -673,6 +689,7 @@ export function DataProvider({ children }) {
     }
   };
 
+  // Add a comma here to separate object properties
   const addResource = (item) => {
     const newItem = { ...item, id: Date.now().toString() };
     setResources([...resources, newItem]);
@@ -772,6 +789,7 @@ export function DataProvider({ children }) {
     approveVocabulary,
     approveGrammar,
     deleteGrammar,
+    fetchSubjectStatus,
   };
 
   return <DataContext.Provider value={value}>{children}</DataContext.Provider>;

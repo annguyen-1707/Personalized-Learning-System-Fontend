@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import { useParams, Link, useLocation } from "react-router-dom";
 import { useData } from "../../context/DataContext";
+import { useAuth } from "../../context/AuthContext";
+
 import {
   ArrowLeft,
   Plus,
@@ -16,11 +18,15 @@ import {
   Video,
   Upload,
 } from "lucide-react";
-import { g, s, sub, u } from "framer-motion/client";
+import { g, i, s, sub, u } from "framer-motion/client";
 import { GiOpenBook } from "react-icons/gi";
 import { toast } from "react-toastify";
 import ReactPaginate from "react-paginate";
-import { use } from "react";
+import {
+  acceptLesson,
+  rejectLesson,
+  inactiveLesson,
+} from "../../services/ContentBankService";
 
 function LessonManagement() {
   const { subjectId } = useParams();
@@ -34,6 +40,7 @@ function LessonManagement() {
     fetchLessonStatus,
     getSubjectById,
   } = useData();
+  const { user } = useAuth();
 
   const [subject, setSubject] = useState(null);
   const [subjectLessons, setSubjectLessons] = useState([]);
@@ -48,12 +55,23 @@ function LessonManagement() {
   const [formData, setFormData] = useState({
     name: "",
     description: "",
-    status: "PUBLIC",
+    status: "DRAFT",
     subjectId: subjectId,
     videoUrl: null,
     videoPreview: null,
     videoDuration: null,
   });
+
+  const isStaff =
+    user &&
+    Array.isArray(user.role) &&
+    user.role.some((role) => ["STAFF"].includes(role));
+
+  const isContentManagerment =
+    user &&
+    Array.isArray(user.role) &&
+    user.role.some((role) => ["CONTENT_MANAGER"].includes(role));
+
   const [statusOptions, setStatusOptions] = useState([]);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(null);
 
@@ -162,8 +180,6 @@ function LessonManagement() {
     );
     try {
       const newLesson = await addLesson(formData);
-      console.log("New lesson added:", newLesson);
-      debugger;
       if (newLesson) {
         setErrorMessage("");
         toast.dismiss(toastId);
@@ -195,6 +211,42 @@ function LessonManagement() {
       setErrorMessage(error.message || "Failed to add lesson.");
       toast.dismiss(toastId);
       toast.error("Failed to add lesson.");
+    }
+  };
+
+  const handleInactive = async (id) => {
+    try {
+      await inactiveLesson(id);
+      getLessons();
+    } catch (error) {
+      console.error("Failed to inactive lesson:", error);
+    }
+  };
+
+  const handleAccept = async (id) => {
+    const toastId = toast.loading("Accepting lesson...");
+    try {
+      await acceptLesson(id);
+      toast.dismiss(toastId);
+      toast.success("Lesson accepted successfully!");
+      getLessons();
+    } catch (error) {
+      console.error("Failed to accept lesson:", error);
+      toast.dismiss(toastId);
+      toast.error(error.message || "Failed to accept lesson.");
+    }
+  };
+  const handleReject = async (id) => {
+    const toastId = toast.loading("Rejecting lesson...");
+    try {
+      await rejectLesson(id);
+      toast.dismiss(toastId);
+      toast.success("Lesson rejected successfully!");
+      getLessons();
+    } catch (error) {
+      console.error("Failed to reject lesson:", error);
+      toast.dismiss(toastId);
+      toast.error("Failed to reject lesson.");
     }
   };
 
@@ -256,9 +308,9 @@ function LessonManagement() {
     setFormData({
       name: lesson.name,
       description: lesson.description,
-      status: lesson.status,
+      status: "DRAFT",
       subjectId: lesson.subjectId,
-      videoUrl:  lesson.videoUrl || null,
+      videoUrl: lesson.videoUrl || null,
       videoPreview: lesson.videoUrl || null,
       videoDuration: lesson.duration || null,
     });
@@ -273,12 +325,25 @@ function LessonManagement() {
     setFormData({
       name: "",
       description: "",
-      status: "PUBLIC",
+      status: "DRAFT",
       subjectId: subjectId,
       videoUrl: null,
       videoPreview: null,
       videoDuration: null,
     });
+  };
+
+  const getStatusBadgeClass = (status) => {
+    switch (status) {
+      case "PUBLIC":
+        return "bg-success-50 text-success-700";
+      case "DRAFT":
+        return "bg-gray-100 text-gray-700";
+      case "IN_ACTIVE":
+        return "bg-warning-50 text-warning-700";
+      case "REJECTED":
+        return "bg-error-50 text-error-700";
+    }
   };
 
   if (!subject) {
@@ -309,17 +374,19 @@ function LessonManagement() {
               Manage lessons for this Subject
             </p>
           </div>
-          <button
-            onClick={() => {
-              setIsAdding(true);
-              setIsEditing(null);
-            }}
-            className="btn-primary flex items-center"
-            disabled={isAdding || isEditing}
-          >
-            <Plus size={16} className="mr-1" />
-            Add Lesson
-          </button>
+          {isStaff && (
+            <button
+              onClick={() => {
+                setIsAdding(true);
+                setIsEditing(null);
+              }}
+              className="btn-primary flex items-center"
+              disabled={isAdding || isEditing}
+            >
+              <Plus size={16} className="mr-1" />
+              Add Lesson
+            </button>
+          )}
         </div>
       </div>
 
@@ -549,33 +616,6 @@ function LessonManagement() {
                   </div>
                 </div>
               </div>
-
-              {/* Status */}
-              <div>
-                <label
-                  htmlFor="status"
-                  className="block text-sm font-medium text-gray-700 mb-1"
-                >
-                  Status <span className="text-red-500">*</span>
-                </label>
-                <select
-                  id="status"
-                  value={formData.status}
-                  onChange={(e) =>
-                    setFormData({ ...formData, status: e.target.value })
-                  }
-                  className="block w-full rounded-md border-gray-300 focus:border-primary-500 focus:ring-primary-500 sm:text-sm"
-                >
-                  {statusOptions.map((option) => (
-                    <option key={option} value={option}>
-                      {option}
-                    </option>
-                  ))}
-                </select>
-                <p className="mt-1 text-sm text-gray-500">
-                  Set the visibility of the lesson
-                </p>
-              </div>
             </div>
 
             <div className="flex justify-end space-x-3 pt-4 border-t">
@@ -627,6 +667,12 @@ function LessonManagement() {
                       Status
                     </th>
                     <th className="px-4 py-2 text-left font-medium text-gray-700">
+                      Created At
+                    </th>
+                    <th className="px-4 py-2 text-left font-medium text-gray-700">
+                      Last Updated
+                    </th>
+                    <th className="px-4 py-2 text-left font-medium text-gray-700">
                       Actions
                     </th>
                   </tr>
@@ -657,65 +703,120 @@ function LessonManagement() {
                       </td>
                       <td className="px-4 py-2">
                         <span
-                          className={`badge ${
-                            lesson.status === "PUBLIC"
-                              ? "bg-green-100 text-green-800"
-                              : "bg-yellow-100 text-yellow-800"
-                          }`}
+                          className={`badge ${getStatusBadgeClass(
+                            lesson.status
+                          )}`}
                         >
-                          {lesson.status === "PUBLIC" ? "Published" : "Draft"}
+                          {lesson.status}
                         </span>
                       </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {new Date(subject.createdAt).toLocaleDateString()}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {new Date(subject.updatedAt).toLocaleDateString()}
+                      </td>
                       <td className="px-4 py-2 whitespace-nowrap">
-                        <div className="flex items-center space-x-2">
-                          {/* Nút quản lý nội dung */}
-                          <Link
-                            to={`/admin/courses/${subjectId}/lessons/${lesson.lessonId}/content`}
-                            title="Manage Content"
-                            className="text-blue-600 hover:text-blue-800"
-                          >
-                            <ExternalLink size={16} />
-                          </Link>
+                        <div className="grid grid-cols-1 gap-2 sm:grid-cols-1">
+                          {/* Hàng 1: Manage / Edit / Delete */}
+                          <div className="flex flex-wrap gap-3">
+                            {/* Nút quản lý nội dung */}
+                            <Link
+                              to={`/admin/courses/${subjectId}/lessons/${lesson.lessonId}/content`}
+                              title="Manage Content"
+                              className="text-blue-600 hover:text-blue-800 flex items-center"
+                            >
+                              <ExternalLink size={16} className="mr-1" />
+                            </Link>
 
-                          {/* Nếu đang confirm xóa */}
-                          {showDeleteConfirm === lesson.lessonId ? (
-                            <>
-                              <button
-                                onClick={() => handleDelete(lesson.lessonId)}
-                                className="text-red-600 hover:text-red-800"
-                                title="Confirm Delete"
-                              >
-                                <Check size={16} />
-                              </button>
-                              <button
-                                onClick={() => setShowDeleteConfirm(null)}
-                                className="text-gray-500 hover:text-gray-700"
-                                title="Cancel"
-                              >
-                                <X size={16} />
-                              </button>
-                            </>
-                          ) : (
-                            <>
-                              <button
-                                onClick={() => startEdit(lesson)}
-                                className="text-indigo-600 hover:text-indigo-800"
-                                disabled={isAdding || isEditing}
-                                title="Edit Lesson"
-                              >
-                                <Edit size={16} />
-                              </button>
-                              <button
-                                onClick={() =>
-                                  setShowDeleteConfirm(lesson.lessonId)
-                                }
-                                className="text-red-500 hover:text-red-700"
-                                disabled={isAdding || isEditing}
-                                title="Delete Lesson"
-                              >
-                                <Trash2 size={16} />
-                              </button>
-                            </>
+                            {/* Nếu đang confirm xóa */}
+                            {showDeleteConfirm === lesson.lessonId ? (
+                              <>
+                                <button
+                                  onClick={() => handleDelete(lesson.lessonId)}
+                                  className="text-red-600 hover:text-red-800 flex items-center"
+                                  title="Confirm Delete"
+                                >
+                                  <Check size={16} className="mr-1" />
+                                  Confirm
+                                </button>
+                                <button
+                                  onClick={() => setShowDeleteConfirm(null)}
+                                  className="text-gray-500 hover:text-gray-700 flex items-center"
+                                  title="Cancel"
+                                >
+                                  <X size={16} className="mr-1" />
+                                  Cancel
+                                </button>
+                              </>
+                            ) : (
+                              <>
+                                {isStaff &&
+                                  (lesson.status === "DRAFT" ||
+                                    lesson.status === "IN_ACTIVE") && (
+                                    <button
+                                      onClick={() => startEdit(lesson)}
+                                      className="text-indigo-600 hover:text-indigo-800 flex items-center"
+                                      disabled={isAdding || isEditing}
+                                      title="Edit Lesson"
+                                    >
+                                      <Edit size={16} className="mr-1" />
+                                    </button>
+                                  )}
+
+                                {isContentManagerment && (
+                                  <button
+                                    onClick={() =>
+                                      setShowDeleteConfirm(lesson.lessonId)
+                                    }
+                                    className="text-red-500 hover:text-red-700 flex items-center"
+                                    disabled={isAdding || isEditing}
+                                    title="Delete Lesson"
+                                  >
+                                    <Trash2 size={16} className="mr-1" />
+                                  </button>
+                                )}
+                              </>
+                            )}
+                          </div>
+
+                          {/* Hàng 2: Accept / Reject / Inactive */}
+                          {isContentManagerment && (
+                            <div className="flex flex-wrap gap-2">
+                              {lesson.status === "DRAFT" && (
+                                <>
+                                  <button
+                                    onClick={() =>
+                                      handleAccept(lesson.lessonId)
+                                    }
+                                    className="flex items-center bg-green-600 hover:bg-green-700 text-white px-2 py-1 rounded"
+                                  >
+                                    <Check size={16} className="mr-1" />
+                                    Accept
+                                  </button>
+                                  <button
+                                    onClick={() =>
+                                      handleReject(lesson.lessonId)
+                                    }
+                                    className="flex items-center bg-red-600 hover:bg-red-700 text-white px-2 py-1 rounded"
+                                  >
+                                    <X size={16} className="mr-1" />
+                                    Reject
+                                  </button>
+                                </>
+                              )}
+
+                              {lesson.status === "PUBLIC" && (
+                                <button
+                                  onClick={() =>
+                                    handleInactive(lesson.lessonId)
+                                  }
+                                  className="flex items-center bg-yellow-600 hover:bg-yellow-700 text-white px-3 py-1 rounded"
+                                >
+                                  Inactive
+                                </button>
+                              )}
+                            </div>
                           )}
                         </div>
                       </td>

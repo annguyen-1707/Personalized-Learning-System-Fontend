@@ -1,19 +1,22 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { ArrowLeft, Plus, Edit, Trash2, Check, X, Search } from 'lucide-react';
+import { ArrowLeft, Plus, Edit, Trash2, Check, X, Search, Dumbbell, Headphones, ShieldX } from 'lucide-react';
 import {
   getQuestionPageFromAPI, handleCreateQuestion, handleDeleteQuestion, handleUpdateQuestion, acceptQuestion,
   rejectQuestion,
   getLessonBySubjectIdFromAPI,
   getListAllSubjectFromAPI,
   getExerciseByLessonIdFromAPI,
-  getContentListeningByLeverFromAPI
+  getContentListeningByLeverFromAPI, inActiveQuestion
 } from '../../services/QuestionService';
 import ReactPaginate from 'react-paginate';
 import { toast } from "react-toastify";
 import { getJlptLevel, getStatus } from '../../services/ContentListeningService';
+import { a } from 'framer-motion/client';
+import { useAuth } from '../../context/AuthContext';
 
 function QuestionManagement() {
+  const { lessonId } = useParams();
   const [questions, setQuestions] = useState([]);
   const [isAdding, setIsAdding] = useState(false);
   const [isEditing, setIsEditing] = useState(null);
@@ -37,15 +40,72 @@ function QuestionManagement() {
   const [listSubject, setListSubject] = useState([]);
   const [listLesson, setListLesson] = useState([]);
   const [listExercise, setListExercise] = useState([]);
+  const [activeType, setActiveType] = useState("exercise");
+  const TypeTabs = ({ activeType, setActiveType }) => {
+    const types = [
+      {
+        key: "exercise",
+        label: "Exercise",
+        icon: <Dumbbell className="mr-2" size={16} />,
+      },
+      {
+        key: "contentListening",
+        label: "Content Listening",
+        icon: <Headphones className="mr-2" size={16} />,
+      },
+    ];
+
+    return (
+      <div className="border-b border-gray-200 mb-4">
+        <nav className="flex">
+          {types.map((type) => (
+            <button
+              key={type.key}
+              onClick={() => {
+                setActiveType(type.key)
+                getQuestionPage(1, type.key);
+                setCurrentPage(1);
+              }}
+              className={`
+              flex items-center px-4 py-3 text-sm font-medium border-b-2 transition
+              ${activeType === type.key
+                  ? "border-primary-600 text-primary-600"
+                  : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                }
+            `}
+            >
+              {type.icon}
+              {type.label}
+            </button>
+          ))}
+        </nav>
+      </div>
+    );
+  };
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(null);
   const [formData, setFormData] = useState({
     questionText: '',
     answerQuestions: [{ answerText: '', correct: false }],
     contentListeningId: '',
     exerciseId: ''
   });
+  const { user } = useAuth();
+  const isStaff =
+    user &&
+    Array.isArray(user.role) &&
+    user.role.some(role =>
+      ["STAFF"].includes(role)
+    );
+  const isContentManagerment =
+    user &&
+    Array.isArray(user.role) &&
+    user.role.some(role =>
+      ["CONTENT_MANAGER"].includes(role)
+    );
 
   useEffect(() => {
     getQuestionPage(1);
+    setCurrentPage(1);
     getListStatus();
   }, [size]);
 
@@ -59,8 +119,9 @@ function QuestionManagement() {
     return searchText === '' || matchQuestionText || matchAnyAnswer;
   });
 
-  const getQuestionPage = async (page) => {
-    let res = await getQuestionPageFromAPI(page, size);
+  const getQuestionPage = async (page, type) => {
+    let res = await getQuestionPageFromAPI(page, size, type || activeType);
+    console.log("getQuestionPage", res.data.content);
     if (res && res.data && res.data.content) {
       setQuestions(res.data.content);
       setPageCount(res.data.page.totalPages);
@@ -255,6 +316,22 @@ function QuestionManagement() {
     }));
   }
 
+  const handleAccept = async (id) => {
+    await acceptQuestion(id);
+    await getQuestionPage(currentPage);
+
+  }
+
+  const handleReject = async (id) => {
+    await rejectQuestion(id)
+    await getQuestionPage(currentPage);
+  }
+
+  const handleInActive = async (id) => {
+    await inActiveQuestion(id);
+    await getQuestionPage(currentPage);
+  }
+
   return (
     <div className="animate-fade-in">
       <div className="mb-6">
@@ -263,14 +340,16 @@ function QuestionManagement() {
             <h1 className="text-2xl font-bold text-gray-900">Question Management</h1>
             <p className="text-gray-500 mt-1">Manage questions for this question</p>
           </div>
-          <button
-            onClick={() => { setIsAdding(true); setIsEditing(null); }}
-            className="btn-primary flex items-center"
-            disabled={isAdding || isEditing}
-          >
-            <Plus size={16} className="mr-1" />
-            Add Question
-          </button>
+          {(isStaff &&
+            <button
+              onClick={() => { setIsAdding(true); setIsEditing(null); }}
+              className="btn-primary flex items-center"
+              disabled={isAdding || isEditing}
+            >
+              <Plus size={16} className="mr-1" />
+              Add Question
+            </button>
+          )}
         </div>
       </div>
 
@@ -493,7 +572,7 @@ function QuestionManagement() {
                       >
                         <option value="">-- Select Exercise --</option>
                         {listExercise.map((ex) => (
-                          <option key={ex.id} value={ex.id}>{ex.title}</option>
+                          <option key={ex.exerciseId} value={ex.id}>{ex.title}</option>
                         ))}
                       </select>
                     </div>
@@ -525,6 +604,7 @@ function QuestionManagement() {
       )}
 
       {/* Questions List */}
+      <TypeTabs activeType={activeType} setActiveType={setActiveType} />
       <div className="card">
         {filteredQuestions?.length > 0 ? (
           <div className="space-y-4">
@@ -533,6 +613,24 @@ function QuestionManagement() {
                 key={question.exerciseQuestionId}
                 className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm hover:shadow-md transition"
               >
+                {/* Title + Audio ngang hàng */}
+                {question?.contentListening && (
+                  <div className="flex items-center justify-between mb-3">
+                    <p className="text-sm font-semibold text-gray-800">
+                      Content Listening: {question.contentListening.title}
+                    </p>
+                    {question.contentListening.audioFile && (
+                      <audio controls className="w-300 ml-10">
+                        <source
+                          src={`http://localhost:8080/audio/content_listening/${question.contentListening.audioFile}`}
+                          type="audio/mpeg"
+                        />
+                        Your browser does not support the audio element.
+                      </audio>
+                    )}
+                  </div>
+                )}
+
                 {/* Question + Status */}
                 <div className="flex items-center justify-between mb-3">
                   <p className="text-sm font-semibold text-gray-900">
@@ -547,7 +645,9 @@ function QuestionManagement() {
                           ? 'bg-red-200 text-red-700'
                           : question.status === 'PUBLIC'
                             ? 'bg-green-200 text-green-700'
-                            : 'bg-gray-100 text-gray-500'}
+                            : question.status === "IN_ACTIVE"
+                              ? "bg-yellow-100 text-yellow-700"
+                              : 'bg-gray-100 text-gray-500'}
               `}
                   >
                     {question.status}
@@ -579,12 +679,68 @@ function QuestionManagement() {
 
                 {/* Action buttons */}
                 <div className="flex justify-end pt-4 space-x-2">
-                  {(question.status === 'DRAFT' || question.status === 'REJECT') && (
+                  {(isContentManagerment && question.status === 'PUBLIC') && (
+                    <div className="flex gap-4 mt-2">
+                      <button
+                        onClick={() => handleInActive(question.exerciseQuestionId)}
+                        className="flex items-center bg-yellow-600 hover:bg-yellow-700 text-white px-1 py-1 rounded"
+                      >
+                        <ShieldX size={16} className="mr-1" />
+                        In Active
+                      </button>
+                    </div>
+                  )}
+                  {(isContentManagerment && question.status === 'DRAFT') && (
+                    <div className="flex gap-3 mt-2">
+                      <button
+                        onClick={() => handleAccept(question.exerciseQuestionId)}
+                        className="flex items-center bg-green-600 hover:bg-green-700 text-white px-1 py-1 rounded"
+                      >
+                        <Check size={16} className="mr-1" />
+                        Accept
+                      </button>
+
+                      <button
+                        onClick={() => handleReject(question.exerciseQuestionId)}
+                        className="flex items-center bg-red-600 hover:bg-red-700 text-white px-1 py-1 rounded"
+                      >
+                        <X size={16} className="mr-1" />
+                        Reject
+                      </button>
+                    </div>
+                  )}
+                  {(isStaff && question.status != 'PUBLIC') && (
                     <button
                       onClick={() => startUpdate(question)}
                       className="text-blue-600 hover:text-blue-800"
                     >
                       <Edit size={16} />
+                    </button>
+                  )}
+                  {showDeleteConfirm === question.exerciseQuestionId ? (
+                    <>
+                      <button
+                        onClick={() => {
+                          handleDelete(question.exerciseQuestionId);
+                          setShowDeleteConfirm(null);
+                        }}
+                        className="text-error-500 hover:text-error-700"
+                      >
+                        <Check size={16} />
+                      </button>
+                      <button
+                        onClick={() => setShowDeleteConfirm(null)}
+                        className="text-gray-500 hover:text-gray-700"
+                      >
+                        <X size={16} />
+                      </button>
+                    </>
+                  ) : (
+                    <button
+                      onClick={() => setShowDeleteConfirm(question.exerciseQuestionId)}
+                      className="text-red-500 hover:text-red-700"
+                    >
+                      <Trash2 size={16} />
                     </button>
                   )}
                 </div>

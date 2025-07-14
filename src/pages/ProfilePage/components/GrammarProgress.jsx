@@ -16,7 +16,6 @@ function GrammarProgress({ progress }) {
     var res = await getProgressGrammarFromAPI();
     if (res && res.data) {
       setGrammarProgress(res.data);
-      console.log("Grammar Progress Data:", res.data);
     }
   }
 

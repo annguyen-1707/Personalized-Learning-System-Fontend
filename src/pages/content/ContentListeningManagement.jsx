@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
-import { Plus, Search, Edit, Trash2, Check, X, MessageCircleQuestion } from 'lucide-react';
+import { Plus, Search, Edit, Trash2, Check, X, MessageCircleQuestion, ShieldX } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import {
   getPageContentListening, handleUpdateContent, fetchAllContentCategoryListening, handleCreateContent,
-  handleDeleteContent, getJlptLevel, getStatus, acceptContent, rejectContent
+  handleDeleteContent, getJlptLevel, getStatus, acceptContent, rejectContent, inActiveContent
 } from '../../services/ContentListeningService';
 import ReactPaginate from 'react-paginate';
 import 'bootstrap/dist/css/bootstrap.min.css';
@@ -115,6 +115,7 @@ function ListeningContentManagement() {
   }
   const handleSubmit = async (e) => {
     e.preventDefault();
+    console.log("formData", formData);
     if (isAdding) {
       try {
         await handleCreateContent(formData);
@@ -214,12 +215,22 @@ function ListeningContentManagement() {
   }
 
   const handleAccept = async (id) => {
-    await acceptContent(id);
-    await getContentPage(currentPage);
+    try {
+      await acceptContent(id);
+      await getContentPage(currentPage);
+    } catch (error) {
+      console.log("Error accepting content:", error);
+      toast.error(error.message || "Chấp nhận content thất bại!");
+    }
   }
 
   const handleReject = async (id) => {
     await rejectContent(id);
+    await getContentPage(currentPage);
+  }
+
+  const handleInActive = async (id) => {
+    await inActiveContent(id);
     await getContentPage(currentPage);
   }
 
@@ -474,14 +485,14 @@ function ListeningContentManagement() {
                   <th className="px-4 py-2 text-left font-medium text-gray-700 min-w-[120px]">Title</th>
                   <th className="px-4 py-2 text-left font-medium text-gray-700">Image</th>
                   <th className="px-4 py-2 text-left font-medium text-gray-700">Audio</th>
-                  <th className="px-4 py-2 text-left font-medium text-gray-700 min-w-[120px]">JP Script</th>
-                  <th className="px-4 py-2 text-left font-medium text-gray-700 min-w-[120px]">VN Script</th>
                   <th className="px-4 py-2 text-left font-medium text-gray-700">Category</th>
                   <th className="px-4 py-2 text-left font-medium text-gray-700">JLPT Level</th>
                   <th className="px-4 py-2 text-left font-medium text-gray-700">Status</th>
                   <th className="px-4 py-2 text-left font-medium text-gray-700">Actions</th>
                   <th className="px-4 py-2 text-left font-medium text-gray-700">Created At</th>
                   <th className="px-4 py-2 text-left font-medium text-gray-700">Updated At</th>
+                  <th className="px-4 py-2 text-left font-medium text-gray-700 min-w-[120px]">JP Script</th>
+                  <th className="px-4 py-2 text-left font-medium text-gray-700 min-w-[120px]">VN Script</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
@@ -506,8 +517,6 @@ function ListeningContentManagement() {
                         </audio>
                       )}
                     </td>
-                    <td className="px-4 py-2 text-gray-900">{content.scriptJp}</td>
-                    <td className="px-4 py-2 text-gray-700">{content.scriptVn}</td>
                     <td className="px-4 py-2">{content.category}</td>
 
                     {/* JLPT Level */}
@@ -520,22 +529,22 @@ function ListeningContentManagement() {
                           ? "bg-green-100 text-green-700"
                           : content.status === "REJECT"
                             ? "bg-red-100 text-red-700"
-                            : "bg-gray-100 text-gray-700"
+                            : content.status === "IN_ACTIVE"
+                              ? "bg-yellow-100 text-yellow-700"
+                              : "bg-gray-100 text-gray-700"
                           }`}
                       >
                         {content.status}
                       </span>
                     </td>
                     <td className="px-4 py-2 space-y-1">
-                      {isContentManagerment&& (
-                        <Link
-                          to={`/admin/content_listening/${content.contentListeningId}/question`}
-                          className="flex items-center text-blue-600 hover:underline mb-1"
-                        >
-                          <MessageCircleQuestion size={14} className="mr-1" />
-                          Question
-                        </Link>
-                     )}
+                      <Link
+                        to={`/admin/content_listening/${content.contentListeningId}/question`}
+                        className="flex items-center text-blue-600 hover:underline mb-1"
+                      >
+                        <MessageCircleQuestion size={14} className="mr-1" />
+                        Question
+                      </Link>
                       <div className="flex space-x-2">
                         {isStaff && content.status != 'PUBLIC' && (
                           <button
@@ -594,11 +603,11 @@ function ListeningContentManagement() {
                       {isContentManagerment && content.status === "PUBLIC" && (
                         <div className="flex gap-4 mt-2">
                           <button
-                            onClick={() => handleReject(content.contentListeningId)}
-                            className="flex items-center bg-red-600 hover:bg-red-700 text-white px-1 py-1 rounded"
+                            onClick={() => handleInActive(content.contentListeningId)}
+                            className="flex items-center bg-yellow-600 hover:bg-yellow-700 text-white px-1 py-1 rounded"
                           >
-                            <X size={16} className="mr-1" />
-                            Reject
+                            <ShieldX size={16} className="mr-1" />
+                            In Active
                           </button>
                         </div>
                       )}
@@ -611,6 +620,8 @@ function ListeningContentManagement() {
                         ? new Date(content.updatedAt).toLocaleDateString()
                         : "Never update"}
                     </td>
+                    <td className="px-4 py-2 text-gray-900 max-w-[300px] truncate">{content.scriptJp}</td>
+                    <td className="px-4 py-2 text-gray-700 max-w-[300px] truncate">{content.scriptVn}</td>
                   </tr>
                 ))}
               </tbody>

@@ -7,14 +7,13 @@ import ReactPaginate from "react-paginate";
 import { useAuth } from "../../context/AuthContext";
 
 function LearningPage() {
-  const { getAllSubjectsById, getAllSubjects } =
-    LearningPaggService;
+  const { getAllSubjectsById, getAllSubjects } = LearningPaggService;
   const [coursesData, setCoursesData] = useState([]);
   const [myCoursesData, setMyCoursesData] = useState([]);
   const [currentPage, setCurrentPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
   const [selected, setSelected] = useState("all");
-  const { user} = useAuth();
+  const { user } = useAuth();
 
   const filteredCourses =
     selected === "my-courses" ? myCoursesData : coursesData;
@@ -26,7 +25,6 @@ function LearningPage() {
 
   const fetchCourses = async () => {
     const data = await getAllSubjectsById(currentPage);
-    console.log("Fetched courses:", data);
     setMyCoursesData(data?.content);
     setTotalPages(data?.page?.totalPages);
     setCurrentPage(data?.page?.number);
@@ -47,7 +45,7 @@ function LearningPage() {
 
   // Fetch courses when the component mounts
   useEffect(() => {
-    if(!user || user === undefined)  {
+    if (!user || user === undefined) {
       fetchAllCourses();
     } else {
       fetchCourses();
@@ -94,17 +92,6 @@ function LearningPage() {
           >
             My learning
           </button>
-          {/* <button
-            type="button"
-            className={`px-4 py-2 text-sm font-medium ${
-              selected === "suggested"
-                ? "bg-primary-500 text-white"
-                : "bg-white text-gray-700 hover:bg-gray-50"
-            } border-t border-b border-r border-gray-300`}
-            onClick={() => setSelected("suggested")}
-          >
-            Suggested from Parent
-          </button> */}
         </div>
       </div>
 
@@ -128,38 +115,36 @@ function LearningPage() {
           );
         })}
       </div>
-            {/* No courses message */}
+      {/* No courses message */}
       {filteredCourses?.length === 0 && (
         <div className="text-center py-12">
           <p className="text-gray-600">No courses found.</p>
         </div>
-      )}  
+      )}
 
       {filteredCourses?.length > 0 && (
         <ReactPaginate
-        className="pagination mt-6 justify-center"
-        nextLabel="next >"
-        onPageChange={handlePageClick}
-        pageRangeDisplayed={3} // giới hạn trang bên trái 1 2 3 .... 99 100
-        marginPagesDisplayed={2} // giới hạn trang bên phải 1 2 3 .... 99 100
-        pageCount={totalPages}
-        previousLabel="< previous"
-        pageClassName="page-item"
-        pageLinkClassName="page-link"
-        previousClassName="page-item"
-        previousLinkClassName="page-link"
-        nextClassName="page-item"
-        nextLinkClassName="page-link"
-        breakLabel="..."
-        breakClassName="page-item"
-        breakLinkClassName="page-link"
-        containerClassName="pagination"
-        activeClassName="active"
-        renderOnZeroPageCount={null}
-      />
-
+          className="pagination mt-6 justify-center"
+          nextLabel="next >"
+          onPageChange={handlePageClick}
+          pageRangeDisplayed={3} // giới hạn trang bên trái 1 2 3 .... 99 100
+          marginPagesDisplayed={2} // giới hạn trang bên phải 1 2 3 .... 99 100
+          pageCount={totalPages}
+          previousLabel="< previous"
+          pageClassName="page-item"
+          pageLinkClassName="page-link"
+          previousClassName="page-item"
+          previousLinkClassName="page-link"
+          nextClassName="page-item"
+          nextLinkClassName="page-link"
+          breakLabel="..."
+          breakClassName="page-item"
+          breakLinkClassName="page-link"
+          containerClassName="pagination"
+          activeClassName="active"
+          renderOnZeroPageCount={null}
+        />
       )}
-
     </div>
   );
 }

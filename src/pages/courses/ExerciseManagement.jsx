@@ -1,15 +1,24 @@
 import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useData } from "../../context/DataContext";
-import { ArrowLeft, Book, FileText, Dumbbell, Check, Trash2 ,X} from "lucide-react";
+import {
+  ArrowLeft,
+  Book,
+  FileText,
+  Dumbbell,
+  Check,
+  Trash2,
+  X,
+} from "lucide-react";
 import ReactPaginate from "react-paginate";
 import { g } from "framer-motion/client";
-import {acceptQuestion, rejectQuestion } from '../../services/QuestionService';
-
+import { acceptQuestion, rejectQuestion } from "../../services/QuestionService";
+import { useAuth } from "../../context/AuthContext";
 
 function ExerciseManagement() {
   const { subjectId, lessonId, exerciseId } = useParams();
   const { getSubjectById, getLessonById, getExerciseDetailsById } = useData();
+  const { user } = useAuth();
 
   const [subject, setSubject] = useState(null);
   const [lesson, setLesson] = useState(null);
@@ -22,6 +31,17 @@ function ExerciseManagement() {
     const selectedPage = event.selected;
     setCurrentPage(selectedPage);
   };
+
+  const isStaff =
+    user &&
+    Array.isArray(user.role) &&
+    user.role.some((role) => ["STAFF"].includes(role));
+  const isContentManagerment =
+    user &&
+    Array.isArray(user.role) &&
+    user.role.some(role =>
+      ["CONTENT_MANAGER"].includes(role)
+    );
 
   const getSubject = async () => {
     try {
@@ -67,7 +87,7 @@ function ExerciseManagement() {
     getSubject();
     getLessons();
     getLessonExercises();
-    console.log("list question",lessonExercises)
+    console.log("list question", lessonExercises);
   }, [subjectId, lessonId, exerciseId]);
 
   if (!lessonExercises || !subject || !lesson) {
@@ -81,13 +101,12 @@ function ExerciseManagement() {
   const handleAccept = async (id) => {
     await acceptQuestion(id);
     await getLessonExercises(currentPage);
-
-  }
+  };
 
   const handleReject = async (id) => {
-    await rejectQuestion(id)
+    await rejectQuestion(id);
     await getLessonExercises(currentPage);
-  }
+  };
 
   const renderContent = () => {
     return (
@@ -106,13 +125,13 @@ function ExerciseManagement() {
                 <span
                   className={`
                   text-xs font-semibold px-2 py-1 rounded-full
-                  ${question.status === 'DRAFT'
-                      ? 'bg-gray-200 text-gray-700'
-                      : question.status === 'REJECT'
-                        ? 'bg-red-200 text-red-700'
-                        : question.status === 'PUBLIC'
-                          ? 'bg-green-200 text-green-700'
-                          : 'bg-gray-100 text-gray-500'
+                  ${question.status === "DRAFT"
+                      ? "bg-gray-200 text-gray-700"
+                      : question.status === "REJECT"
+                        ? "bg-red-200 text-red-700"
+                        : question.status === "PUBLIC"
+                          ? "bg-green-200 text-green-700"
+                          : "bg-gray-100 text-gray-500"
                     }
                 `}
                 >
@@ -128,8 +147,8 @@ function ExerciseManagement() {
                     className={`
                     flex items-center space-x-2 text-sm px-3 py-2 rounded-md border
                     ${answer.correct
-                        ? 'bg-green-50 text-green-800 border-green-200'
-                        : 'bg-gray-50 text-gray-700 border-gray-200'
+                        ? "bg-green-50 text-green-800 border-green-200"
+                        : "bg-gray-50 text-gray-700 border-gray-200"
                       }
                   `}
                   >
@@ -146,7 +165,7 @@ function ExerciseManagement() {
 
               {/* Action buttons */}
               <div className="flex justify-end pt-2 space-x-2">
-                {(question.status === 'PUBLIC') && (
+                {isContentManagerment && question.status === "PUBLIC" && (
                   <button
                     onClick={() => handleReject(question.exerciseQuestionId)}
                     className="flex items-center bg-red-600 hover:bg-red-700 text-white px-1 py-1 rounded"
@@ -155,7 +174,7 @@ function ExerciseManagement() {
                     Reject
                   </button>
                 )}
-                {(question.status === 'DRAFT') && (
+                {isContentManagerment && question.status === "DRAFT" && (
                   <div className="flex gap-3 mt-2">
                     <button
                       onClick={() => handleAccept(question.exerciseQuestionId)}
@@ -175,7 +194,9 @@ function ExerciseManagement() {
                   </div>
                 )}
                 <button
-                  onClick={() => setShowDeleteConfirm(question.exerciseQuestionId)}
+                  onClick={() =>
+                    setShowDeleteConfirm(question.exerciseQuestionId)
+                  }
                   className="text-red-500 hover:text-red-700"
                 >
                   <Trash2 size={16} />
@@ -191,7 +212,6 @@ function ExerciseManagement() {
       </div>
     );
   };
-
 
   return (
     <div className="animate-fade-in">

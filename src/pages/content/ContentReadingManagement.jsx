@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
-import { Plus, Search, Edit, Trash2, Check, X, Image, Clock, Book, FileText, LayoutPanelTop, WholeWord } from 'lucide-react';
+import { Plus, Search, Edit, Trash2, Check, X, Image, Clock, Book, FileText, LayoutPanelTop, WholeWord, ShieldX } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import {
   getPageContentReading, handleUpdateContent, fetchAllContentCategoryReading, handleCreateContent,
-  handleDeleteContent, acceptContent, rejectContent
+  handleDeleteContent, acceptContent, rejectContent, inActiveContent
 } from '../../services/ContentReadingService';
 import ReactPaginate from 'react-paginate';
 import 'bootstrap/dist/css/bootstrap.min.css';
@@ -228,6 +228,11 @@ function ReadingContentManagement() {
 
   const handleReject = async (id) => {
     await rejectContent(id);
+    await getContentPage(currentPage);
+  }
+
+  const handleInActive = async (id) => {
+    await inActiveContent(id);
     await getContentPage(currentPage);
   }
 
@@ -499,8 +504,6 @@ function ReadingContentManagement() {
                 <th className="px-4 py-2 text-left font-medium text-gray-700 min-w-[120px]">Title</th>
                 <th className="px-4 py-2 text-left font-medium text-gray-700">Image</th>
                 <th className="px-4 py-2 text-left font-medium text-gray-700">Audio</th>
-                <th className="px-4 py-2 text-left font-medium text-gray-700 min-w-[120px]">JP Script</th>
-                <th className="px-4 py-2 text-left font-medium text-gray-700 min-w-[120px]">VN Script</th>
                 <th className="px-4 py-2 text-left font-medium text-gray-700">Category</th>
                 <th className="px-4 py-2 text-left font-medium text-gray-700">JLPT Level</th>
                 <th className="px-4 py-2 text-left font-medium text-gray-700">Status</th>
@@ -508,6 +511,8 @@ function ReadingContentManagement() {
                 <th className="px-4 py-2 text-left font-medium text-gray-700">Actions</th>
                 <th className="px-4 py-2 text-left font-medium text-gray-700">Created At</th>
                 <th className="px-4 py-2 text-left font-medium text-gray-700">Updated At</th>
+                <th className="px-4 py-2 text-left font-medium text-gray-700 min-w-[120px]">JP Script</th>
+                <th className="px-4 py-2 text-left font-medium text-gray-700 min-w-[120px]">VN Script</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
@@ -532,8 +537,6 @@ function ReadingContentManagement() {
                       </audio>
                     )}
                   </td>
-                  <td className="px-4 py-2 text-gray-900 line-clamp-3">{content.scriptJp}</td>
-                  <td className="px-4 py-2 text-gray-700 line-clamp ">{content.scriptVn}</td>
                   <td className="px-4 py-2">{content.category}</td>
                   <td className="px-4 py-2">{content.jlptLevel || "N/A"}</td>
                   {/* Status */}
@@ -543,7 +546,9 @@ function ReadingContentManagement() {
                         ? "bg-green-100 text-green-700"
                         : content.status === "REJECT"
                           ? "bg-red-100 text-red-700"
-                          : "bg-gray-100 text-gray-700"
+                          : content.status === "IN_ACTIVE"
+                            ? "bg-yellow-100 text-yellow-700"
+                            : "bg-gray-100 text-gray-700"
                         }`}
                     >
                       {content.status}
@@ -551,26 +556,24 @@ function ReadingContentManagement() {
                   </td>
                   <td className="px-4 py-2">{new Date(content.timeNew).toLocaleDateString()}</td>
                   <td className="px-4 py-2 space-y-1">
-                    {isContentManagerment && (
-                      <div>
-                        <Link
-                          to={`/admin/content_reading/${content.contentReadingId}/vocabulary`}
-                          className="flex items-center text-blue-600 hover:underline mb-1"
-                        >
-                          <WholeWord size={14} className="mr-1" />
-                          Vocabulary
-                        </Link>
-                        <Link
-                          to={`/admin/content_reading/${content.contentReadingId}/grammar`}
-                          className="flex items-center text-blue-600 hover:underline mb-1"
-                        >
-                          <LayoutPanelTop size={14} className="mr-1" />
-                          Grammar
-                        </Link>
-                      </div>
-                    )}
+                    <div>
+                      <Link
+                        to={`/admin/content_reading/${content.contentReadingId}/vocabulary`}
+                        className="flex items-center text-blue-600 hover:underline mb-1"
+                      >
+                        <WholeWord size={14} className="mr-1" />
+                        Vocabulary
+                      </Link>
+                      <Link
+                        to={`/admin/content_reading/${content.contentReadingId}/grammar`}
+                        className="flex items-center text-blue-600 hover:underline mb-1"
+                      >
+                        <LayoutPanelTop size={14} className="mr-1" />
+                        Grammar
+                      </Link>
+                    </div>
                     <div className="flex space-x-2">
-                      {isStaff && content.status != 'PUBLIC' &&(
+                      {isStaff && content.status != 'PUBLIC' && (
                         <button
                           onClick={() => startUpdate(content)}
                           className="text-primary-600 hover:text-primary-800"
@@ -628,11 +631,11 @@ function ReadingContentManagement() {
                     {isContentManagerment && content.status === "PUBLIC" && (
                       <div className="flex gap-4 mt-2">
                         <button
-                          onClick={() => handleReject(content.contentReadingId)}
-                          className="flex items-center bg-red-600 hover:bg-red-700 text-white px-1 py-1 rounded"
+                          onClick={() => handleInActive(content.contentReadingId)}
+                          className="flex items-center bg-yellow-600 hover:bg-yellow-700 text-white px-1 py-1 rounded"
                         >
-                          <X size={16} className="mr-1" />
-                          Reject
+                          <ShieldX size={16} className="mr-1" />
+                          In Active
                         </button>
                       </div>
                     )}
@@ -643,6 +646,8 @@ function ReadingContentManagement() {
                       ? new Date(content.updatedAt).toLocaleDateString()
                       : "Never update"}
                   </td>
+                  <td className="px-4 py-2 text-gray-900 max-w-[300px] truncate">{content.scriptJp}</td>
+                  <td className="px-4 py-2 text-gray-700 max-w-[300px] truncate">{content.scriptVn}</td>
                 </tr>
               ))}
             </tbody>

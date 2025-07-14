@@ -41,10 +41,6 @@ function ViewChildren() {
         }
     }
 
-    const handleUpgradeAccount = async (userId) => {
-        navigate('/upgrade', {state : {userId}})
-    }
-    
 
     const statusColors = {
         NORMAL: "gray",
@@ -89,12 +85,7 @@ function ViewChildren() {
                                 {studentInfo?.status}
                             </span>
                             <br />
-                            <button
-                                onClick={() => handleUpgradeAccount(studentInfo?.userId)}
-                                className="mt-2 inline-block bg-warning-500 hover:bg-blue-600 text-white font-medium py-1.5 px-4 rounded-lg shadow transition duration-200"
-                            >
-                                Upgrade Account
-                            </button>
+
                         </div>
                     </div>
                 </div>

@@ -25,7 +25,6 @@ function ProfilePage() {
 
   const getLearningProgress = async () => {
     var res = await getLearningProgressFromAPI();
-    console.log("data", res);
     if (res && res.data) {
       setLearningProgress(res.data);
     }
@@ -33,7 +32,6 @@ function ProfilePage() {
 
   const getStudentInformation = async () => {
     var res = await getStudentInfoFromAPI();
-    console.log("Student Info:", res);
     if (res && res.data) {
       setStudentInfo(res.data);
     }
@@ -195,40 +193,6 @@ function ProfilePage() {
                 <span className="text-gray-600">Percentage Complete</span>
                 <span className="font-medium text-gray-900">{Math.floor((learningProgress?.totalVocabularyLearn + learningProgress?.totalGrammarLearn + learningProgress?.exerciseCompleted)
                   / (learningProgress?.totalVocabularyAllSubject + learningProgress?.totalGrammarAllSubject + learningProgress?.exerciseAllSubject) * 100)}% </span>
-              </div>
-            </div>
-          </motion.div>
-
-          {/* Recent Activity */}
-          <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.2 }}
-            className="bg-white rounded-lg shadow-md p-6"
-          >
-            <h2 className="text-lg font-medium text-gray-900 mb-4">Recent Activity</h2>
-            <div className="space-y-4">
-              <div className="flex items-start">
-                <div className="flex-shrink-0">
-                  <div className="w-8 h-8 rounded-full bg-primary-100 flex items-center justify-center">
-                    <FiTrendingUp className="h-4 w-4 text-primary-600" />
-                  </div>
-                </div>
-                <div className="ml-3">
-                  <p className="text-sm font-medium text-gray-900">Completed N5 Grammar Lesson</p>
-                  <p className="text-sm text-gray-500">2 hours ago</p>
-                </div>
-              </div>
-              <div className="flex items-start">
-                <div className="flex-shrink-0">
-                  <div className="w-8 h-8 rounded-full bg-success-100 flex items-center justify-center">
-                    <FiDownload className="h-4 w-4 text-success-600" />
-                  </div>
-                </div>
-                <div className="ml-3">
-                  <p className="text-sm font-medium text-gray-900">Added 20 new vocabulary words</p>
-                  <p className="text-sm text-gray-500">5 hours ago</p>
-                </div>
               </div>
             </div>
           </motion.div>

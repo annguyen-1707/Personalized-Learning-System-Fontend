@@ -62,8 +62,8 @@ const getQuestionPageByContentListeningId = async (page, id, size) => {
     return axios.get(`/api/question/content_listening/${id}?page=${page}&size=${size}`);
 }
 
-const getQuestionPageFromAPI = async(page, size) => {
-    return axios.get(`/api/question?page=${page}&size=${size}`);
+const getQuestionPageFromAPI = async(page, size, activeType) => {
+    return axios.get(`/api/question/type?page=${page}&size=${size}&type=${activeType}`);
 }
 
 const acceptQuestion = async(id) => {
@@ -91,6 +91,10 @@ const getContentListeningByLeverFromAPI = async(jlptLevel) => {
     return axios.get(`/api/content_listening/jlptLevel?jlptLevel=${jlptLevel}`)
 }
 
+const inActiveQuestion = async(id) => {
+    return axios.patch(`/api/question/inactive/${id}`)
+}
+
 export {
     getQuestionPageByContentListeningId,
     handleCreateQuestion,
@@ -104,5 +108,6 @@ export {
     getListAllSubjectFromAPI,
     getExerciseByLessonIdFromAPI,
     getContentListeningByLeverFromAPI,
+    inActiveQuestion
 }
 

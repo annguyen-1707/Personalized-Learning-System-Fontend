@@ -16,14 +16,14 @@ function QuizPage() {
   const type = searchParams.get("type") || "vocabulary";
   const favoriteListId = searchParams.get("favoriteListId");
 
-  const listId = 3;
+
 
   useEffect(() => {
     setLoading(true);
     const fetchQuiz = async () => {
       const api = "vocabulary" === type ? '/api/quiz/vocabulary-list' : '/api/quiz/grammar-list';
       try {
-        const response = await axios.get(`${api}?id=${listId}`);
+        const response = await axios.get(`${api}?id=${favoriteListId}`);
         setQuizDatas(response);
         console.log('Quiz data fetched:', response);
       } catch (error) {
@@ -34,6 +34,7 @@ function QuizPage() {
     };
     fetchQuiz();
   }, []);
+
   const tips = [
     "🧠 Tip: Learning through examples improves memorization!",
     "💡 Hint: Practice speaking along with vocabulary for better retention!",
@@ -138,7 +139,7 @@ function QuizPage() {
   );
 }
 
-  if (currentQuiz.questions.length === 0) {
+  if (currentQuiz.questions.length <= 1) {
     return (
       <div className="max-w-2xl mx-auto bg-yellow-100 text-yellow-800 border border-yellow-300 p-4 rounded">
         Not enough data to generate questions (at least 2 vocabulary items are required).

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { FiBookmark, FiVolume2, FiChevronDown } from "react-icons/fi";
+import FlashCardsLessonPage from "../../FlashcardsPage/GrammarFlashCards";
 
 function LessonGrammar({ lesson }) {
   const [openIndex, setOpenIndex] = useState(null);
@@ -39,6 +40,12 @@ function LessonGrammar({ lesson }) {
   return (
     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
       <h2 className="text-2xl font-bold text-gray-900 mb-6">Grammar Points</h2>
+      <div className="mb-4">
+        <FlashCardsLessonPage
+          words={lesson.grammars}
+          lessonId={lesson?.lessonId}
+        />
+      </div>
 
       {lesson.grammars && lesson.grammars.length > 0 ? (
         <div className="space-y-4">

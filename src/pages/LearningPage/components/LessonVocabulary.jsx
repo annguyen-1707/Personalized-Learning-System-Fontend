@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { FiVolume2, FiPlus, FiCheck } from "react-icons/fi";
-import FlashCardsLessonPage from "../../FlashcardsPage/FlashCardsLessonPage";
+import FlashCardsLessonPage from "../../FlashcardsPage/VocabularyFlashCards";
 import { useParams } from "react-router-dom";
 
 function LessonVocabulary({ lesson }) {

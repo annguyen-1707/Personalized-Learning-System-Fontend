@@ -133,7 +133,7 @@ const fetchLessons = async () => {
       >
         <div className="relative">
           <img
-            src={course.thumbnailUrl || "https://via.placeholder.com/800x400"}
+            src={"http://localhost:8080/images/content_learning/" + course.thumbnailUrl}
             alt={course.subjectName}
             className="w-full h-64 object-cover"
           />

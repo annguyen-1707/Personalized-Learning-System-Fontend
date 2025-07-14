@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
-import { Plus, Search, Edit, Trash2, Check, X, MessageSquare } from 'lucide-react';
+import { Plus, Search, Edit, Trash2, Check, X, MessageSquare, ShieldX } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import {
   getPageContentSpeaking, handleUpdateContent, fetchAllContentCategorySpeaking, handleCreateContent,
-  handleDeleteContent, acceptContent, rejectContent
+  handleDeleteContent, acceptContent, rejectContent, inActiveContent
 } from '../../services/ContentSpeakingService';
 import ReactPaginate from 'react-paginate';
 import 'bootstrap/dist/css/bootstrap.min.css';
@@ -191,13 +191,22 @@ function SpeakingContentManagement() {
   }
 
   const handleAccept = async (id) => {
-    await acceptContent(id);
-    await getContentPage(currentPage);
-
+    try {
+      await acceptContent(id);
+      await getContentPage(currentPage);
+    } catch (error) {
+      console.error("Error accepting content:", error);
+      toast.error(error.message || "Failed to accept content.");
+    }
   }
 
   const handleReject = async (id) => {
     await rejectContent(id);
+    await getContentPage(currentPage);
+  }
+
+  const handleInActive = async (id) => {
+    await inActiveContent(id);
     await getContentPage(currentPage);
   }
   return (
@@ -447,7 +456,9 @@ function SpeakingContentManagement() {
                         ? "bg-green-100 text-green-700"
                         : content.status === "REJECT"
                           ? "bg-red-100 text-red-700"
-                          : "bg-gray-100 text-gray-700"
+                          : content.status === "IN_ACTIVE"
+                            ? "bg-yellow-100 text-yellow-700"
+                            : "bg-gray-100 text-gray-700"
                         }`}
                     >
                       {content.status}
@@ -465,15 +476,13 @@ function SpeakingContentManagement() {
                   </td>
 
                   <td className="px-4 py-2 space-y-1">
-                    {isContentManagerment && (
-                      <Link
-                        to={`/admin/content_speaking/${content.contentSpeakingId}/dialogue`}
-                        className="flex items-center text-blue-600 hover:underline mb-1"
-                      >
-                        <MessageSquare size={14} className="mr-1" />
-                        Dialogue
-                      </Link>
-                    )}
+                    <Link
+                      to={`/admin/content_speaking/${content.contentSpeakingId}/dialogue`}
+                      className="flex items-center text-blue-600 hover:underline mb-1"
+                    >
+                      <MessageSquare size={14} className="mr-1" />
+                      Dialogue
+                    </Link>
                     <div className="flex space-x-2">
                       {isStaff && content.status != 'PUBLIC' && (
                         <button
@@ -533,11 +542,11 @@ function SpeakingContentManagement() {
                     {isContentManagerment && content.status === "PUBLIC" && (
                       <div className="flex gap-4 mt-2">
                         <button
-                          onClick={() => handleReject(content.contentSpeakingId)}
-                          className="flex items-center bg-red-600 hover:bg-red-700 text-white px-1 py-1 rounded"
+                          onClick={() => handleInActive(content.contentSpeakingId)}
+                          className="flex items-center bg-yellow-600 hover:bg-yellow-700 text-white px-1 py-1 rounded"
                         >
-                          <X size={16} className="mr-1" />
-                          Reject
+                          <ShieldX size={16} className="mr-1" />
+                          In Active
                         </button>
                       </div>
                     )}
