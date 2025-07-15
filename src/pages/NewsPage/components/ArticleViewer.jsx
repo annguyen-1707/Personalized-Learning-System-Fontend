@@ -7,8 +7,6 @@ import NewsAudio from './NewsAudio';
 import { useAuth } from '../../../context/AuthContext';
 import { toast } from 'react-toastify';
 
-
-
 function ArticleViewer({ article }) {
   // Add user from auth context
   const { user } = useAuth();
@@ -62,8 +60,8 @@ function ArticleViewer({ article }) {
       axios.get(`/api/content_reading/${article.id}/grammars`)
         .then(res => {
           console.log('Grammar response:', res);
-          // Display received JSON data for debugging
-          setGrammarData(res || []);
+          // Set only the data array from the response
+          setGrammarData(res.data || []);
         })
         .catch(err => {
           console.error('Grammar error:', err);
@@ -84,55 +82,55 @@ function ArticleViewer({ article }) {
           contentReadingId: article.id
         }
       })
-      .then(res => {
-        if (res.data) {
-          console.log('Reading progress status:', res);
-          setIsDone(true);
-        } else {
-          console.log('Reading progress status:', res);
+        .then(res => {
+          if (res.data) {
+            console.log('Reading progress status:', res);
+            setIsDone(true);
+          } else {
+            console.log('Reading progress status:', res);
+            setIsDone(false);
+          }
+        })
+        .catch(err => {
+          console.error('Error checking reading progress:', err);
           setIsDone(false);
-        }
-      })
-      .catch(err => {
-        console.error('Error checking reading progress:', err);
-        setIsDone(false);
-      });
+        });
     }
   }, [article?.id, user]);
 
   // Updated handleMarkAsDone function to call your API
- const handleMarkAsDone = () => {
-  const userId = user?.id || user?.userId || user?._id;
+  const handleMarkAsDone = () => {
+    const userId = user?.id || user?.userId || user?._id;
 
-  if (!userId) {
-    toast.error('User ID not found. Please log in again.');
-    return;
-  }
-
-  setIsMarking(true);
-
-  axios.post('/api/progressReading/markAsDone', null, {
-    params: {
-      userId: userId,
-      contentReadingId: article.id
+    if (!userId) {
+      toast.error('User ID not found. Please log in again.');
+      return;
     }
-  })
-    .then(res => {
-      if (res) {
-        setIsDone(true);
-        toast.success('Progress saved successfully!');
-      } else {
-        toast.error('Failed to save progress.');
+
+    setIsMarking(true);
+
+    axios.post('/api/progressReading/markAsDone', null, {
+      params: {
+        userId: userId,
+        contentReadingId: article.id
       }
     })
-    .catch(err => {
-      console.error('Error marking as done:', err);
-      toast.error('Failed to save progress. Please try again.');
-    })
-    .finally(() => {
-      setIsMarking(false);
-    });
-};
+      .then(res => {
+        if (res) {
+          setIsDone(true);
+          toast.success('Progress saved successfully!');
+        } else {
+          toast.error('Failed to save progress.');
+        }
+      })
+      .catch(err => {
+        console.error('Error marking as done:', err);
+        toast.error('Failed to save progress. Please try again.');
+      })
+      .finally(() => {
+        setIsMarking(false);
+      });
+  };
 
   const renderActionButton = () => {
     if (!user) {
@@ -215,14 +213,14 @@ function ArticleViewer({ article }) {
           <span>{article.category}</span>
         </div>
 
-        <div className="flex space-x-2">
+        {/* <div className="flex space-x-2">
           <button className="p-2 text-gray-500 hover:text-primary-500 rounded-full hover:bg-gray-100">
             <FiBookmark className="h-5 w-5" />
           </button>
           <button className="p-2 text-gray-500 hover:text-primary-500 rounded-full hover:bg-gray-100">
             <FiShare2 className="h-5 w-5" />
           </button>
-        </div>
+        </div> */}
       </div>
 
       <div>
