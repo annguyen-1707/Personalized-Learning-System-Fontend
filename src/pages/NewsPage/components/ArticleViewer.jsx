@@ -22,13 +22,11 @@ function ArticleViewer({ article }) {
 
   useEffect(() => {
     if (article) {
-      console.log('Article selected:', article);
-      console.log('Article properties:', Object.keys(article));
+
 
       // Check and build audio URL
       if (article.audioFile) {
         const fullAudioUrl = `http://localhost:8080/audio/content_reading/${article.audioFile}`;
-        console.log('Constructed audio URL:', fullAudioUrl);
         setAudioUrl(fullAudioUrl);
       } else {
         console.log('No audioFile property found in article');
@@ -42,7 +40,6 @@ function ArticleViewer({ article }) {
       setVocabData([]); // loading
       axios.get(`/api/content_reading/${article.id}/vocabularies`)
         .then(res => {
-          console.log('Vocab response:', res);
           // Display received JSON data for debugging
           setVocabData(res.data || []);
         })
@@ -59,7 +56,6 @@ function ArticleViewer({ article }) {
       setGrammarData([]); // loading
       axios.get(`/api/content_reading/${article.id}/grammars`)
         .then(res => {
-          console.log('Grammar response:', res);
           // Set only the data array from the response
           setGrammarData(res.data || []);
         })
@@ -73,7 +69,6 @@ function ArticleViewer({ article }) {
   // Check initial completion status when article changes
   useEffect(() => {
     const userId = user?.id || user?.userId || user?._id;
-    console.log('Checking completion status for user:', userId, 'and article:', article?.id);
     if (userId && article?.id) {
       // Fix to call API correctly
       axios.get('/api/progressReading/checkStatus', {
@@ -97,6 +92,8 @@ function ArticleViewer({ article }) {
         });
     }
   }, [article?.id, user]);
+      
+
 
   // Updated handleMarkAsDone function to call your API
   const handleMarkAsDone = () => {
@@ -106,9 +103,7 @@ function ArticleViewer({ article }) {
       toast.error('User ID not found. Please log in again.');
       return;
     }
-
     setIsMarking(true);
-
     axios.post('/api/progressReading/markAsDone', null, {
       params: {
         userId: userId,
