@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { FiSearch } from 'react-icons/fi'
+import { FiSearch, FiCheck } from 'react-icons/fi'
 import { getPageContentReading } from '../../services/ContentReadingService'
 import ArticleList from './components/ArticleList'
 import ArticleViewer from './components/ArticleViewer'
 import axios from 'axios'
 import ReactPaginate from 'react-paginate'
+import { useAuth } from '../../context/AuthContext'
 
 // Hàm lấy categories từ backend
 const getContentReadingCategories = async () => {
@@ -13,6 +14,7 @@ const getContentReadingCategories = async () => {
 };
 
 function NewsPage() {
+  const { user } = useAuth();
   const [selectedArticle, setSelectedArticle] = useState(null)
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedCategory, setSelectedCategory] = useState('all')
@@ -20,9 +22,27 @@ function NewsPage() {
   const [categories, setCategories] = useState([{ id: 'all', name: 'All Categories' }])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
-  const [page, setPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
+  const [page, setPage] = useState(1)
+  const [totalPages, setTotalPages] = useState(1)
+  const [completedArticles, setCompletedArticles] = useState([])
+  const [showCompletedOnly, setShowCompletedOnly] = useState(false)
 
+  // Fetch completed articles for current user
+  useEffect(() => {
+    if (user?.id) {
+      axios.get('/progressReading/completed', {
+        params: { userId: user.id }
+      })
+      .then(res => {
+        // Giả sử API trả về mảng các ProgressContent có thuộc tính contentReadingId
+        setCompletedArticles(res.data.data.map(item => item.contentReadingId))
+      })
+      .catch(err => {
+        console.error('Error fetching completed articles:', err)
+      })
+    }
+  }, [user])
+  
   // Lấy categories từ backend
   useEffect(() => {
     async function fetchCategories() {
@@ -47,9 +67,9 @@ function NewsPage() {
       setError(null)
       try {
         const res = await getPageContentReading(page, 20)
-        console.log("API response:", res.data.content[0]); 
+        console.log("API response:", res.data.content[0]);
         const mapped = res.data.content.map(item => ({
-          id: item.contentReadingId, 
+          id: item.contentReadingId,
           title: item.title,
           titleJapanese: item.scriptJp,
           excerpt: item.scriptVn?.slice(0, 60) + '...',
@@ -76,14 +96,15 @@ function NewsPage() {
     fetchArticles()
   }, [page])
 
-  //khai báo filteredArticles
+  // Filter articles
   const filteredArticles = articles.filter(article => {
     const matchesSearch = article.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       (article.titleJapanese && article.titleJapanese.includes(searchTerm))
     const matchesCategory = selectedCategory === 'all' ||
       (article.category && article.category.toLowerCase() === selectedCategory.toLowerCase())
+    const matchesCompletion = !showCompletedOnly || completedArticles.includes(article.id)
 
-    return matchesSearch && matchesCategory
+    return matchesSearch && matchesCategory && matchesCompletion
   })
 
   const handlePageClick = (event) => {
@@ -102,6 +123,18 @@ function NewsPage() {
             Practice reading with current news articles
           </p>
         </motion.div>
+        
+        <button
+          onClick={() => setShowCompletedOnly(!showCompletedOnly)}
+          className={`flex items-center px-4 py-2 rounded-full text-sm font-medium ${
+            showCompletedOnly 
+              ? 'bg-green-100 text-green-800' 
+              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+          }`}
+        >
+          {/* {showCompletedOnly && <FiCheck className="mr-2" />}
+          {showCompletedOnly ? 'Showing Completed' : 'Show Completed Only'} */}
+        </button>
       </div>
 
       {loading ? (
@@ -133,11 +166,10 @@ function NewsPage() {
                     <button
                       key={category.id}
                       onClick={() => setSelectedCategory(category.id)}
-                      className={`px-3 py-1 rounded-full text-sm font-medium whitespace-nowrap ${
-                        selectedCategory === category.id
+                      className={`px-3 py-1 rounded-full text-sm font-medium whitespace-nowrap ${selectedCategory === category.id
                           ? 'bg-primary-500 text-white'
                           : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                      }`}
+                        }`}
                     >
                       {category.name}
                     </button>
@@ -148,6 +180,7 @@ function NewsPage() {
                 articles={filteredArticles}
                 selectedArticle={selectedArticle}
                 onArticleSelect={setSelectedArticle}
+                completedArticles={completedArticles}
               />
             </div>
             {/* Article viewer */}
