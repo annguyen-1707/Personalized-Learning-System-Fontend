@@ -511,7 +511,7 @@ function ListeningContentManagement() {
                         <audio controls className="w-32">
                           <source
                             src={`http://localhost:8080/audio/content_listening/${content.audioFile}`}
-                            type="audio/mpeg"
+                            type="audio/*"
                           />
                           Your browser does not support the audio element.
                         </audio>
