@@ -48,6 +48,7 @@ export default function UserManagement() {
     address: '',
     gender: '',
     membershipLevel: '',
+    dob: '',
   });
 
   // --- Helper Functions for Formatting Data ---
@@ -865,6 +866,20 @@ export default function UserManagement() {
                         onChange={(e) => setNewUser({ ...newUser, password: e.target.value })}
                         required
                         disabled={loading}
+                      />
+                    </div>
+                    <div>
+                      <label htmlFor="new-user-dob" className="block text-sm font-medium text-gray-700 mb-1">
+                        Date of Birth
+                      </label>
+                      <input
+                        id="new-user-dob"
+                        type="date"
+                        className="w-full border border-gray-300 p-2 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                        value={newUser.dob}
+                        onChange={(e) => setNewUser({ ...newUser, dob: e.target.value })}
+                        disabled={loading}
+                        required
                       />
                     </div>
                     <div>
