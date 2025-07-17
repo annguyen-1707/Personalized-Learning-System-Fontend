@@ -132,7 +132,13 @@ const getGrammarByContentReadingId = async (id) => {
 }
 
 const acceptContent = (id) => {
+    try {
     return axios.patch(`/api/content_reading/accept/${id}`)
+    } catch (error) {
+        const allErrors = error.response?.data?.message
+        console.log("All error", allErrors)
+        throw new Error(allErrors || "can not accept");
+    }
 }
 
 const rejectContent = (id) => {

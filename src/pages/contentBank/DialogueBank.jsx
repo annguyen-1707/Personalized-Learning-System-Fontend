@@ -1,17 +1,20 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { ArrowLeft, Plus, Edit, Trash2, Check, X, MessageSquare, Languages, Search } from 'lucide-react';
+import { ArrowLeft, Plus, Edit, Trash2, Check, X, MessageSquare, Languages, Search, ShieldX } from 'lucide-react';
 import {
     fetchDialoguePage,
     handleCreateDialogue,
     handleDeleteDialogue,
-    handleUpdateDialogue
+    handleUpdateDialogue,
+    inActiveDialogue,
+    acceptDialogue,
+    rejectDialogue
 } from '../../services/DialogueService';
 import ReactPaginate from 'react-paginate';
 import { getJlptLevel, getStatus } from '../../services/ContentListeningService';
 import { getContentSpeakingByLever } from '../../services/ContentSpeakingService';
 import { toast } from "react-toastify";
-
+import { useAuth } from '../../context/AuthContext';
 
 function DialogueManagement() {
     const [errorMessage, setErrorMessage] = useState("");
@@ -38,10 +41,24 @@ function DialogueManagement() {
         jlptLevel: '',
         contentSpeakingId: ''
     })
+    const { user } = useAuth();
+    const isStaff =
+        user &&
+        Array.isArray(user.role) &&
+        user.role.some(role =>
+            ["STAFF"].includes(role)
+        );
+    const isContentManagerment =
+        user &&
+        Array.isArray(user.role) &&
+        user.role.some(role =>
+            ["CONTENT_MANAGER"].includes(role)
+        );
     useEffect(() => {
         getDialoguePage(1);
         getListLever();
     }, [size]);
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         const updatedFormData = {
@@ -165,6 +182,22 @@ function DialogueManagement() {
             jlptLevel: newLever,
         }));
         await getListContentLisSpeaking(newLever);
+    }
+
+    const handleAccept = async (id) => {
+        await acceptDialogue(id);
+        await getDialoguePage(currentPage);
+
+    }
+
+    const handleReject = async (id) => {
+        await rejectDialogue(id)
+        await getDialoguePage(currentPage);
+    }
+
+    const handleInActive = async (id) => {
+        await inActiveDialogue(id);
+        await getDialoguePage(currentPage);
     }
 
     const handleWhenChooseContentSpeaking = async (newContent) => {
@@ -409,15 +442,67 @@ function DialogueManagement() {
                                     </div>
 
                                     <div className="mt-auto flex justify-end pt-4">
-                                        {dialogue.status != "PUBLIC" && (
-                                            <div className="flex gap-4 mt-2">
+                                        {isStaff && dialogue.status != "PUBLIC" && (
+                                            <button
+                                                onClick={() => startUpdate(dialogue)}
+                                                className="text-primary-600 hover:text-primary-800 mr-2"
+                                            >
+                                                <Edit size={16} />
+                                            </button>
+                                        )}
+                                        {isContentManagerment && dialogue.status === "DRAFT" && (
+                                            <div className="flex gap-3 mt-2">
                                                 <button
-                                                    onClick={() => startUpdate(dialogue)}
-                                                    className="text-primary-600 hover:text-primary-800 mr-2"
+                                                    onClick={() => handleAccept(dialogue.dialogueId)}
+                                                    className="flex items-center bg-green-600 hover:bg-green-700 text-white px-1 py-1 rounded"
                                                 >
-                                                    <Edit size={16} />
+                                                    <Check size={16} className="mr-1" />
+                                                    Accept
+                                                </button>
+
+                                                <button
+                                                    onClick={() => handleReject(dialogue.dialogueId)}
+                                                    className="flex items-center bg-red-600 hover:bg-red-700 text-white px-1 py-1 rounded"
+                                                >
+                                                    <X size={16} className="mr-1" />
+                                                    Reject
                                                 </button>
                                             </div>
+                                        )}
+                                        {isContentManagerment && dialogue.status === "PUBLIC" && (
+                                            <div className="flex gap-3 mt-2">
+                                                <button
+                                                    onClick={() => handleInActive(dialogue.dialogueId)}
+                                                    className="flex items-center bg-yellow-600 hover:bg-yellow-700 text-white px-1 py-1 rounded"
+                                                >
+                                                    <ShieldX size={16} className="mr-1" />
+                                                    In Active
+                                                </button>
+                                            </div>
+                                        )}
+                                        {showDeleteConfirm === dialogue.dialogueId ? (
+                                            <div className="flex items-center space-x-2">
+                                                <span className="text-xs text-gray-500">Delete?</span>
+                                                <button
+                                                    onClick={() => handleDelete(dialogue.dialogueId)}
+                                                    className="text-error-500 hover:text-error-700"
+                                                >
+                                                    <Check size={16} />
+                                                </button>
+                                                <button
+                                                    onClick={() => setShowDeleteConfirm(null)}
+                                                    className="text-gray-500 hover:text-gray-700"
+                                                >
+                                                    <X size={16} />
+                                                </button>
+                                            </div>
+                                        ) : (
+                                            <button
+                                                onClick={() => setShowDeleteConfirm(dialogue.dialogueId)}
+                                                className="text-error-500 hover:text-error-700 ml-2"
+                                            >
+                                                <Trash2 size={16} />
+                                            </button>
                                         )}
                                     </div>
                                 </div>

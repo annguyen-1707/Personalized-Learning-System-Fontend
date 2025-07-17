@@ -69,7 +69,6 @@ function NewsTranslationPage() {
               {article.content.map((section, index) => (
                 <div key={index} className="bg-gray-50 rounded-lg p-4">
                   <div className="text-lg text-primary-900 mb-2 font-bold">{section.japanese}</div>
-                  <div className="text-gray-900 mb-1">{section.japanese}</div>
                   <div className="text-gray-700">{section.english}</div>
                 </div>
               ))}

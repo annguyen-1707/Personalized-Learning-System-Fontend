@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Plus, Search, Edit, Trash2, Check, X, MessageSquare,ShieldX } from 'lucide-react';
+import { Plus, Search, Edit, Trash2, Check, X, MessageSquare, ShieldX } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import {
   getPageContentSpeaking, handleUpdateContent, fetchAllContentCategorySpeaking, handleCreateContent,
@@ -191,9 +191,13 @@ function SpeakingContentManagement() {
   }
 
   const handleAccept = async (id) => {
-    await acceptContent(id);
-    await getContentPage(currentPage);
-
+    try {
+      await acceptContent(id);
+      await getContentPage(currentPage);
+    } catch (error) {
+      console.error("Error accepting content:", error);
+      toast.error(error.message || "Failed to accept content.");
+    }
   }
 
   const handleReject = async (id) => {
@@ -472,15 +476,13 @@ function SpeakingContentManagement() {
                   </td>
 
                   <td className="px-4 py-2 space-y-1">
-                    {isContentManagerment && (
-                      <Link
-                        to={`/admin/content_speaking/${content.contentSpeakingId}/dialogue`}
-                        className="flex items-center text-blue-600 hover:underline mb-1"
-                      >
-                        <MessageSquare size={14} className="mr-1" />
-                        Dialogue
-                      </Link>
-                    )}
+                    <Link
+                      to={`/admin/content_speaking/${content.contentSpeakingId}/dialogue`}
+                      className="flex items-center text-blue-600 hover:underline mb-1"
+                    >
+                      <MessageSquare size={14} className="mr-1" />
+                      Dialogue
+                    </Link>
                     <div className="flex space-x-2">
                       {isStaff && content.status != 'PUBLIC' && (
                         <button

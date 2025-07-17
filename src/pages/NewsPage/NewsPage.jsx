@@ -1,11 +1,12 @@
-import { useState, useEffect } from 'react'
-import { motion } from 'framer-motion'
-import { FiSearch } from 'react-icons/fi'
-import { getPageContentReading } from '../../services/ContentReadingService'
-import ArticleList from './components/ArticleList'
-import ArticleViewer from './components/ArticleViewer'
-import axios from 'axios'
-import ReactPaginate from 'react-paginate'
+import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
+import { FiSearch, FiCheck } from "react-icons/fi";
+import { getPageContentReading } from "../../services/ContentReadingService";
+import ArticleList from "./components/ArticleList";
+import ArticleViewer from "./components/ArticleViewer";
+import axios from "../../services/customixe-axios"; 
+import ReactPaginate from "react-paginate";
+import { useAuth } from "../../context/AuthContext";
 
 // Hàm lấy categories từ backend
 const getContentReadingCategories = async () => {
@@ -13,15 +14,39 @@ const getContentReadingCategories = async () => {
 };
 
 function NewsPage() {
-  const [selectedArticle, setSelectedArticle] = useState(null)
-  const [searchTerm, setSearchTerm] = useState('')
-  const [selectedCategory, setSelectedCategory] = useState('all')
-  const [articles, setArticles] = useState([])
-  const [categories, setCategories] = useState([{ id: 'all', name: 'All Categories' }])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
+  const { user } = useAuth();
+  const [selectedArticle, setSelectedArticle] = useState(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("all");
+  const [articles, setArticles] = useState([]);
+  const [categories, setCategories] = useState([
+    { id: "all", name: "All Categories" },
+  ]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [completedArticles, setCompletedArticles] = useState(null);
+  const [showCompletedOnly, setShowCompletedOnly] = useState(false);
+
+  console.log("articles", articles);
+
+
+  useEffect(() => {
+    async function fetchCompletedArticles() {
+      try {
+        const res = await axios.get("/api/progressReading/completed");
+        setCompletedArticles(
+          res.data.map((item) => {
+            return item?.content?.contentId;
+          })
+        );
+      } catch (err) {
+        console.error("Error fetching completed articles:", err);
+      }
+    }
+    fetchCompletedArticles();
+  }, []);
 
   // Lấy categories từ backend
   useEffect(() => {
@@ -29,13 +54,16 @@ function NewsPage() {
       try {
         const res = await getContentReadingCategories();
         // res.data.data là mảng tên category dạng ["TECHNOLOGY", "SCIENCE", ...]
-        const backendCategories = res.data.data.map(cat => ({
+        const backendCategories = res.data.data.map((cat) => ({
           id: cat.toLowerCase(),
-          name: cat.charAt(0) + cat.slice(1).toLowerCase()
+          name: cat.charAt(0) + cat.slice(1).toLowerCase(),
         }));
-        setCategories([{ id: 'all', name: 'All Categories' }, ...backendCategories]);
+        setCategories([
+          { id: "all", name: "All Categories" },
+          ...backendCategories,
+        ]);
       } catch (err) {
-        setCategories([{ id: 'all', name: 'All Categories' }]);
+        setCategories([{ id: "all", name: "All Categories" }]);
       }
     }
     fetchCategories();
@@ -43,16 +71,15 @@ function NewsPage() {
 
   useEffect(() => {
     async function fetchArticles() {
-      setLoading(true)
-      setError(null)
+      setLoading(true);
+      setError(null);
       try {
-        const res = await getPageContentReading(page, 20)
-        console.log("API response:", res.data.content[0]); 
-        const mapped = res.data.content.map(item => ({
-          id: item.contentReadingId, 
+        const res = await getPageContentReading(page, 20);
+        const mapped = res.data.content.map((item) => ({
+          id: item.contentReadingId,
           title: item.title,
           titleJapanese: item.scriptJp,
-          excerpt: item.scriptVn?.slice(0, 60) + '...',
+          excerpt: item.scriptVn?.slice(0, 60) + "...",
           image: item.image,
           date: item.timeNew || item.createdAt,
           category: item.category,
@@ -61,30 +88,37 @@ function NewsPage() {
           content: [
             {
               japanese: item.scriptJp,
-              english: item.scriptVn
-            }
-          ]
-        }))
-        setArticles(mapped)
-        setTotalPages(res.data.totalPages || 1)
+              english: item.scriptVn,
+            },
+          ],
+          contentId: item?.content?.contentId,
+        }));
+        setArticles(mapped);
+        setTotalPages(res.data.totalPages || 1);
       } catch (err) {
-        setError('Failed to load articles')
+        setError("Failed to load articles");
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
     }
-    fetchArticles()
-  }, [page])
+    fetchArticles();
+  }, [page]);
 
-  //khai báo filteredArticles
-  const filteredArticles = articles.filter(article => {
-    const matchesSearch = article.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (article.titleJapanese && article.titleJapanese.includes(searchTerm))
-    const matchesCategory = selectedCategory === 'all' ||
-      (article.category && article.category.toLowerCase() === selectedCategory.toLowerCase())
 
-    return matchesSearch && matchesCategory
-  })
+  // Filter articles
+  const filteredArticles = articles.filter((article) => {
+    const matchesSearch =
+      article.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (article.titleJapanese && article.titleJapanese.includes(searchTerm));
+    const matchesCategory =
+      selectedCategory === "all" ||
+      (article.category &&
+        article.category.toLowerCase() === selectedCategory.toLowerCase());
+    const matchesCompletion =
+      !showCompletedOnly || completedArticles.includes(article.id);
+
+    return matchesSearch && matchesCategory && matchesCompletion;
+  });
 
   const handlePageClick = (event) => {
     setPage(event.selected + 1);
@@ -102,10 +136,24 @@ function NewsPage() {
             Practice reading with current news articles
           </p>
         </motion.div>
+
+        <button
+          onClick={() => setShowCompletedOnly(!showCompletedOnly)}
+          className={`flex items-center px-4 py-2 rounded-full text-sm font-medium ${
+            showCompletedOnly
+              ? "bg-green-100 text-green-800"
+              : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+          }`}
+        >
+          {showCompletedOnly && <FiCheck className="mr-2" />}
+          {showCompletedOnly ? 'Showing Completed' : 'Show Completed Only'}
+        </button>
       </div>
 
       {loading ? (
-        <div className="text-center py-10 text-gray-500">Loading articles...</div>
+        <div className="text-center py-10 text-gray-500">
+          Loading articles...
+        </div>
       ) : error ? (
         <div className="text-center py-10 text-red-500">{error}</div>
       ) : (
@@ -129,14 +177,14 @@ function NewsPage() {
                 </div>
                 {/* Nút chọn category */}
                 <div className="flex items-center space-x-2 overflow-x-auto pb-2">
-                  {categories.map(category => (
+                  {categories.map((category) => (
                     <button
                       key={category.id}
                       onClick={() => setSelectedCategory(category.id)}
                       className={`px-3 py-1 rounded-full text-sm font-medium whitespace-nowrap ${
                         selectedCategory === category.id
-                          ? 'bg-primary-500 text-white'
-                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                          ? "bg-primary-500 text-white"
+                          : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                       }`}
                     >
                       {category.name}
@@ -148,6 +196,7 @@ function NewsPage() {
                 articles={filteredArticles}
                 selectedArticle={selectedArticle}
                 onArticleSelect={setSelectedArticle}
+                completedArticles={completedArticles}
               />
             </div>
             {/* Article viewer */}
@@ -185,7 +234,7 @@ function NewsPage() {
         </>
       )}
     </div>
-  )
+  );
 }
 
 export default NewsPage;

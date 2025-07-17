@@ -16,6 +16,37 @@ const SpeakingDetailPage = () => {
     const [currentIndex, setCurrentIndex] = useState(0);
     const audioChunksRef = useRef([]);
     const [pronunciationResult, setPronunciationResult] = useState(null);
+    const [showTranslation, setShowTranslation] = useState(false);
+    const HighlightAnswerComparison = ({ answerJp, recognizedText }) => {
+        console.log("Recognized Text:", recognizedText);
+        console.log("Answer JP:", answerJp);
+        const matched = new Array(recognizedText?.length).fill(false);
+
+        const highlighted = answerJp?.split('').map((char, index) => {
+            const matchIndex = recognizedText?.split('').findIndex(
+                (rcChar, i) => rcChar === char && !matched[i]
+            );
+            if (matchIndex !== -1) {
+                matched[matchIndex] = true;
+                return (
+                    <span key={index} className="text-green-600 font-semibold">
+                        {char}
+                    </span>
+                );
+            } else {
+                return (
+                    <span key={index} className="text-red-500 font-semibold">
+                        {char}
+                    </span>
+                );
+            }
+        });
+        return (
+            <p className="text-gray-600 text-sm bg-gray-50 px-3 py-2 rounded border">
+                <p className="text-lg leading-relaxed">{highlighted}</p>
+            </p>
+        );
+    };
 
     useEffect(() => {
         getDialogueByContentSpeaking(); // Giả sử hàm này setListDialogue(...)
@@ -137,27 +168,47 @@ const SpeakingDetailPage = () => {
                         <p className="mt-2 opacity-90">{dialogue?.contentSpeaking.title}</p>
                     </div>
                     <span className="text-sm text-white">
-                        Câu {currentIndex + 1}/{listDialogue.length}
+                        Question {currentIndex + 1}/{listDialogue.length}
                     </span>
                 </div>
 
                 <div className="p-6 border rounded bg-white shadow">
-                    <div className="flex items-center justify-between mb-4">
-                        <div>
-                            <div className="text-xl text-primary-600">Japanese: {dialogue?.questionJp}</div>
-                            <div className="text-gray-600">Vietnamese: {dialogue?.questionVn}</div>
+                    <div className="flex items-start justify-between">
+                        {/* Câu hỏi + nút loa */}
+                        <div className="flex items-center gap-2">
+                            <span className="text-xl text-primary-600">
+                                Question: {dialogue?.questionJp}
+                            </span>
+                            <button
+                                onClick={() => playAudio(dialogue?.questionJp)}
+                                className="p-2 text-gray-500 hover:text-primary-500 rounded-full hover:bg-gray-100"
+                            >
+                                <FiVolume2 className="h-5 w-5" />
+                            </button>
                         </div>
+
+                        {/* Nút hiện bản dịch */}
                         <button
-                            onClick={() => { playAudio(dialogue?.questionJp) }}
-                            className="p-2 text-gray-500 hover:text-primary-500 rounded-full hover:bg-gray-100"
+                            onClick={() => setShowTranslation(prev => !prev)}
+                            className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition ml-4"
                         >
-                            <FiVolume2 className="h-5 w-5" />
+                            {showTranslation ? "Hidden translation" : "Display translation"}
                         </button>
                     </div>
-                    <div className="text-xl text-primary-600">Japanese: {dialogue?.answerJp}</div>
-                    <div className="text-gray-600 mb-6">Vietnamese: {dialogue?.answerVn}</div>
 
-                    <div className="flex flex-col items-center">
+                    {/* Bản dịch */}
+                    <div className="min-h-[24px] text-gray-600 mb-4">
+                        {showTranslation && (
+                            <div>Vietnamese: {dialogue?.questionVn}</div>
+                        )}
+                    </div>
+                    <div className="text-xl text-primary-600">Answer: {dialogue?.answerJp}</div>
+                    <div className="min-h-[24px] text-gray-600 mb-4">
+                        {showTranslation && (
+                            <div>Vietnamese: {dialogue?.answerVn}</div>
+                        )}
+                    </div>
+                    <div className="flex flex-col items-center mt-6">
                         <button
                             onClick={handleVoiceClick}
                             className={`p-6 rounded-full ${isRecording ? 'bg-error-100 text-error-600 animate-pulse' : 'bg-primary-500 text-white hover:bg-primary-600'}`}
@@ -169,11 +220,10 @@ const SpeakingDetailPage = () => {
                         </div>
                         <div className="mt-1 text-sm text-gray-500">Attempts: {attempts}</div>
                     </div>
-
                     <div className="mt-6 bg-gray-50 rounded-lg p-4">
                         <h3 className="text-sm font-medium text-gray-900 mb-2">Speaking Tips</h3>
                         <ul className="space-y-2 text-sm text-gray-600">
-                            <li className="flex items-start"><FiRepeat className="h-4 w-4 mt-1 mr-2 text-primary-500" />Listen to the example and try to mimic the intonation</li>
+                            <li className="flex items-start"><FiRepeat className="h-4 w-4 mt-1 mr-2 text-primary-500" />Listen to question and try to mimic the intonation</li>
                             <li className="flex items-start"><FiRepeat className="h-4 w-4 mt-1 mr-2 text-primary-500" />Pay attention to the pitch accent of each word</li>
                             <li className="flex items-start"><FiRepeat className="h-4 w-4 mt-1 mr-2 text-primary-500" />Practice at a slower pace first, then increase speed</li>
                         </ul>
@@ -195,8 +245,8 @@ const SpeakingDetailPage = () => {
             </div>
 
             {/* Result Panel 1/3 */}
-            <div className="w-1/3 bg-white p-4 rounded shadow">
-                <h3 className="text-lg font-semibold text-gray-800 mb-4">Pronunciation Result</h3>
+            <div className="w-1/3 bg-white p-3 rounded shadow">
+                <h3 className="text-lg font-semibold text-gray-800 mb-2">Pronunciation Result</h3>
                 {pronunciationResult ? (
                     <div className="space-y-4 text-sm text-gray-700">
                         <div className="flex flex-wrap gap-4 justify-center mb-4">
@@ -235,6 +285,14 @@ const SpeakingDetailPage = () => {
                             <p className="text-gray-600 text-sm bg-gray-50 px-3 py-2 rounded border">
                                 {pronunciationResult.recognizedText}
                             </p>
+                        </div>
+
+                        <div className="mt-2">
+                            <p className="font-medium text-gray-800 mb-2">Compare with answer:</p>
+                            <HighlightAnswerComparison
+                                answerJp={dialogue.answerJp}
+                                recognizedText={pronunciationResult.recognizedText}
+                            />
                         </div>
 
                         {/* Advice */}
