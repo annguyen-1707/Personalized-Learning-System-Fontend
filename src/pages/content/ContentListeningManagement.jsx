@@ -392,7 +392,7 @@ function ListeningContentManagement() {
                 {previewAudio && (
                   <div style={{ marginTop: "10px" }}>
                     <audio key={previewAudio} controls>
-                      <source src={previewAudio} type="audio/mpeg" />
+                      <source src={previewAudio} type="audio/*" />
                       Your browser does not support the audio element.
                     </audio>
                   </div>

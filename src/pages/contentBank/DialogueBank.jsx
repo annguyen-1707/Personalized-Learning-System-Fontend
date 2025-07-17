@@ -398,7 +398,7 @@ function DialogueManagement() {
                         {filteredDialogues.map((dialogue, index) => (
                             <div key={dialogue.dialogueId || index} className="p-6 border rounded-lg shadow hover:bg-gray-50">
                                 <div className="flex flex-col h-full">
-                                    <div className="flex items-center justify-between mb-4">
+                                    <div className="flex items-center justify-between mb-2">
                                         {/* Category badge */}
                                         <div className="flex items-center">
                                             <MessageSquare className="h-5 w-5 text-primary-600 mr-2" />
@@ -421,7 +421,11 @@ function DialogueManagement() {
                                             {dialogue.status}
                                         </span>
                                     </div>
-
+                                    <div className='mb-3'>
+                                        <p className="text-lg font-semibold text-gray-800 uppercase">
+                                            Content Speaking: {dialogue.contentSpeaking.title}
+                                        </p>
+                                    </div>
                                     <div className="grid grid-cols-1 gap-4 flex-1">
                                         <div>
                                             <p className="text-sm font-medium text-gray-500">Question (Japanese)</p>
