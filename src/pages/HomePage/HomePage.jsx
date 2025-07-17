@@ -42,7 +42,6 @@ function HomePage() {
 
   return (
     <CodeVerificationOverlay>
-
       <div className="space-y-16">
         <HeroSection />
 

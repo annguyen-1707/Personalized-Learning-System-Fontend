@@ -20,27 +20,7 @@ function AwaitEmailConfirmation() {
       });
     });
     return () => websocket.disconnect();
-    // const interval = setInterval(async () => {
-    //   try {
-    //     const response = await fetch(`http://localhost:8080/auth?email=${encodeURIComponent(email)}`, {
-    //       method: 'GET',
-    //       headers: { 'X-Requested-With': 'XMLHttpRequest' }
-    //     });
 
-    //     if (response.ok) {
-    //       localStorage.setItem("email", email);
-    //       const data = await response.json();
-    //       if (data.data === 'Registered') {
-    //         clearInterval(interval);
-    //         navigate('/register2');
-    //       }
-    //     }
-    //   } catch (err) {
-    //     console.error('Lỗi khi kiểm tra xác nhận email:', err);
-    //   }
-    // }, 3000);
-
-    // return () => clearInterval(interval);
   }, [email, navigate]);
 
   const handleResendEmail = async () => {

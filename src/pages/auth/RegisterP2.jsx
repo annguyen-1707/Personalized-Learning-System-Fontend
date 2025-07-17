@@ -81,14 +81,8 @@ function RegisterP2() {
           console.log("ádasddasd", userData.data.parents)
           if (role === "PARENT") {
             navigate("/parentpage");
-          } else if (role === "USER") {
+          } else {
             navigate("/");
-          }
-          else {
-            if (!errors || !typeof errors === 'object' || !Object.keys(errors).length > 0) {
-              navigate("/admin");
-            }
-
           }
 
         } catch (error) {
@@ -99,6 +93,10 @@ function RegisterP2() {
         return;
       }
       else {
+        if (accessToken) {
+          navigate('/parentPage');
+          return;
+        }
         navigate('/login', { state: { successMessage: 'Register Successfully' } });
       }
 
