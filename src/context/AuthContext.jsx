@@ -163,7 +163,6 @@ export function AuthProvider({ children }) {
         throw new Error(userData.message || 'Failed to fetch user data');
       }
       setUser(userData.data);
-      console.log("User data:", user);
       const role = userData.data.roleName;
       if (role === "PARENT") {
         navigate("/parentpage");
@@ -238,8 +237,6 @@ export function AuthProvider({ children }) {
       setLoading(false);
     }
   };
-
-
 
   const register1 = async (email, password) => {
     setLoading(true);

@@ -64,6 +64,7 @@ import AccessDeniedUserPage from "./pages/auth/DenyUser.jsx";
 import UserRoute from "./context/UserRoute.jsx";
 import ChatComponent from "./ChatComponent.jsx";
 import ExerciseResultDetails from "./pages/LearningPage/components/ExerciseResultDetails.jsx";
+import ParentRoute from "./context/ParentRoute.jsx";
 
 function App() {
   const [notificationOpen, setNotificationOpen] = useState(false);
@@ -125,6 +126,10 @@ function App() {
               { /*Speaking */}
               <Route path="speaking" element={<SpeakingPage />} />
               <Route path="speaking/detail/:contentSpeakingId" element={<SpeakingDetailPage />} />
+              <Route path="upgrade" element={<UpgradePage />} />
+
+              {/* Routes cho người dùng đã đăng nhập */}
+
             </Route>
           </Route>
           <Route
@@ -138,23 +143,15 @@ function App() {
           </Route>
 
           {/* Trang chính */}
-          <Route path="upgrade" element={<UpgradePage />} />
           <Route path="vnpay-return" element={<VnpayReturn />} />
 
           {/* Routes cho phụ huynh */}
-          <Route
-            path="/"
-            element={
-              <LayoutParent
-                onNotificationClick={() => setNotificationOpen(true)}
-              />
-            }
-          >
-            <Route path="parentPage" element={<ParentPage />} />
-            <Route
-              path="parentPage/:studentId/view_children"
-              element={<ViewChildren />}
-            />
+          <Route path="/" element={<LayoutParent onNotificationClick={() => setNotificationOpen(true)} />}>
+            <Route path="/parentPage" element={<ParentRoute />} >           
+             <Route index element={<ParentPage />} />
+              <Route path=":studentId/view_children" element={<ViewChildren/>} />
+            </Route>
+
           </Route>
 
           {/* Các route độc lập (không dùng Layout) */}

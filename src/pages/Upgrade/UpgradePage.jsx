@@ -1,4 +1,4 @@
-import { Link, useLocation } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { useEffect, useState } from 'react'
 import axios from '../../services/customixe-axios'
@@ -9,15 +9,15 @@ function UpgradePage() {
   const [text, setText] = useState('');
   const location = useLocation(); // để lấy location.state
   const [notification, setNotification] = useState('');
-  
-  
+  const navigate = useNavigate();
+
 
 
 
   const handleBuy = async (amount, userIdParam) => {
     // const accessToken = localStorage.getItem('accessToken');
     const userId = location.state?.userId ?? userIdParam;
-   
+
     try {
       const inforData = await axios.get(`/api/payment/getMembershipOfUser`)
       let confirmed = false;
@@ -119,17 +119,16 @@ function UpgradePage() {
           </button>
         </div>
       )}
-
       {/* Hero Section */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         className="text-center py-12"
       >
-        <h1 className="text-4xl font-bold text-gray-900 mb-4">
+        <h1 className="text-5xl text-yellow-300 font-bold text-gray-900 mb-4">
           Upgrade to Premium
         </h1>
-        <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+        <p className="text-2xl text-gray-600 max-w-2xl mx-auto">
           Take your Japanese learning to the next level with our premium features
           and personalized support.
         </p>

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import axios from 'axios';
+import { useAuth } from '../../context/AuthContext';
 import {
   FiSearch,
   FiFilter,
@@ -65,6 +66,9 @@ function FavoriteFolderDetailsPage() {
   // Options for filters
   const [levels, setLevels] = useState([{ id: 'all', name: 'All Levels' }]);
   const [categories, setCategories] = useState([{ id: 'all', name: 'All Categories' }]);
+  const { user } = useAuth(); // Get user info from AuthContext
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+
 
   // Color map
   const jlptColorMap = {
@@ -76,11 +80,21 @@ function FavoriteFolderDetailsPage() {
   };
 
   // Navigate to flashcards
-  const goToFlashcards = () =>
-    navigate(`/flashcards?type=${activeTab}&favoriteListId=${folderId}`);
+  const goToFlashcards = () => {
+    if (user?.membershipLevel === 'NORMAL') {
+      setShowUpgradeModal(true);
+    } else {
+      navigate(`/flashcards?type=${activeTab}&favoriteListId=${folderId}`);
+    }
+  };
 
-  const goToQuiz = () =>
-    navigate(`/quiz?type=${activeTab}&favoriteListId=${folderId}`);
+  const goToQuiz = () => {
+    if (user?.membershipLevel === 'NORMAL') {
+      setShowUpgradeModal(true);
+    } else {
+      navigate(`/quiz?type=${activeTab}&favoriteListId=${folderId}`);
+    }
+  };
 
   // Fetch filter options for JLPT & POS
   useEffect(() => {
@@ -440,6 +454,35 @@ function FavoriteFolderDetailsPage() {
 
   return (
     <>
+      {showUpgradeModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+          <div className="bg-white p-6 rounded-lg shadow-lg max-w-sm w-full relative">
+            <button
+              className="absolute top-2 right-2 text-gray-500 hover:text-gray-800"
+              onClick={() => setShowUpgradeModal(false)}
+            >
+              ✕
+            </button>
+            <h2 className="text-xl font-semibold text-center text-red-600 mb-3">
+              VIP Feature
+            </h2>
+            <p className="text-gray-700 text-center mb-5">
+              This feature is only available for Premium users. Please upgrade your membership to unlock it.
+            </p>
+            <div className="flex justify-center">
+              <button
+                onClick={() => {
+                  setShowUpgradeModal(false);
+                  navigate('/upgrade');
+                }}
+                className="px-4 py-2 rounded bg-yellow-500 hover:bg-yellow-600 text-white font-medium"
+              >
+                Upgrade Now
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       {/* Add/Edit Modal */}
       {showModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
