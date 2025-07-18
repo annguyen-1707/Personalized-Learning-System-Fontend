@@ -15,11 +15,11 @@ export default function ParentVerificationOverlay({ children }) {
   const { user, setUser, loading } = useAuth();
 
 
-  useEffect(() => {
-    if (!loading && user.roleName === 'PARENT'  ) {
-      handleLogout();       
-    }
-  }, []);
+  // useEffect(() => {
+  //   if (!loading && user.roleName === 'PARENT'  ) {
+  //     handleLogout();       
+  //   }
+  // }, []);
   
   const handleSubmit = async (e) => {
     e.preventDefault();
