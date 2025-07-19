@@ -900,7 +900,7 @@ function FavoriteFolderDetailsPage() {
                     }
                   />
                 </button>
-                <button
+                {/* <button
                   onClick={() => openEditModal(item)}
                   className="p-1 rounded-full hover:bg-gray-100 transition-colors"
                   aria-label="Edit item"
@@ -913,7 +913,7 @@ function FavoriteFolderDetailsPage() {
                   aria-label="Delete item"
                 >
                   <FiTrash2 size={20} />
-                </button>
+                </button> */}
               </div>
             </motion.div>
           ))
