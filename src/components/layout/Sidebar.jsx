@@ -17,7 +17,7 @@ function Sidebar({ sidebarOpen, setSidebarOpen }) {
     { name: 'News', href: '/news', icon: FiGlobe },
     { name: 'Listening', href: '/listening', icon: FiHeadphones },
     { name: 'Speaking', href: '/speaking', icon: FiMic },
-    { name: 'Name Translation', href: '/name-translation', icon: FiType },
+    // { name: 'Name Translation', href: '/name-translation', icon: FiType },
     { name: 'Upgrade', href: '/upgrade', icon: FiStar },
   ]
 
