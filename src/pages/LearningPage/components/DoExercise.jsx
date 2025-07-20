@@ -99,7 +99,6 @@ function DoExercise() {
         setFormExerciseResult(finalFormResult);
         setFormExerciseResultDetails(finalFormDetails);
         setShowResults(true);
-        console.log("Exercise result submitted successfully:", response);
       })
       .catch((error) => {
         console.error("Error submitting exercise result:", error);
