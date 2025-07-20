@@ -1470,9 +1470,6 @@ function ContentManagement() {
                 >
                   Cancel
                 </button>
-                <button type="submit" className="btn-primary">
-                  {isAdding ? "Add" : "Save Changes"}
-                </button>
               </div>
             </form>
           </div>

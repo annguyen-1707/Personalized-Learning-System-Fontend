@@ -19,7 +19,6 @@ function CourseCard({ subject, selected, progressStatus }) {
     if (selected === "all") {
       setShowEnrollDialog(true);
     } else {
-      console.log("Selected course:", subject?.subjectId);
       await enrollInCourse(subject?.subjectId);
       window.location.href = `/learning/${subject?.subjectId}`;
     }
