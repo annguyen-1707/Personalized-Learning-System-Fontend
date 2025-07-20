@@ -12,7 +12,6 @@ import {
 } from "lucide-react";
 import ReactPaginate from "react-paginate";
 import { g } from "framer-motion/client";
-import { acceptQuestion, rejectQuestion } from "../../services/QuestionService";
 import { useAuth } from "../../context/AuthContext";
 
 function ExerciseManagement() {
@@ -97,16 +96,6 @@ function ExerciseManagement() {
       </div>
     );
   }
-
-  const handleAccept = async (id) => {
-    await acceptQuestion(id);
-    await getLessonExercises(currentPage);
-  };
-
-  const handleReject = async (id) => {
-    await rejectQuestion(id);
-    await getLessonExercises(currentPage);
-  };
 
   const renderContent = () => {
     return (

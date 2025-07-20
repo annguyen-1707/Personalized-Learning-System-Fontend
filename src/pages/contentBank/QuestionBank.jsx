@@ -2,12 +2,11 @@ import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { ArrowLeft, Plus, Edit, Trash2, Check, X, Search, Dumbbell, Headphones, ShieldX } from 'lucide-react';
 import {
-  getQuestionPageFromAPI, handleCreateQuestion, handleDeleteQuestion, handleUpdateQuestion, acceptQuestion,
-  rejectQuestion,
+  getQuestionPageFromAPI, handleCreateQuestion, handleDeleteQuestion, handleUpdateQuestion,
   getLessonBySubjectIdFromAPI,
   getListAllSubjectFromAPI,
   getExerciseByLessonIdFromAPI,
-  getContentListeningByLeverFromAPI, inActiveQuestion
+  getContentListeningByLeverFromAPI
 } from '../../services/QuestionService';
 import ReactPaginate from 'react-paginate';
 import { toast } from "react-toastify";
@@ -87,7 +86,8 @@ function QuestionManagement() {
     questionText: '',
     answerQuestions: [{ answerText: '', correct: false }],
     contentListeningId: '',
-    exerciseId: ''
+    exerciseId: '',
+    type: ''
   });
   const { user } = useAuth();
   const isStaff =
@@ -178,7 +178,8 @@ function QuestionManagement() {
     const updatedFormData = {
       ...formData,
       contentListeningId: formChoose.contentListeningId,
-      exerciseId: formChoose.exerciseId
+      exerciseId: formChoose.exerciseId,
+      type: formChoose.type,
     };
     if (isAdding) {
       setFormData(updatedFormData);
@@ -255,7 +256,7 @@ function QuestionManagement() {
       lessonId: ''
     });
 
-    if (newType === 'content') {
+    if (newType === 'contentListening') {
       await getListLever();     // ví dụ lấy danh sách level JLPT
     } else if (newType === 'exercise') {
       await getListSubject();   // ví dụ lấy danh sách môn học
@@ -314,22 +315,6 @@ function QuestionManagement() {
       jlptLevel: '',
       exerciseId: newExercise,
     }));
-  }
-
-  const handleAccept = async (id) => {
-    await acceptQuestion(id);
-    await getQuestionPage(currentPage);
-
-  }
-
-  const handleReject = async (id) => {
-    await rejectQuestion(id)
-    await getQuestionPage(currentPage);
-  }
-
-  const handleInActive = async (id) => {
-    await inActiveQuestion(id);
-    await getQuestionPage(currentPage);
   }
 
   return (
@@ -488,13 +473,13 @@ function QuestionManagement() {
                   className="border p-2 ml-2"
                 >
                   <option value="">-- Select Type --</option>
-                  <option value="content">Content Listening</option>
+                  <option value="contentListening">Content Listening</option>
                   <option value="exercise">Exercise</option>
                 </select>
               </div>
 
-              {/* Nếu type = content => chọn JLPT Level */}
-              {formChoose.type === 'content' && (
+              {/* Nếu type = contentListening => chọn JLPT Level */}
+              {formChoose.type === 'contentListening' && (
                 <>
                   <div>
                     <label>JLPT Level:</label>
@@ -510,7 +495,7 @@ function QuestionManagement() {
                     </select>
                   </div>
 
-                  {/* Nếu đã chọn level thì hiển thị chọn content */}
+                  {/* Nếu đã chọn level thì hiển thị chọn contentListening */}
                   {formChoose.jlptLevel && (
                     <div>
                       <label>Content Listening:</label>
@@ -631,27 +616,11 @@ function QuestionManagement() {
                   </div>
                 )}
 
-                {/* Question + Status */}
+                {/* Question */}
                 <div className="flex items-center justify-between mb-3">
                   <p className="text-sm font-semibold text-gray-900">
                     {question.questionText}
                   </p>
-                  <span
-                    className={`
-                text-xs font-semibold px-2 py-1 rounded-full
-                ${question.status === 'DRAFT'
-                        ? 'bg-gray-200 text-gray-700'
-                        : question.status === 'REJECT'
-                          ? 'bg-red-200 text-red-700'
-                          : question.status === 'PUBLIC'
-                            ? 'bg-green-200 text-green-700'
-                            : question.status === "IN_ACTIVE"
-                              ? "bg-yellow-100 text-yellow-700"
-                              : 'bg-gray-100 text-gray-500'}
-              `}
-                  >
-                    {question.status}
-                  </span>
                 </div>
 
                 {/* Answer list */}
@@ -679,44 +648,13 @@ function QuestionManagement() {
 
                 {/* Action buttons */}
                 <div className="flex justify-end pt-4 space-x-2">
-                  {(isContentManagerment && question.status === 'PUBLIC') && (
-                    <div className="flex gap-4 mt-2">
-                      <button
-                        onClick={() => handleInActive(question.exerciseQuestionId)}
-                        className="flex items-center bg-yellow-600 hover:bg-yellow-700 text-white px-1 py-1 rounded"
-                      >
-                        <ShieldX size={16} className="mr-1" />
-                        In Active
-                      </button>
-                    </div>
-                  )}
-                  {(isContentManagerment && question.status === 'DRAFT') && (
-                    <div className="flex gap-3 mt-2">
-                      <button
-                        onClick={() => handleAccept(question.exerciseQuestionId)}
-                        className="flex items-center bg-green-600 hover:bg-green-700 text-white px-1 py-1 rounded"
-                      >
-                        <Check size={16} className="mr-1" />
-                        Accept
-                      </button>
-
-                      <button
-                        onClick={() => handleReject(question.exerciseQuestionId)}
-                        className="flex items-center bg-red-600 hover:bg-red-700 text-white px-1 py-1 rounded"
-                      >
-                        <X size={16} className="mr-1" />
-                        Reject
-                      </button>
-                    </div>
-                  )}
-                  {(isStaff && question.status != 'PUBLIC') && (
+                
                     <button
                       onClick={() => startUpdate(question)}
                       className="text-blue-600 hover:text-blue-800"
                     >
                       <Edit size={16} />
                     </button>
-                  )}
                   {showDeleteConfirm === question.exerciseQuestionId ? (
                     <>
                       <button

@@ -5,10 +5,7 @@ import {
     fetchDialoguePage,
     handleCreateDialogue,
     handleDeleteDialogue,
-    handleUpdateDialogue,
-    inActiveDialogue,
-    acceptDialogue,
-    rejectDialogue
+    handleUpdateDialogue
 } from '../../services/DialogueService';
 import ReactPaginate from 'react-paginate';
 import { getJlptLevel, getStatus } from '../../services/ContentListeningService';
@@ -184,22 +181,6 @@ function DialogueManagement() {
         await getListContentLisSpeaking(newLever);
     }
 
-    const handleAccept = async (id) => {
-        await acceptDialogue(id);
-        await getDialoguePage(currentPage);
-
-    }
-
-    const handleReject = async (id) => {
-        await rejectDialogue(id)
-        await getDialoguePage(currentPage);
-    }
-
-    const handleInActive = async (id) => {
-        await inActiveDialogue(id);
-        await getDialoguePage(currentPage);
-    }
-
     const handleWhenChooseContentSpeaking = async (newContent) => {
         setFormChoose(prev => ({
             ...prev,
@@ -211,11 +192,6 @@ function DialogueManagement() {
     return (
         <div className="animate-fade-in">
             <div className="mb-6">
-                <Link to="/admin/content_speaking" className="inline-flex items-center text-primary-600 hover:text-primary-800 mb-4">
-                    <ArrowLeft size={16} className="mr-1" />
-                    Back to Speaking Content
-                </Link>
-
                 <div className="flex justify-between items-center">
                     <div>
                         <h1 className="text-2xl font-bold text-gray-900">Dialogue Management</h1>
@@ -393,131 +369,81 @@ function DialogueManagement() {
 
             {/* Dialogues List */}
             <div className="card mb-4">
-                {filteredDialogues?.length > 0 ? (
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        {filteredDialogues.map((dialogue, index) => (
-                            <div key={dialogue.dialogueId || index} className="p-6 border rounded-lg shadow hover:bg-gray-50">
-                                <div className="flex flex-col h-full">
-                                    <div className="flex items-center justify-between mb-2">
-                                        {/* Category badge */}
-                                        <div className="flex items-center">
-                                            <MessageSquare className="h-5 w-5 text-primary-600 mr-2" />
-                                            <span className="badge bg-primary-50 text-primary-700">
-                                                {dialogue?.contentSpeaking?.category}
-                                            </span>
-                                        </div>
-
-                                        {/* Status badge */}
-                                        <span
-                                            className={`text-xs px-2 py-1 rounded font-medium ${dialogue.status === "PUBLIC"
-                                                ? "bg-green-100 text-green-700"
-                                                : dialogue.status === "REJECT"
-                                                    ? "bg-red-100 text-red-700"
-                                                    : dialogue.status === "IN_ACTIVE"
-                                                        ? "bg-yellow-100 text-yellow-700"
-                                                        : "bg-gray-100 text-gray-700"
-                                                }`}
-                                        >
-                                            {dialogue.status}
-                                        </span>
-                                    </div>
-                                    <div className='mb-3'>
-                                        <p className="text-lg font-semibold text-gray-800 uppercase">
-                                            Content Speaking: {dialogue.contentSpeaking.title}
-                                        </p>
-                                    </div>
-                                    <div className="grid grid-cols-1 gap-4 flex-1">
-                                        <div>
-                                            <p className="text-sm font-medium text-gray-500">Question (Japanese)</p>
-                                            <p className="text-gray-900">{dialogue.questionJp}</p>
-                                        </div>
-                                        <div>
-                                            <p className="text-sm font-medium text-gray-500">Question (Vietnamese)</p>
-                                            <p className="text-gray-700">{dialogue.questionVn}</p>
-                                        </div>
-                                        <div>
-                                            <p className="text-sm font-medium text-gray-500">Answer (Japanese)</p>
-                                            <p className="text-gray-900">{dialogue.answerJp}</p>
-                                        </div>
-                                        <div>
-                                            <p className="text-sm font-medium text-gray-500">Answer (Vietnamese)</p>
-                                            <p className="text-gray-700">{dialogue.answerVn}</p>
-                                        </div>
-                                    </div>
-
-                                    <div className="mt-auto flex justify-end pt-4">
-                                        {isStaff && dialogue.status != "PUBLIC" && (
-                                            <button
-                                                onClick={() => startUpdate(dialogue)}
-                                                className="text-primary-600 hover:text-primary-800 mr-2"
-                                            >
-                                                <Edit size={16} />
-                                            </button>
-                                        )}
-                                        {isContentManagerment && dialogue.status === "DRAFT" && (
-                                            <div className="flex gap-3 mt-2">
-                                                <button
-                                                    onClick={() => handleAccept(dialogue.dialogueId)}
-                                                    className="flex items-center bg-green-600 hover:bg-green-700 text-white px-1 py-1 rounded"
-                                                >
-                                                    <Check size={16} className="mr-1" />
-                                                    Accept
-                                                </button>
-
-                                                <button
-                                                    onClick={() => handleReject(dialogue.dialogueId)}
-                                                    className="flex items-center bg-red-600 hover:bg-red-700 text-white px-1 py-1 rounded"
-                                                >
-                                                    <X size={16} className="mr-1" />
-                                                    Reject
-                                                </button>
+                <div className="overflow-x-auto">
+                    {filteredDialogues?.length > 0 ? (
+                        <table className="min-w-full divide-y divide-gray-200 text-sm">
+                            <thead className="bg-gray-50">
+                                <tr>
+                                    <th className="px-4 py-2 text-left font-medium text-gray-700">Title</th>
+                                    <th className="px-4 py-2 text-left font-medium text-gray-700">Question (JP)</th>
+                                    <th className="px-4 py-2 text-left font-medium text-gray-700">Question (VN)</th>
+                                    <th className="px-4 py-2 text-left font-medium text-gray-700">Answer (JP)</th>
+                                    <th className="px-4 py-2 text-left font-medium text-gray-700">Answer (VN)</th>
+                                    <th className="px-4 py-2 text-left font-medium text-gray-700 min-w-[120px]">Category</th>
+                                    <th className="px-4 py-2 text-left font-medium text-gray-700">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-gray-100">
+                                {filteredDialogues.map((dialogue, index) => (
+                                    <tr key={dialogue.dialogueId || index} className="hover:bg-gray-50">
+                                        <td className="px-4 py-2 text-gray-800">
+                                            <div className="flex items-center">
+                                                <MessageSquare className="h-4 w-4 text-primary-600 mr-1" />
+                                                <span className="bg-primary-50 text-primary-700 px-2 py-1 rounded text-xs">
+                                                    {dialogue?.contentSpeaking?.category}
+                                                </span>
                                             </div>
-                                        )}
-                                        {isContentManagerment && dialogue.status === "PUBLIC" && (
-                                            <div className="flex gap-3 mt-2">
-                                                <button
-                                                    onClick={() => handleInActive(dialogue.dialogueId)}
-                                                    className="flex items-center bg-yellow-600 hover:bg-yellow-700 text-white px-1 py-1 rounded"
-                                                >
-                                                    <ShieldX size={16} className="mr-1" />
-                                                    In Active
-                                                </button>
-                                            </div>
-                                        )}
-                                        {showDeleteConfirm === dialogue.dialogueId ? (
+                                        </td>
+                                        <td className="px-4 py-2 font-medium text-gray-900">
+                                            {dialogue?.contentSpeaking?.title}
+                                        </td>
+                                        <td className="px-4 py-2 text-gray-900">{dialogue.questionJp}</td>
+                                        <td className="px-4 py-2 text-gray-700">{dialogue.questionVn}</td>
+                                        <td className="px-4 py-2 text-gray-900">{dialogue.answerJp}</td>
+                                        <td className="px-4 py-2 text-gray-700">{dialogue.answerVn}</td>
+                                        <td className="px-4 py-2">
                                             <div className="flex items-center space-x-2">
-                                                <span className="text-xs text-gray-500">Delete?</span>
                                                 <button
-                                                    onClick={() => handleDelete(dialogue.dialogueId)}
-                                                    className="text-error-500 hover:text-error-700"
+                                                    onClick={() => startUpdate(dialogue)}
+                                                    className="text-primary-600 hover:text-primary-800"
                                                 >
-                                                    <Check size={16} />
+                                                    <Edit size={16} />
                                                 </button>
-                                                <button
-                                                    onClick={() => setShowDeleteConfirm(null)}
-                                                    className="text-gray-500 hover:text-gray-700"
-                                                >
-                                                    <X size={16} />
-                                                </button>
+                                                {showDeleteConfirm === dialogue.dialogueId ? (
+                                                    <>
+                                                        <button
+                                                            onClick={() => handleDelete(dialogue.dialogueId)}
+                                                            className="text-error-500 hover:text-error-700"
+                                                        >
+                                                            <Check size={16} />
+                                                        </button>
+                                                        <button
+                                                            onClick={() => setShowDeleteConfirm(null)}
+                                                            className="text-gray-500 hover:text-gray-700"
+                                                        >
+                                                            <X size={16} />
+                                                        </button>
+                                                    </>
+                                                ) : (
+                                                    <button
+                                                        onClick={() => setShowDeleteConfirm(dialogue.dialogueId)}
+                                                        className="text-error-500 hover:text-error-700"
+                                                    >
+                                                        <Trash2 size={16} />
+                                                    </button>
+                                                )}
                                             </div>
-                                        ) : (
-                                            <button
-                                                onClick={() => setShowDeleteConfirm(dialogue.dialogueId)}
-                                                className="text-error-500 hover:text-error-700 ml-2"
-                                            >
-                                                <Trash2 size={16} />
-                                            </button>
-                                        )}
-                                    </div>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                ) : (
-                    <div className="p-6 text-center text-gray-500">
-                        <p>No dialogues found. Please add a new dialogue.</p>
-                    </div>
-                )}
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    ) : (
+                        <div className="p-6 text-center text-gray-500">
+                            No dialogues found. Please add a new dialogue.
+                        </div>
+                    )}
+                </div>
             </div>
 
             {/* Phan trang */}
