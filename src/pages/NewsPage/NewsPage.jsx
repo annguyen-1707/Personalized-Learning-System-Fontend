@@ -74,7 +74,7 @@ function NewsPage() {
       setLoading(true);
       setError(null);
       try {
-        const res = await getPageContentReading(page, 20);
+        const res = await getPageContentReading(page, 5);
         const mapped = res.data.content.map((item) => ({
           id: item.contentReadingId,
           title: item.title,
