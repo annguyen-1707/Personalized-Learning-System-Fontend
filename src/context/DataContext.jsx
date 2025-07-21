@@ -236,8 +236,10 @@ const fetchSubjectStatus = async () => {
 
   const addLesson = async (lesson) => {
     try {
-      const res = await uploadVideoToYouTube(lesson.videoUrl, lesson.name);
-      lesson.videoUrl = res.data;
+      if(lesson.videoSource === 'upload') {
+        const res = await uploadVideoToYouTube(lesson.videoUrl, lesson.name);
+        lesson.videoUrl = res.data;
+      }
       const response = await fetch("/api/lessons", {
         method: "POST",
         headers: {

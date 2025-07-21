@@ -60,6 +60,7 @@ function LessonManagement() {
     videoUrl: null,
     videoPreview: null,
     videoDuration: null,
+    videoSource: null
   });
 
   const isStaff =
@@ -200,6 +201,7 @@ function LessonManagement() {
           videoUrl: null,
           videoPreview: null,
           videoDuration: null,
+          videoSource: null
         });
         setIsAdding(false);
       } else {
@@ -279,6 +281,7 @@ function LessonManagement() {
         videoUrl: null,
         videoPreview: null,
         videoDuration: null,
+        videoSource: null
       });
       setErrorMessage("");
       setIsEditing(null);
@@ -313,6 +316,7 @@ function LessonManagement() {
       videoUrl: lesson.videoUrl || null,
       videoPreview: lesson.videoUrl || null,
       videoDuration: lesson.duration || null,
+      videoSource: isYouTubeUrl(lesson.videoUrl) ? "youtube" : "upload",
     });
     setIsEditing(lesson.lessonId);
     setIsAdding(false);
@@ -332,6 +336,7 @@ function LessonManagement() {
       videoDuration: null,
     });
   };
+
 
   const getStatusBadgeClass = (status) => {
     switch (status) {
@@ -547,7 +552,7 @@ function LessonManagement() {
                   Lesson Video
                 </label>
                 <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-lg">
-                  <div className="space-y-1 text-center">
+                  {/* <div className="space-y-1 text-center">
                     {formData.videoPreview ? (
                       <div className="relative">
                         {isEditing && isYouTubeUrl(formData.videoPreview) ? (
@@ -613,6 +618,136 @@ function LessonManagement() {
                         </p>
                       </>
                     )}
+                  </div> */}
+                  <div className="space-y-4">
+                    {/* Lựa chọn giữa Upload và YouTube */}
+                    <div className="flex justify-center space-x-6">
+                      <label className="flex items-center space-x-2">
+                        <input
+                          type="radio"
+                          name="videoSource"
+                          value="upload"
+                          checked={formData.videoSource === "upload"}
+                          onChange={() =>
+                            setFormData((prev) => ({
+                              ...prev,
+                              videoSource: "upload",
+                              videoUrl: null,
+                              videoPreview: null,
+                              videoDuration: null,
+                            }))
+                          }
+                        />
+                        <span className="text-sm">Upload file</span>
+                      </label>
+                      <label className="flex items-center space-x-2">
+                        <input
+                          type="radio"
+                          name="videoSource"
+                          value="youtube"
+                          checked={formData.videoSource === "youtube"}
+                          onChange={() =>
+                            setFormData((prev) => ({
+                              ...prev,
+                              videoSource: "youtube",
+                              videoUrl: "",
+                              videoPreview: "",
+                              videoDuration: null,
+                            }))
+                          }
+                        />
+                        <span className="text-sm">Paste YouTube link</span>
+                      </label>
+                    </div>
+
+                    {/* Hiển thị phần preview */}
+                    <div className="text-center space-y-2">
+                      {formData.videoPreview ? (
+                        <div className="relative">
+                          {formData.videoSource === "youtube" ? (
+                            <iframe
+                              title="YouTube Preview"
+                              src={`https://www.youtube.com/embed/${extractYouTubeVideoId(
+                                formData.videoPreview
+                              )}`}
+                              className="mx-auto h-48 w-auto rounded-lg"
+                              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                              allowFullScreen
+                            />
+                          ) : (
+                            <video
+                              className="mx-auto h-48 w-auto rounded-lg"
+                              src={formData.videoPreview}
+                              controls
+                            />
+                          )}
+
+                          {formData.videoDuration && (
+                            <span className="absolute bottom-2 right-2 bg-black bg-opacity-50 text-white px-2 py-1 rounded text-sm">
+                              {formatDuration(formData.videoDuration)}
+                            </span>
+                          )}
+
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setFormData((prev) => ({
+                                ...prev,
+                                videoUrl: null,
+                                videoPreview: null,
+                                videoDuration: null,
+                              }))
+                            }
+                            className="absolute -top-2 -right-2 p-1 bg-red-100 rounded-full hover:bg-red-200"
+                            aria-label="Remove video preview"
+                          >
+                            <X className="h-4 w-4 text-red-600" />
+                          </button>
+                        </div>
+                      ) : (
+                        <>
+                          {formData.videoSource === "upload" ? (
+                            <>
+                              <div className="flex text-sm text-gray-600 justify-center">
+                                <label
+                                  htmlFor="video"
+                                  className="relative cursor-pointer bg-white rounded-md font-medium text-primary-600 hover:text-primary-500"
+                                >
+                                  <span>Upload a video</span>
+                                  <input
+                                    id="video"
+                                    type="file"
+                                    accept="video/*"
+                                    onChange={handleVideoChange}
+                                    className="sr-only"
+                                  />
+                                </label>
+                                <p className="pl-1">or drag and drop</p>
+                              </div>
+                              <p className="text-xs text-gray-500">
+                                MP4, WebM up to 100MB
+                              </p>
+                            </>
+                          ) : (
+                            <div className="flex flex-col items-center">
+                              <input
+                                type="text"
+                                placeholder="Paste YouTube URL..."
+                                className="w-72 border rounded px-3 py-2 text-sm"
+                                value={formData.videoPreview || ""}
+                                onChange={(e) =>
+                                  setFormData((prev) => ({
+                                    ...prev,
+                                    videoPreview: e.target.value,
+                                    videoUrl: e.target.value,
+                                  }))
+                                }
+                              />
+                            </div>
+                          )}
+                        </>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
