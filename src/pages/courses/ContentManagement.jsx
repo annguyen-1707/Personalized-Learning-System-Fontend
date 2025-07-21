@@ -411,18 +411,14 @@ function ContentManagement() {
             setErrorMessages("At least one question is required");
             return;
           }
+          console.log("Form data before API call:", formData.questions);
           const exerciseData = {
             title: formData.title,
             duration: parseInt(formData.duration) || 30,
             lessonId: parseInt(lessonId),
-            content: (formData.questions || []).map((q) => ({
-              questionText: q.questionText,
-              answers: (q.answers || []).map((a) => ({
-                answerText: a.answerText,
-                correct: a.correct,
-              })),
-            })),
+            questionIds: formData.questionIds || [],
           };
+
           response = await addExercise(exerciseData);
           console.log("Add exercise response:", response); // Debug logging
           if (response && response.status === "error") {
@@ -1264,9 +1260,11 @@ function ContentManagement() {
                     onClick={() => {
                       setFormData(prev => ({
                         ...prev,
+                        questionIds: [...(prev.questionIds || []), question.exerciseQuestionId],
                         questions: [
                           ...(prev.questions || []),
                           {
+                            id: question.exerciseQuestionId, // Thêm ID vào đây nếu cần
                             questionText: question.questionText,
                             answers: question.answerQuestions.map(a => ({
                               answerText: a.answerText,
