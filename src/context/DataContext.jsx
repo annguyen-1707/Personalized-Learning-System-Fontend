@@ -83,7 +83,7 @@ export function DataProvider({ children }) {
   };
 
   // Subject CRUD operations
-const fetchSubjectStatus = async () => {
+  const fetchSubjectStatus = async () => {
     try {
       const response = await fetch("/api/subjects/status", {
         headers: {
@@ -541,21 +541,21 @@ const fetchSubjectStatus = async () => {
 
   const getLessonExercisesById = async (lessonId, page = 1) => {
     try {
-    const response = await fetch(`/api/exercise-questions?lessonId=${lessonId}&page=${page}`, {
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${localStorage.getItem('accessToken')}`
+      const response = await fetch(`/api/exercise-questions?lessonId=${lessonId}&page=${page}`, {
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${localStorage.getItem('accessToken')}`
+        }
+      });
+      if (!response.ok) {
+        const data = await response.json();
+        setErrorMessage(
+          data.message || `Failed to fetch exercises for lesson ${lessonId}`
+        );
+        throw new Error(
+          data.message || `Failed to fetch exercises for lesson ${lessonId}`
+        );
       }
-    });
-    if (!response.ok) {
-      const data = await response.json();
-      setErrorMessage(
-        data.message || `Failed to fetch exercises for lesson ${lessonId}`
-      );
-      throw new Error(
-        data.message || `Failed to fetch exercises for lesson ${lessonId}`
-      );
-    }         
 
       const data = await response.json();
 
@@ -678,16 +678,24 @@ const fetchSubjectStatus = async () => {
       );
 
       if (!response.ok) {
-        const data = await response.json();
-        setErrorMessage(data.message || "Failed to delete exercise");
-        throw new Error(data.message || "Failed to delete exercise");
+        const errorData = await response.json();
+        console.error("Delete failed:", errorData);
+        throw new Error(errorData.message || "Failed to delete exercise");
       }
 
-      // Return true if deletion was successful
-      return true;
+      // Trả về object chứa status và data để dễ xử lý
+      return {
+        status: "success",
+        data: await response.json(), // Nếu API trả về dữ liệu
+        message: "Exercise deleted successfully"
+      };
+
     } catch (error) {
       console.error("Error deleting exercise:", error);
-      throw error;
+      return {
+        status: "error",
+        message: error.message || "An error occurred while deleting"
+      };
     }
   };
 
