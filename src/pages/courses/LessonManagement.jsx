@@ -60,7 +60,7 @@ function LessonManagement() {
     videoUrl: null,
     videoPreview: null,
     videoDuration: null,
-    videoSource: null
+    videoSource: "upload",
   });
 
   const isStaff =
@@ -201,7 +201,7 @@ function LessonManagement() {
           videoUrl: null,
           videoPreview: null,
           videoDuration: null,
-          videoSource: null
+          videoSource: "upload",
         });
         setIsAdding(false);
       } else {
@@ -281,7 +281,7 @@ function LessonManagement() {
         videoUrl: null,
         videoPreview: null,
         videoDuration: null,
-        videoSource: null
+        videoSource: "upload"
       });
       setErrorMessage("");
       setIsEditing(null);
@@ -334,6 +334,7 @@ function LessonManagement() {
       videoUrl: null,
       videoPreview: null,
       videoDuration: null,
+      videoSource: "youtube"
     });
   };
 
@@ -552,73 +553,6 @@ function LessonManagement() {
                   Lesson Video
                 </label>
                 <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-lg">
-                  {/* <div className="space-y-1 text-center">
-                    {formData.videoPreview ? (
-                      <div className="relative">
-                        {isEditing && isYouTubeUrl(formData.videoPreview) ? (
-                          <iframe
-                            title="Video Preview"
-                            src={`https://www.youtube.com/embed/${extractYouTubeVideoId(
-                              formData.videoPreview
-                            )}`}
-                            className="mx-auto h-48 w-auto rounded-lg"
-                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                            allowFullScreen
-                          />
-                        ) : (
-                          <video
-                            className="mx-auto h-48 w-auto rounded-lg"
-                            src={formData.videoPreview}
-                            controls
-                          />
-                        )}
-
-                        {formData.videoDuration && (
-                          <span className="absolute bottom-2 right-2 bg-black bg-opacity-50 text-white px-2 py-1 rounded text-sm">
-                            {formatDuration(formData.videoDuration)}
-                          </span>
-                        )}
-
-                        <button
-                          type="button"
-                          onClick={() =>
-                            setFormData((prev) => ({
-                              ...prev,
-                              videoUrl: null,
-                              videoPreview: null,
-                              videoDuration: null,
-                            }))
-                          }
-                          className="absolute -top-2 -right-2 p-1 bg-red-100 rounded-full hover:bg-red-200"
-                          aria-label="Remove video preview"
-                        >
-                          <X className="h-4 w-4 text-red-600" />
-                        </button>
-                      </div>
-                    ) : (
-                      <>
-                        <div className="flex text-sm text-gray-600">
-                          <label
-                            htmlFor="video"
-                            className="relative cursor-pointer bg-white rounded-md font-medium text-primary-600 hover:text-primary-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-primary-500"
-                          >
-                            <span>Upload a video</span>
-                            <input
-                              id="video"
-                              type="file"
-                              accept="video/*"
-                              onChange={handleVideoChange}
-                              className="sr-only"
-                            />
-                          </label>
-                          <p className="pl-1">or drag and drop</p>
-                        </div>
-                        <p className="text-xs text-gray-500">
-                          MP4, WebM up to 100MB
-                        </p>
-                      </>
-                    )}
-                  </div> */}
                   <div className="space-y-4">
                     {/* Lựa chọn giữa Upload và YouTube */}
                     <div className="flex justify-center space-x-6">
