@@ -45,7 +45,7 @@ function FavoriteFoldersPage() {
             const params = {
                 viewType,
                 currentPage: page,
-                pageSize: 21,
+                pageSize: 6,
                 searchName: searchKeyword.trim() || undefined,
             }
             if (folderType !== 'all') {
