@@ -58,21 +58,16 @@ const handleUpdateQuestion = async (id, data) => {
     }
 }
 
-const getQuestionPageByContentListeningId = async (page, id, size) => {
-    return axios.get(`/api/question/content_listening/${id}?page=${page}&size=${size}`);
+const getQuestionByContentListeningId = async (id) => {
+    return axios.get(`/api/question/content_listening/${id}`);
+}
+
+const getQuestionByExerciseId = async (id) => {
+    return axios.get(`/api/question/exercise/${id}`);
 }
 
 const getQuestionPageFromAPI = async(page, size, activeType) => {
     return axios.get(`/api/question/type?page=${page}&size=${size}&type=${activeType}`);
-}
-
-const acceptQuestion = async(id) => {
-    console.log("id", id)
-    return axios.patch(`/api/question/${id}/accept`)
-}
-
-const rejectQuestion = async(id) => {
-    return axios.patch(`/api/question/${id}/reject`)
 }
 
 const getListAllSubjectFromAPI = async() => {
@@ -91,23 +86,43 @@ const getContentListeningByLeverFromAPI = async(jlptLevel) => {
     return axios.get(`/api/content_listening/jlptLevel?jlptLevel=${jlptLevel}`)
 }
 
-const inActiveQuestion = async(id) => {
-    return axios.patch(`/api/question/inactive/${id}`)
+const addQuestionToContentListening = async(contentListeningId, questionId) => {
+    console.log("Adding question to content listening:", contentListeningId, questionId);
+    return axios.patch(`/api/question/${questionId}/addContentListening/${contentListeningId}`);
+}
+
+const removeQuestionFromContentListening = async(questionId) => {
+    return axios.patch(`/api/question/${questionId}/removeFromContentListening`);
+}
+
+const addQuestionToExercise = async(exerciseId, questionId) => {
+    return axios.patch(`/api/question/${questionId}/addExercise/${exerciseId}`);
+}
+
+const removeQuestionFromExercise = async(questionId) => {
+    return axios.patch(`/api/question/${questionId}/removeFromExercise`);
+}
+
+const getQuestionEmpty = (type, page, size) => {
+    return axios.get(`/api/question/empty?type=${type}`);
 }
 
 export {
-    getQuestionPageByContentListeningId,
+    getQuestionByContentListeningId,
     handleCreateQuestion,
     handleDeleteQuestion,
     handleUpdateQuestion,
     handleCreateManyQuestion,
     getQuestionPageFromAPI,
-    acceptQuestion,
-    rejectQuestion,
     getLessonBySubjectIdFromAPI,
     getListAllSubjectFromAPI,
     getExerciseByLessonIdFromAPI,
     getContentListeningByLeverFromAPI,
-    inActiveQuestion
+    addQuestionToContentListening,
+    removeQuestionFromContentListening,
+    addQuestionToExercise,
+    removeQuestionFromExercise,
+    getQuestionEmpty,
+    getQuestionByExerciseId
 }
 
