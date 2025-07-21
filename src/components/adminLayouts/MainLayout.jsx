@@ -9,6 +9,7 @@ function MainLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const location = useLocation();
   const { handleLogout } = useAuth(); // ✅ lấy isAdmin từ AuthContext
+  const {user} = useAuth();
 
   const handleLogoutt = async (e) => {
     e.preventDefault();
@@ -68,7 +69,7 @@ function MainLayout() {
                   <div className="w-8 h-8 rounded-full bg-primary-600 flex items-center justify-center text-white font-bold">
                     A
                   </div>
-                  <span className="hidden md:block text-sm font-medium">Admin User</span>
+                  <span className="hidden md:block text-sm font-medium">{user?.username ||"Admin"}</span>
                 </div>
 
                 <button
