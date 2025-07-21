@@ -23,7 +23,8 @@ function ParentPage() {
     if (location.state?.text) {
       showTempMessage(location.state.text);
       console.log(location.state.text)
-      window.history.replaceState({}, document.title); 
+      window.location.reload()
+      window.history.replaceState({}, document.title);
     }
   }, []);
   if (!user || !user.children) {
@@ -44,8 +45,6 @@ function ParentPage() {
       setIsLoading(false);
     }
   };
-
-
 
 
   const renderMembershipBadge = (type) => {
@@ -143,7 +142,7 @@ function ParentPage() {
           ))}
         </div>
       </div>
-        <TestimonialSection></TestimonialSection>
+      <TestimonialSection></TestimonialSection>
     </div>
   );
 }

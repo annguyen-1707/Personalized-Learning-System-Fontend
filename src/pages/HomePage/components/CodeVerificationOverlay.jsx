@@ -12,14 +12,14 @@ export default function ParentVerificationOverlay({ children }) {
   const [error, setError] = useState('');
   const [mess, setMess] = useState(`We've sent a verification request to your parent.
               Please wait while they review your request.`);
-  const { user, setUser, loading } = useAuth();
+  const { user, setUser } = useAuth();
 
 
-  useEffect(() => {
-    if (!loading && user.roleName === 'PARENT'  ) {
-      handleLogout();       
-    }
-  }, []);
+  // useEffect(() => {
+  //   if (!loading && user.roleName === 'PARENT'  ) {
+  //     handleLogout();       
+  //   }
+  // }, []);
   
   const handleSubmit = async (e) => {
     e.preventDefault();
