@@ -374,33 +374,24 @@ function DialogueManagement() {
                         <table className="min-w-full divide-y divide-gray-200 text-sm">
                             <thead className="bg-gray-50">
                                 <tr>
-                                    <th className="px-4 py-2 text-left font-medium text-gray-700">Title</th>
                                     <th className="px-4 py-2 text-left font-medium text-gray-700">Question (JP)</th>
                                     <th className="px-4 py-2 text-left font-medium text-gray-700">Question (VN)</th>
                                     <th className="px-4 py-2 text-left font-medium text-gray-700">Answer (JP)</th>
                                     <th className="px-4 py-2 text-left font-medium text-gray-700">Answer (VN)</th>
-                                    <th className="px-4 py-2 text-left font-medium text-gray-700 min-w-[120px]">Category</th>
+                                    <th className="px-4 py-2 text-left font-medium text-gray-700">Content Speaking Title</th>
                                     <th className="px-4 py-2 text-left font-medium text-gray-700">Actions</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-100">
                                 {filteredDialogues.map((dialogue, index) => (
                                     <tr key={dialogue.dialogueId || index} className="hover:bg-gray-50">
-                                        <td className="px-4 py-2 text-gray-800">
-                                            <div className="flex items-center">
-                                                <MessageSquare className="h-4 w-4 text-primary-600 mr-1" />
-                                                <span className="bg-primary-50 text-primary-700 px-2 py-1 rounded text-xs">
-                                                    {dialogue?.contentSpeaking?.category}
-                                                </span>
-                                            </div>
-                                        </td>
-                                        <td className="px-4 py-2 font-medium text-gray-900">
-                                            {dialogue?.contentSpeaking?.title}
-                                        </td>
                                         <td className="px-4 py-2 text-gray-900">{dialogue.questionJp}</td>
                                         <td className="px-4 py-2 text-gray-700">{dialogue.questionVn}</td>
                                         <td className="px-4 py-2 text-gray-900">{dialogue.answerJp}</td>
                                         <td className="px-4 py-2 text-gray-700">{dialogue.answerVn}</td>
+                                        <td className="px-4 py-2 font-medium text-gray-900">
+                                            {dialogue?.contentSpeaking?.title}
+                                        </td>
                                         <td className="px-4 py-2">
                                             <div className="flex items-center space-x-2">
                                                 <button

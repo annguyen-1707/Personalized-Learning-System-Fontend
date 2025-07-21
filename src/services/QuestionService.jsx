@@ -62,6 +62,10 @@ const getQuestionByContentListeningId = async (id) => {
     return axios.get(`/api/question/content_listening/${id}`);
 }
 
+const getQuestionByExerciseId = async (id) => {
+    return axios.get(`/api/question/exercise/${id}`);
+}
+
 const getQuestionPageFromAPI = async(page, size, activeType) => {
     return axios.get(`/api/question/type?page=${page}&size=${size}&type=${activeType}`);
 }
@@ -99,9 +103,10 @@ const removeQuestionFromExercise = async(questionId) => {
     return axios.patch(`/api/question/${questionId}/removeFromExercise`);
 }
 
-const getQuestionEmpty = (type) => {
+const getQuestionEmpty = (type, page, size) => {
     return axios.get(`/api/question/empty?type=${type}`);
 }
+
 export {
     getQuestionByContentListeningId,
     handleCreateQuestion,
@@ -117,6 +122,7 @@ export {
     removeQuestionFromContentListening,
     addQuestionToExercise,
     removeQuestionFromExercise,
-    getQuestionEmpty
+    getQuestionEmpty,
+    getQuestionByExerciseId
 }
 

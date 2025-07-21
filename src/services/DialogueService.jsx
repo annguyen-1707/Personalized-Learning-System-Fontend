@@ -51,17 +51,16 @@ const getDialoguePageByContentSpeakingId = async (page, id, size) => {
     return axios.get(`/api/dialogue/content_speaking/${id}?page=${page}&size=${size}`);
 }
 
-const inActiveDialogue = async (id) => {
-    return axios.patch(`/api/dialogue/inactive/${id}`)
+const getDialoguesEmpty = async (page, size) => {
+    return axios.get(`/api/dialogue/empty?page=${page}&size=${size}`);
 }
 
-const acceptDialogue = async (id) => {
-    console.log("id", id)
-    return axios.patch(`/api/dialogue/accept/${id}`)
+const addDialogueToContentSpeaking = async(contentSpeakingId, dialogueId) => {
+    return axios.patch(`/api/dialogue/${dialogueId}/addContentSpeaking/${contentSpeakingId}`);
 }
 
-const rejectDialogue = async (id) => {
-    return axios.patch(`/api/dialogue/reject/${id}`)
+const removeDialogueFromContentSpeaking = async(dialogueId) => {
+    return axios.patch(`/api/dialogue/${dialogueId}/removeFromContentSpeaking`);
 }
 
 export {
@@ -71,8 +70,8 @@ export {
     handleDeleteDialogue,
     handleUpdateDialogue,
     fetchDialoguePage,
-    inActiveDialogue,
-    acceptDialogue,
-    rejectDialogue
+    getDialoguesEmpty,
+    addDialogueToContentSpeaking,
+    removeDialogueFromContentSpeaking
 };
 

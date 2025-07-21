@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { ArrowLeft, Plus, Trash2, Search, Check } from 'lucide-react';
-import ReactPaginate from 'react-paginate'; import {
+import ReactPaginate from 'react-paginate';
+import {
   getQuestionByContentListeningId,
   getQuestionEmpty,
   addQuestionToContentListening,
@@ -29,13 +30,13 @@ function QuestionManagement() {
   };
 
   const fetchAvailableQuestions = async (page) => {
-    const res = await getQuestionEmpty('contentListening');
+    const res = await getQuestionEmpty('contentListening', page, size);
     console.log("res", res);
     if (res && res.data) {
       const filtered = res.data.content.filter(q => q.questionText.toLowerCase().includes(search.toLowerCase()));
       setPageCount(res.data.page.totalPages);
       setTotalElements(res.data.page.totalElements);
-      setAllQuestions(res.data.content);
+      setAllQuestions(filtered);
       setCurrentPage(page);
     }
   };
@@ -119,7 +120,7 @@ function QuestionManagement() {
 
       <div className="card p-4 mb-6">
         <div className="flex items-center gap-4">
-          <div className="relative w-1/5">
+          <div className="relative w-2/5">
             <select
               className="w-full border border-gray-300 rounded-md py-2 px-2"
               value={size}
@@ -132,7 +133,7 @@ function QuestionManagement() {
               <option value={totalElements}>All</option>
             </select>
           </div>
-          <div className="relative w-2/5">
+          <div className="relative w-3/5">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
               <Search size={18} className="text-gray-400" />
             </div>
