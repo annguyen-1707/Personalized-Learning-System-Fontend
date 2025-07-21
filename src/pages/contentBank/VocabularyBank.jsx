@@ -679,12 +679,6 @@ export default function VocabularyBank() {
 
       {/* Available Vocabulary List */}
       <div className="card">
-        <div className="p-4 border-b border-gray-200">
-          <h2 className="text-lg font-medium text-gray-900">
-            Available Vocabulary
-          </h2>
-        </div>
-
         <div className="overflow-x-auto rounded-lg shadow border border-gray-200">
           {filteredVocabulary.length > 0 ? (
             <table className="min-w-full divide-y divide-gray-200">
