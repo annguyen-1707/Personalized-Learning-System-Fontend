@@ -8,6 +8,7 @@ import { MultiSectionDigitalClock } from "@mui/x-date-pickers/MultiSectionDigita
 import dayjs from "dayjs";
 import HandleAddVocabularyInLesson from "./HandleAddVocabularyInLesson";
 import { useAuth } from "../../context/AuthContext";
+import { getQuestionEmpty } from "../../services/QuestionService";
 
 import {
   ArrowLeft,
@@ -75,6 +76,10 @@ function ContentManagement() {
   const [grammars, setGrammars] = useState([]);
   const [lessonExercises, setLessonExercises] = useState([]);
   const { user } = useAuth();
+  const [showQuestionListModal, setShowQuestionListModal] = useState(false);
+  const [availableQuestions, setAvailableQuestions] = useState([]);
+  const [isLoadingQuestions, setIsLoadingQuestions] = useState(false);
+
 
   const isStaff =
     user &&
@@ -239,6 +244,53 @@ function ContentManagement() {
     }
   };
 
+  //getQuestionEmpty 
+  const fetchEmptyQuestions = async () => {
+    setIsLoadingQuestions(true);
+    try {
+      const response = await getQuestionEmpty('exercise');
+      console.log('[DEBUG] Raw API Response:', response);
+
+      // Bước 1: Lấy danh sách questions từ response (theo đúng cấu trúc API)
+      const questions = response.data?.content || [];
+
+      // Bước 2: Lọc ra các question có exerciseId null/undefined
+      const emptyQuestions = questions.filter(
+        question => question.exerciseId === null || question.exerciseId === undefined
+      );
+
+      console.log('[DEBUG] Filtered Empty Questions:', emptyQuestions);
+
+      setAvailableQuestions(emptyQuestions);
+
+      if (emptyQuestions.length === 0) {
+        toast.info(
+          <div>
+            No unassigned questions found.
+            <button
+              onClick={() => setShowAddQuestion(true)}
+              className="ml-2 text-blue-600 underline"
+            >
+              Create New
+            </button>
+          </div>,
+          { autoClose: false }
+        );
+      }
+    } catch (error) {
+      console.error('Error loading questions:', error);
+      toast.error(error.response?.data?.message || "Failed to load questions");
+    } finally {
+      setIsLoadingQuestions(false);
+    }
+  };
+
+  const getQuestionModal = async () => {
+    if (!showQuestionListModal) {
+      return null;
+    }
+  };
+
   useEffect(() => {
     setCurrentPage(0); // Reset page về 0
   }, [activeTab]);
@@ -288,7 +340,7 @@ function ContentManagement() {
         setFormData({
           title: "",
           duration: "",
-          questions: [], // Initialize empty questions array
+          questionIds: [], // Initialize empty questions array    
           lessonId: lessonId,
         });
         break;
@@ -359,7 +411,6 @@ function ContentManagement() {
             setErrorMessages("At least one question is required");
             return;
           }
-
           const exerciseData = {
             title: formData.title,
             duration: parseInt(formData.duration) || 30,
@@ -372,10 +423,8 @@ function ContentManagement() {
               })),
             })),
           };
-
-          console.log("Submitting exercise data:", exerciseData); // Debug logging
-
           response = await addExercise(exerciseData);
+          console.log("Add exercise response:", response); // Debug logging
           if (response && response.status === "error") {
             if (Array.isArray(response.data)) {
               const errorMap = {};
@@ -485,8 +534,7 @@ function ContentManagement() {
 
     addLog(
       logAction,
-      `${
-        activeTab.charAt(0).toUpperCase() + activeTab.slice(1)
+      `${activeTab.charAt(0).toUpperCase() + activeTab.slice(1)
       } content was updated in lesson "${lesson.title}"`
     );
     setIsEditing(null);
@@ -506,18 +554,21 @@ function ContentManagement() {
         }
         toast.success("Vocabulary deleted successfully!");
         break;
-      case "grammar":
-        const res = await removeGrammarFromLesson(id, lessonId);
-        getGrammar();
-        if (res.status === "error") {
-          toast.error("Failed to delete grammar");
-          return;
-        }
-        toast.success("Grammar deleted successfully!");
-        break;
       case "exercises":
-        await deleteExercise(id);
-        logAction = "Exercise Deleted";
+        try {
+          const result = await deleteExercise(id);
+          if (result.status === "success") {
+            setLessonExercises(prev => prev.filter(ex => ex.id !== id));
+            toast.success("Exercise deleted successfully!");
+            logAction = "Exercise Deleted";
+            getLessonExercises();
+          } else {
+            toast.error(result.message || "Failed to delete exercise");
+          }
+        } catch (error) {
+          console.error("Delete exercise error:", error);
+          toast.error(error.message || "An error occurred while deleting");
+        }
         break;
       default:
         return;
@@ -525,8 +576,7 @@ function ContentManagement() {
 
     addLog(
       logAction,
-      `${
-        activeTab.charAt(0).toUpperCase() + activeTab.slice(1)
+      `${activeTab.charAt(0).toUpperCase() + activeTab.slice(1)
       } content was deleted from lesson "${lesson.title}"`
     );
     setShowDeleteConfirm(null);
@@ -562,14 +612,10 @@ function ContentManagement() {
         break;
       case "exercises":
         editData = {
-          // title: item.title,
-          // duration: item.duration,
-          // lessonId: lessonId,
-          // questions: item.questions || [],
           title: item.title,
           duration: item.duration,
-          lessonId: item.lessonId || lessonId, // Use item.lessonId if available, otherwise fallback
-          questions: (item.content || item.questions || []).map((q) => ({
+          lessonId: item.lessonId || lessonId,
+          questions: (item.content || []).map((q) => ({
             questionText: q.questionText,
             answers: (q.answers || []).map((a) => ({
               answerText: a.answerText,
@@ -786,11 +832,22 @@ function ContentManagement() {
                             }}
                             className="text-red-500 hover:text-red-700"
                           >
+
                             <Trash2 size={16} />
                           </button>
                         </div>
-                        <div className="mt-1 text-sm text-gray-500">
-                          {question.answers.length} answer options
+                        <div className="mt-2 pl-4">
+                          {question.answers && question.answers.map((answer, aIndex) => (
+                            <div
+                              key={aIndex}
+                              className={`text-sm ${answer.correct ? 'text-green-600 font-medium' : 'text-gray-600'}`}
+                            >
+                              {String.fromCharCode(65 + aIndex)}. {answer.answerText}
+                              {answer.correct && (
+                                <span className="ml-1 text-xs text-green-500">(Correct)</span>
+                              )}
+                            </div>
+                          ))}
                         </div>
                       </div>
                     ))}
@@ -801,7 +858,10 @@ function ContentManagement() {
               {/* Add new question button */}
               <button
                 type="button"
-                onClick={() => setShowAddQuestion(true)}
+                onClick={() => {
+                  setShowQuestionListModal(true);
+                  fetchEmptyQuestions();
+                }}
                 className="btn-secondary flex items-center"
               >
                 <Plus size={16} className="mr-1" />
@@ -873,10 +933,9 @@ function ContentManagement() {
                       </td>
                       <td className="px-4 py-2">
                         <span
-                          className={`text-xs px-2 py-1 rounded-full font-medium ${
-                            jlptLevelClassMap[item.jlptLevel] ||
+                          className={`text-xs px-2 py-1 rounded-full font-medium ${jlptLevelClassMap[item.jlptLevel] ||
                             "bg-gray-100 text-gray-500"
-                          }`}
+                            }`}
                         >
                           {item.jlptLevel}
                         </span>
@@ -1004,10 +1063,9 @@ function ContentManagement() {
                         </td>
                         <td className="px-4 py-2">
                           <span
-                            className={`text-xs px-2 py-1 rounded-full font-medium ${
-                              jlptLevelClassMap[item.jlptLevel] ||
+                            className={`text-xs px-2 py-1 rounded-full font-medium ${jlptLevelClassMap[item.jlptLevel] ||
                               "bg-gray-100 text-gray-500"
-                            }`}
+                              }`}
                           >
                             {item.jlptLevel}
                           </span>
@@ -1174,6 +1232,95 @@ function ContentManagement() {
       default:
         return null;
     }
+  };
+
+  const QuestionListModal = () => {
+    if (!showQuestionListModal) return null;
+
+    return (
+      <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50">
+        <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-4xl max-h-[80vh] overflow-auto">
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-xl font-semibold">Select Existing Question</h2>
+            <button
+              onClick={() => setShowQuestionListModal(false)}
+              className="text-gray-500 hover:text-gray-700"
+            >
+              <X size={20} />
+            </button>
+          </div>
+
+          {isLoadingQuestions ? (
+            <div className="flex justify-center py-4">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {availableQuestions.length > 0 ? (
+                availableQuestions.map((question) => (
+                  <div
+                    key={question.exerciseQuestionId}
+                    className="border rounded-lg p-4 hover:bg-gray-50 cursor-pointer"
+                    onClick={() => {
+                      setFormData(prev => ({
+                        ...prev,
+                        questions: [
+                          ...(prev.questions || []),
+                          {
+                            questionText: question.questionText,
+                            answers: question.answerQuestions.map(a => ({
+                              answerText: a.answerText,
+                              correct: a.correct
+                            }))
+                          }
+                        ]
+                      }));
+                      setShowQuestionListModal(false);
+                    }}
+                  >
+                    <p className="font-medium">{question.questionText}</p>
+                    <div className="mt-2 space-y-1">
+                      {question.answerQuestions?.map((answer, idx) => (
+                        <p
+                          key={idx}
+                          className={`text-sm ${answer.correct ? 'text-green-600' : 'text-gray-600'}`}
+                        >
+                          {String.fromCharCode(65 + idx)}. {answer.answerText}
+                        </p>
+                      ))}
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="text-center py-4 text-gray-500">
+                  No questions available
+                </div>
+              )}
+            </div>
+          )}
+          <div className="mt-6 pt-4 border-t flex justify-between">
+            <button
+              onClick={() => {
+                setShowQuestionListModal(false);
+                setShowAddQuestion(true);
+              }}
+              className="text-blue-600 hover:text-blue-800 flex items-center"
+            >
+              <Plus size={16} className="mr-1" />
+              Create New Question
+            </button>
+
+            {/* Nút Cancel giờ ở bên PHẢI */}
+            <button
+              onClick={() => setShowQuestionListModal(false)}
+              className="btn-outline"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      </div>
+    );
   };
 
   const renderQuestionModal = () => {
@@ -1432,10 +1579,9 @@ function ContentManagement() {
                   key={tab}
                   onClick={() => setActiveTab(tab)}
                   className={`
-                    flex items-center px-4 py-3 text-sm font-medium border-b-2 ${
-                      activeTab === tab
-                        ? "border-primary-600 text-primary-600"
-                        : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                    flex items-center px-4 py-3 text-sm font-medium border-b-2 ${activeTab === tab
+                      ? "border-primary-600 text-primary-600"
+                      : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
                     }
                   `}
                 >
@@ -1452,12 +1598,10 @@ function ContentManagement() {
           <div className="p-6 border-b border-gray-200 bg-gray-50">
             <h2 className="text-xl font-medium mb-4">
               {isAdding
-                ? `Add New ${
-                    activeTab.charAt(0).toUpperCase() + activeTab.slice(1)
-                  }`
-                : `Edit ${
-                    activeTab.charAt(0).toUpperCase() + activeTab.slice(1)
-                  }`}
+                ? `Add New ${activeTab.charAt(0).toUpperCase() + activeTab.slice(1)
+                }`
+                : `Edit ${activeTab.charAt(0).toUpperCase() + activeTab.slice(1)
+                }`}
             </h2>
             <form onSubmit={isAdding ? handleAddSubmit : handleEditSubmit}>
               {renderForm()}
@@ -1469,6 +1613,12 @@ function ContentManagement() {
                   className="btn-outline"
                 >
                   Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="btn-primary"
+                >
+                  {isEditing ? "Update" : "Create"} Exercise
                 </button>
               </div>
             </form>
@@ -1498,6 +1648,7 @@ function ContentManagement() {
         activeClassName="active"
         renderOnZeroPageCount={null}
       />
+      <QuestionListModal />
       {renderQuestionModal()}
     </div>
   );
