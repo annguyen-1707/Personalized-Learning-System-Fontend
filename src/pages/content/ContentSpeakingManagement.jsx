@@ -497,7 +497,7 @@ function SpeakingContentManagement() {
                         <>
                           <button
                             onClick={() => {
-                              handleDelete(content.contentSpeakingId);
+                              handeDelete(content.contentSpeakingId);
                               setShowDeleteConfirm(null);
                             }}
                             className="text-error-500 hover:text-error-700"
