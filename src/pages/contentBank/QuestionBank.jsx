@@ -119,6 +119,12 @@ function QuestionManagement() {
     return searchText === '' || matchQuestionText || matchAnyAnswer;
   });
 
+
+  const handleDelete = async (id) => {
+    await handleDeleteQuestion(id);
+    await getQuestionPage(currentPage);
+  };
+
   const getQuestionPage = async (page, type) => {
     let res = await getQuestionPageFromAPI(page, size, type || activeType);
     console.log("getQuestionPage", res.data.content);
@@ -325,16 +331,14 @@ function QuestionManagement() {
             <h1 className="text-2xl font-bold text-gray-900">Question Management</h1>
             <p className="text-gray-500 mt-1">Manage questions for this question</p>
           </div>
-          {(isStaff &&
-            <button
-              onClick={() => { setIsAdding(true); setIsEditing(null); }}
-              className="btn-primary flex items-center"
-              disabled={isAdding || isEditing}
-            >
-              <Plus size={16} className="mr-1" />
-              Add Question
-            </button>
-          )}
+          <button
+            onClick={() => { setIsAdding(true); setIsEditing(null); }}
+            className="btn-primary flex items-center"
+            disabled={isAdding || isEditing}
+          >
+            <Plus size={16} className="mr-1" />
+            Add Question
+          </button>
         </div>
       </div>
 
@@ -648,13 +652,13 @@ function QuestionManagement() {
 
                 {/* Action buttons */}
                 <div className="flex justify-end pt-4 space-x-2">
-                
-                    <button
-                      onClick={() => startUpdate(question)}
-                      className="text-blue-600 hover:text-blue-800"
-                    >
-                      <Edit size={16} />
-                    </button>
+
+                  <button
+                    onClick={() => startUpdate(question)}
+                    className="text-blue-600 hover:text-blue-800"
+                  >
+                    <Edit size={16} />
+                  </button>
                   {showDeleteConfirm === question.exerciseQuestionId ? (
                     <>
                       <button
