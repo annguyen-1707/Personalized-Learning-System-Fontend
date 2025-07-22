@@ -33,6 +33,7 @@ function ListeningPage() {
   // Handle listening content access
   const handleStartListening = (contentId) => {
     if (user) {
+      console.log("User is logged in:", user);
       navigate(`/listening/detail/${contentId}`);
     } else {
       localStorage.setItem("redirectAfterLogin", `/listening/detail/${contentId}`);
@@ -205,7 +206,7 @@ function ListeningPage() {
               <h2 className="text-lg font-semibold mb-1">{item.title || "No title"}</h2>
               <div className="mt-4">
                 <button
-                  onClick={() => handleStartListening(item.id)}
+                  onClick={() => handleStartListening(item.contentListeningId)}
                   className="block w-full text-center px-4 py-2 rounded font-medium bg-blue-500 text-white hover:bg-blue-600"
                 >
                   Start Listening

@@ -505,7 +505,8 @@ function ContentManagement() {
         break;
       case "exercises":
         const resExercise = await updateExercise(isEditing, formData);
-
+        fetchExercises();
+        cancelAction();
         if (resExercise.status === "error") {
           const errorMap = {};
           if (Array.isArray(resExercise.data)) {
@@ -580,8 +581,6 @@ function ContentManagement() {
 
   const startEdit = (item) => {
     let editData;
-    setIsEditing(item.vocabularyId || item.grammarId || item.exerciseId);
-    setIsAdding(true);
     switch (activeTab) {
       case "vocabulary":
         editData = {
@@ -609,16 +608,18 @@ function ContentManagement() {
         break;
       case "exercises":
         editData = {
-          title: item.title,
-          duration: item.duration,
-          questionIds: (item.content || []).map(q => q.exerciseQuestionId),
-          lessonId: item.lessonId || lessonId,
+          title: formData.title,
+          duration: parseInt(formData.duration) || 30,
+          lessonId: parseInt(lessonId),
+          questionIds: formData.questionIds || [],
         };
         break;
       default:
         editData = {};
     }
     setFormData(editData);
+    setIsEditing(item.vocabularyId || item.grammarId || item.exerciseId);
+    setIsEditing(true);
 
   };
 
@@ -1566,7 +1567,7 @@ function ContentManagement() {
         </div>
 
         {/* Add/Edit Form */}
-        {(isAdding || isEditing) && (
+        {(isEditing || isAdding) && (
           <div className="p-6 border-b border-gray-200 bg-gray-50">
             <h2 className="text-xl font-medium mb-4">
               {isEditing ? "Edit Exercise" : "Add New Exercise"}
@@ -1588,7 +1589,7 @@ function ContentManagement() {
                   type="submit"
                   className={`btn-primary ${isEditing ? 'bg-blue-600' : 'bg-green-600'}`}
                 >
-                  {isEditing ? "Create Exercise" : "Update Exercise"}
+                  {isEditing ? "Update Exercise" : "Create Exercise"}
                 </button>
               </div>
             </form>
