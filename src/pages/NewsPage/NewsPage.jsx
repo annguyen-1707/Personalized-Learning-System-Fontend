@@ -53,8 +53,9 @@ function NewsPage() {
     async function fetchCategories() {
       try {
         const res = await getContentReadingCategories();
+        console.log("Categories fetched:", res.data);
         // res.data.data là mảng tên category dạng ["TECHNOLOGY", "SCIENCE", ...]
-        const backendCategories = res.data.data.map((cat) => ({
+        const backendCategories = res.data.map((cat) => ({
           id: cat.toLowerCase(),
           name: cat.charAt(0) + cat.slice(1).toLowerCase(),
         }));
