@@ -13,6 +13,7 @@ function StudyReminders() {
   });
   const [showForm, setShowForm] = useState(false);
   const allDaysOfWeek = ['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY', 'SUNDAY']
+  const [showFormUpdateTime, setShowFormUpdateTime] = useState(false);
 
   useEffect(() => {
     getStudyReminder();
@@ -82,6 +83,23 @@ function StudyReminders() {
     });
     getStudyReminder();
   };
+
+  const updateTime = async (reminderId, timeUpdate) => {
+    const updatedReminders = reminders.map(reminder =>
+      reminder.studyReminderId === reminderId
+        ? { ...reminder, time: timeUpdate }
+        : reminder
+    );
+    setReminders(updatedReminders);
+    const updated = updatedReminders.find(r => r.studyReminderId === reminderId);
+    await handleUpdateStudyReminderFromAPI(reminderId, {
+      time: updated.time,
+      note: updated.note,
+      daysOfWeek: updated.daysOfWeek,
+      isActive: updated.isActive,
+    });
+    getStudyReminder();
+  }
 
 
   const deleteReminder = async (reminderId) => {
@@ -181,14 +199,29 @@ function StudyReminders() {
             <div className="flex items-center justify-between mb-4">
 
               <div className="flex items-center">
-                <FiClock className={`mr-2 ${reminder.isActive ? 'text-primary-500' : 'text-gray-400'
-                  }`} />
-                <span className={`text-lg font-medium ${reminder.isActive ? 'text-gray-900' : 'text-gray-500'
-                  }`}>
-                  {reminder.time}
-                </span>
-              </div>
 
+                <FiClock className={`mr-2 ${reminder.isActive ? 'text-primary-500' : 'text-gray-400'
+                  }`}
+                  onClick={() => setShowFormUpdateTime(!showFormUpdateTime)} />
+                {!showFormUpdateTime && (
+                  <span className={`text-lg font-medium ${reminder.isActive ? 'text-gray-900' : 'text-gray-500'
+                    }`}>
+                    {reminder.time}
+                  </span>
+                )}
+                {showFormUpdateTime && (
+                  <div className="flex items-center">
+                    <input
+                      type="time"
+                      value={reminder.time}
+                      onChange={(e) =>
+                        updateTime(reminder.studyReminderId, e.target.value)
+                      }
+                      className="text-lg font-medium text-gray-900 bg-transparent focus:outline-none"
+                    />
+                  </div>
+                )}
+              </div>
 
               <div className="flex items-center space-x-2">
                 <button
