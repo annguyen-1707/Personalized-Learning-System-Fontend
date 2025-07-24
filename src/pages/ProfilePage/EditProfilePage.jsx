@@ -21,7 +21,7 @@ function EditProfilePage() {
     if (user) {
       setForm({
         name: user.fullName || '',
-        dateOfBirth: user.dob || '',
+        dateOfBirth: user.dateOfBirth || '',
         address: user.address || '',
         gender: user.gender || '',
         phoneNumber: user.phone || '',
@@ -29,7 +29,6 @@ function EditProfilePage() {
       });
     }
   }, [user]);
-
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };

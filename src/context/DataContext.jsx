@@ -640,7 +640,7 @@ export function DataProvider({ children }) {
   const updateExercise = async (id, updatedItem) => {
     try {
       const response = await fetch(
-        `http://localhost:8080/exercise-questions?exercise-questions/${id}`,
+        `http://localhost:8080/exercise-questions/${id}`,
         {
           method: "PATCH",
           headers: {
