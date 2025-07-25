@@ -95,7 +95,7 @@ function NewsPage() {
           contentId: item?.content?.contentId,
         }));
         setArticles(mapped);
-        setTotalPages(res.data.totalPages || 1);
+        setTotalPages(res.data.page.totalPages || 1);
       } catch (err) {
         setError("Failed to load articles");
       } finally {

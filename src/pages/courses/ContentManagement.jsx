@@ -249,7 +249,6 @@ function ContentManagement() {
     setIsLoadingQuestions(true);
     try {
       const response = await getQuestionEmpty('exercise');
-      console.log('[DEBUG] Raw API Response:', response);
 
       // Bước 1: Lấy danh sách questions từ response (theo đúng cấu trúc API)
       const questions = response.data?.content || [];
@@ -259,7 +258,6 @@ function ContentManagement() {
         question => question.exerciseId === null || question.exerciseId === undefined
       );
 
-      console.log('[DEBUG] Filtered Empty Questions:', emptyQuestions);
 
       setAvailableQuestions(emptyQuestions);
 
@@ -608,10 +606,10 @@ function ContentManagement() {
         break;
       case "exercises":
         editData = {
-          title: formData.title,
-          duration: parseInt(formData.duration) || 30,
+          title: item.title,
+          duration: parseInt(item.duration) || 30,
           lessonId: parseInt(lessonId),
-          questionIds: formData.questionIds || [],
+          questionIds: item.questionIds || [],
         };
         break;
       default:
@@ -811,7 +809,7 @@ function ContentManagement() {
                               setFormData({
                                 ...formData,
                                 questions: newQuestions,
-                                questionIds: newQuestions.map(q => q.id) // Quan trọng: đồng bộ cả IDs
+                                questionIds: newQuestions.map(q => q.id)
                               });
                             }}
                           >
