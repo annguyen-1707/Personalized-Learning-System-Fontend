@@ -519,7 +519,8 @@ function ContentManagement() {
           setErrors(errorMap);
           return;
         }
-
+        const updatedList = await getLessonExercisesById(lessonId);
+        setExercises(updatedList.content || []);
         toast.success("Exercise updated successfully!");
         setIsEditing(null);
         resetForm();
