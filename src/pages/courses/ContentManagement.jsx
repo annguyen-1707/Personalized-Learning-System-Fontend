@@ -269,7 +269,6 @@ function ContentManagement() {
               onClick={() => setShowAddQuestion(true)}
               className="ml-2 text-blue-600 underline"
             >
-              Create New
             </button>
           </div>,
           { autoClose: false }
@@ -416,8 +415,9 @@ function ContentManagement() {
             duration: parseInt(formData.duration) || 30,
             lessonId: parseInt(lessonId),
             questionIds: formData.questionIds || [],
-
+            questions: formData.questions || [],
           };
+          console.log("Exercise data to add:", exerciseData); // Debug logging
 
           response = await addExercise(exerciseData);
           console.log("Add exercise response:", response); // Debug logging
@@ -626,7 +626,7 @@ function ContentManagement() {
 
   };
   useEffect(() => {
-    console.log("🟢 formData.questionIds (from useEffect):", formData.questionIds);
+    console.log("🟢 formData (from useEffect):", formData);
   }, [formData]);
 
   const resetForm = () => {
@@ -801,7 +801,7 @@ function ContentManagement() {
               <h3 className="font-medium text-lg mb-4">Exercise Questions</h3>
 
               {/* List of questions already added */}
-              {formData.questionIds?.length > 0 ? (
+              {formData.questions?.length > 0 ? (
                 <div className="mb-6">
                   <h4>Added Questions:</h4>
                   <div className="space-y-3">
@@ -816,7 +816,7 @@ function ContentManagement() {
                               setFormData({
                                 ...formData,
                                 questions: newQuestions,
-                                questionIds: newQuestions.map(q => q.id)
+                                questionIds: newQuestions.map(q => q.id).filter(Boolean),
                               });
                             }}
                           >
@@ -1212,6 +1212,11 @@ function ContentManagement() {
 
   const QuestionListModal = () => {
     if (!showQuestionListModal) return null;
+
+    const filteredQuestions = availableQuestions.filter(question => {
+      return !formData.questionIds?.includes(question.exerciseQuestionId);
+    });
+
     return (
       <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50">
         <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-4xl max-h-[80vh] overflow-auto">
@@ -1231,8 +1236,8 @@ function ContentManagement() {
             </div>
           ) : (
             <div className="space-y-3">
-              {availableQuestions.length > 0 ? (
-                availableQuestions.map((question) => (
+              {filteredQuestions.length > 0 ? (
+                filteredQuestions.map((question) => (
                   <div
                     key={question.exerciseQuestionId}
                     className="border rounded-lg p-4 hover:bg-gray-50 cursor-pointer"
@@ -1284,8 +1289,6 @@ function ContentManagement() {
               }}
               className="text-blue-600 hover:text-blue-800 flex items-center"
             >
-              <Plus size={16} className="mr-1" />
-              Create New Question
             </button>
 
             {/* Nút Cancel giờ ở bên PHẢI */}
@@ -1437,8 +1440,13 @@ function ContentManagement() {
                   },
                 ];
 
-                setFormData({ ...formData, questions: updatedQuestions });
-
+                setFormData((prev) => ({
+                  ...prev,
+                  questions: [...(prev.questions || []), {
+                    questionText: currentQuestion.questionText,
+                    answers: currentQuestion.answers,
+                  }],
+                }));
                 // Reset and close modal
                 setCurrentQuestion({
                   questionText: "",
