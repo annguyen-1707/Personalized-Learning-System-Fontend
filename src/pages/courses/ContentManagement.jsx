@@ -1582,10 +1582,6 @@ function ContentManagement() {
         {/* Add/Edit Form */}
         {(isEditing || isAdding) && (
           <div className="p-6 border-b border-gray-200 bg-gray-50">
-            <h2 className="text-xl font-medium mb-4">
-              {isEditing ? "Edit Exercise" : "Add New Exercise"}
-              {/* Chỉ hiển thị 1 tiêu đề */}
-            </h2>
 
             <form onSubmit={isEditing ? handleEditSubmit : handleAddSubmit}>
               {renderForm()}
@@ -1598,12 +1594,15 @@ function ContentManagement() {
                 >
                   Cancel
                 </button>
-                <button
+                {(activeTab === "exercises") && (
+                  <button
                   type="submit"
                   className={`btn-primary ${isEditing ? 'bg-blue-600' : 'bg-green-600'}`}
                 >
                   {isEditing ? "Update Exercise" : "Create Exercise"}
                 </button>
+                )}
+                
               </div>
             </form>
           </div>
