@@ -122,22 +122,6 @@ function LessonVocabulary({ lesson }) {
                     )}
                   </div>
                 </div>
-
-                {/* Save/Unsave Button */}
-                <button
-                  onClick={() => toggleSaveWord(word.vocabularyId)}
-                  className={`p-2 rounded-full ${
-                    savedWords.includes(word.vocabularyId)
-                      ? "bg-green-100 text-green-600"
-                      : "bg-gray-100 text-gray-500 hover:bg-gray-200"
-                  }`}
-                >
-                  {savedWords.includes(word.vocabularyId) ? (
-                    <FiCheck className="h-5 w-5" />
-                  ) : (
-                    <FiPlus className="h-5 w-5" />
-                  )}
-                </button>
               </div>
             </motion.div>
           ))}
