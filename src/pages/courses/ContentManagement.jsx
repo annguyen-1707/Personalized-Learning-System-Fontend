@@ -249,7 +249,6 @@ function ContentManagement() {
     setIsLoadingQuestions(true);
     try {
       const response = await getQuestionEmpty('exercise');
-      console.log('[DEBUG] Raw API Response:', response);
 
       // Bước 1: Lấy danh sách questions từ response (theo đúng cấu trúc API)
       const questions = response.data?.content || [];
@@ -259,7 +258,6 @@ function ContentManagement() {
         question => question.exerciseId === null || question.exerciseId === undefined
       );
 
-      console.log('[DEBUG] Filtered Empty Questions:', emptyQuestions);
 
       setAvailableQuestions(emptyQuestions);
 
@@ -505,7 +503,8 @@ function ContentManagement() {
         break;
       case "exercises":
         const resExercise = await updateExercise(isEditing, formData);
-
+        fetchExercises();
+        cancelAction();
         if (resExercise.status === "error") {
           const errorMap = {};
           if (Array.isArray(resExercise.data)) {
@@ -580,8 +579,6 @@ function ContentManagement() {
 
   const startEdit = (item) => {
     let editData;
-    setIsEditing(item.vocabularyId || item.grammarId || item.exerciseId);
-    setIsAdding(true);
     switch (activeTab) {
       case "vocabulary":
         editData = {
@@ -610,15 +607,17 @@ function ContentManagement() {
       case "exercises":
         editData = {
           title: item.title,
-          duration: item.duration,
-          questionIds: (item.content || []).map(q => q.exerciseQuestionId),
-          lessonId: item.lessonId || lessonId,
+          duration: parseInt(item.duration) || 30,
+          lessonId: parseInt(lessonId),
+          questionIds: item.questionIds || [],
         };
         break;
       default:
         editData = {};
     }
     setFormData(editData);
+    setIsEditing(item.vocabularyId || item.grammarId || item.exerciseId);
+    setIsEditing(true);
 
   };
 
@@ -810,7 +809,7 @@ function ContentManagement() {
                               setFormData({
                                 ...formData,
                                 questions: newQuestions,
-                                questionIds: newQuestions.map(q => q.id) // Quan trọng: đồng bộ cả IDs
+                                questionIds: newQuestions.map(q => q.id)
                               });
                             }}
                           >
@@ -1566,7 +1565,7 @@ function ContentManagement() {
         </div>
 
         {/* Add/Edit Form */}
-        {(isAdding || isEditing) && (
+        {(isEditing || isAdding) && (
           <div className="p-6 border-b border-gray-200 bg-gray-50">
             <h2 className="text-xl font-medium mb-4">
               {isEditing ? "Edit Exercise" : "Add New Exercise"}
@@ -1588,7 +1587,7 @@ function ContentManagement() {
                   type="submit"
                   className={`btn-primary ${isEditing ? 'bg-blue-600' : 'bg-green-600'}`}
                 >
-                  {isEditing ? "Create Exercise" : "Update Exercise"}
+                  {isEditing ? "Update Exercise" : "Create Exercise"}
                 </button>
               </div>
             </form>

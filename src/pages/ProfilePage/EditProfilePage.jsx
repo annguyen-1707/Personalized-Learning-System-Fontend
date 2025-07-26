@@ -1,64 +1,56 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import { useAuth } from "../../context/AuthContext"; // Adjust the import path as necessary
+import { useAuth } from "../../context/AuthContext";
 
-function EditProfilePage({ }) {
+function EditProfilePage() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [form, setForm] = useState({
-    fullName: '',
-    dob: '',
+    name: '',
+    dateOfBirth: '',
     address: '',
     gender: '',
-    phone: '',
+    phoneNumber: '',
     email: '',
   });
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
-  // Always use the latest user info (especially email) after login
   useEffect(() => {
     if (user) {
       setForm({
-        fullName: user.fullName || '',
-        dob: user.dob || '',
+        name: user.fullName || '',
+        dateOfBirth: user.dateOfBirth || '',
         address: user.address || '',
         gender: user.gender || '',
-        phone: user.phone || '',
+        phoneNumber: user.phone || '',
         email: user.email || '',
       });
     }
   }, [user]);
-
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!form.fullName.trim()) {
-      setError("Full Name is required.");
+    if (!form.name.trim()) {
+      setError("Name is required.");
       return;
     }
     setError("");
     setSuccess("");
     try {
-      await axios.post("http://localhost:8080/api/user/edit", {
-        name: form.fullName,
-        email: form.email,
-        phoneNumber: form.phone,
-        address: form.address,
-        dateOfBirth: form.dob,
-        gender: form.gender,
-      });
-      setSuccess("Profile updated successfully! You will be redirected shortly.");
-      setTimeout(() => navigate("/profile"), 3000);
+      const response = await axios.post("http://localhost:8080/api/user/edit", form);
+      if (response.status === 200) {
+        setSuccess("Profile updated successfully! You will be redirected shortly.");
+        setTimeout(() => navigate("/profile"), 3000);
+      }
     } catch (err) {
       setError(
-        err.response?.data?.message ||
-        (typeof err.response?.data === "string" ? err.response.data : null) ||
-        "Failed to update profile"
+        err.response?.data ||
+        "Failed to update profile. Please try again later."
       );
     }
   };
@@ -73,8 +65,8 @@ function EditProfilePage({ }) {
           </label>
           <input
             type="text"
-            name="fullName"
-            value={form.fullName}
+            name="name"
+            value={form.name}
             onChange={handleChange}
             className="input input-bordered w-full"
             placeholder="Full Name"
@@ -97,8 +89,8 @@ function EditProfilePage({ }) {
           <label className="block font-medium mb-1">Phone Number</label>
           <input
             type="tel"
-            name="phone"
-            value={form.phone}
+            name="phoneNumber"
+            value={form.phoneNumber}
             onChange={handleChange}
             className="input input-bordered w-full"
             placeholder="Phone Number"
@@ -119,8 +111,8 @@ function EditProfilePage({ }) {
           <label className="block font-medium mb-1">Date of Birth</label>
           <input
             type="date"
-            name="dob"
-            value={form.dob}
+            name="dateOfBirth"
+            value={form.dateOfBirth}
             onChange={handleChange}
             className="input input-bordered w-full"
           />
