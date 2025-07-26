@@ -21,8 +21,9 @@ function UpgradePage() {
     try {
       const inforData = await axios.get(`/api/payment/getMembershipOfUser`)
       let confirmed = false;
-      if (inforData !== null && inforData !== undefined) {
-        const isOk = window.confirm(inforData + ". Do you want to buy it!");
+      if (inforData.data !== null && inforData.data !== undefined) {
+        console.log("User's current membership info:", inforData);
+        const isOk = window.confirm(inforData.data + ". Do you want to buy it!");
         if (!isOk) {
           return;
         }
