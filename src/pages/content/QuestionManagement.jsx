@@ -56,7 +56,7 @@ function QuestionManagement() {
   const handleChangeSize = (value) => setSize(+value);
 
   const handlePageClick = (event) => {
-    const selectedPage = event.selected + 1;
+    const selectedPage = +event.selected + 1;
     setCurrentPage(selectedPage);
     fetchAvailableQuestions(selectedPage);
   };
