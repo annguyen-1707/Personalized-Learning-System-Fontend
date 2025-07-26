@@ -392,7 +392,9 @@ function ListeningContentManagement() {
                 {previewAudio && (
                   <div style={{ marginTop: "10px" }}>
                     <audio key={previewAudio} controls>
-                      <source src={previewAudio} type="audio/*" />
+                      <source src={previewAudio} type="audio/mpeg" />
+                      <source src={previewAudio} type="audio/mp3" />
+                      <source src={previewAudio} type="audio/ogg" />
                       Your browser does not support the audio element.
                     </audio>
                   </div>
@@ -509,10 +511,14 @@ function ListeningContentManagement() {
                     <td className="px-4 py-2">
                       {content.audioFile && (
                         <audio controls className="w-32">
-                          <source
-                            src={`http://localhost:8080/audio/content_listening/${content.audioFile}`}
-                            type="audio/mpeg, audio/wav, audio/ogg, audio/aac, audio/flac, audio/mp3, audio/mp4, audio/webm, audio/x-wav, audio/x-aiff, audio/x-m4a, audio/x-ms-wma`}"
-                          />
+                          <source src={`http://localhost:8080/audio/content_listening/${content.audioFile}`}
+                            type="audio/mpeg" />
+                          <source src={`http://localhost:8080/audio/content_listening/${content.audioFile}`}
+                            type="audio/mp3" />
+                          <source src={`http://localhost:8080/audio/content_listening/${content.audioFile}`}
+                            type="audio/ogg" />
+                          <source src={`http://localhost:8080/audio/content_listening/${content.audioFile}`}
+                            type="audio/mp4" />
                           Your browser does not support the audio element.
                         </audio>
                       )}

@@ -248,7 +248,7 @@ function ContentManagement() {
   const fetchEmptyQuestions = async () => {
     setIsLoadingQuestions(true);
     try {
-      const response = await getQuestionEmpty('exercise');
+      const response = await getQuestionEmpty('exercise', currentPage + 1, 6);
 
       // Bước 1: Lấy danh sách questions từ response (theo đúng cấu trúc API)
       const questions = response.data?.content || [];
@@ -269,7 +269,6 @@ function ContentManagement() {
               onClick={() => setShowAddQuestion(true)}
               className="ml-2 text-blue-600 underline"
             >
-              Create New
             </button>
           </div>,
           { autoClose: false }
@@ -338,7 +337,8 @@ function ContentManagement() {
         setFormData({
           title: "",
           duration: "",
-          questionIds: [], // Initialize empty questions array    
+          questionIds: [],
+          questions: [],
           lessonId: lessonId,
         });
         break;
@@ -409,13 +409,15 @@ function ContentManagement() {
             setErrorMessages("At least one question is required");
             return;
           }
-          console.log("Form data before API call:", formData.questions);
+
           const exerciseData = {
             title: formData.title,
             duration: parseInt(formData.duration) || 30,
             lessonId: parseInt(lessonId),
             questionIds: formData.questionIds || [],
+            questions: formData.questions || [],
           };
+          console.log("Exercise data to add:", exerciseData); // Debug logging
 
           response = await addExercise(exerciseData);
           console.log("Add exercise response:", response); // Debug logging
@@ -605,21 +607,27 @@ function ContentManagement() {
         };
         break;
       case "exercises":
+        console.log("🔍 item in handleEdit (exercise):", item);
         editData = {
           title: item.title,
           duration: parseInt(item.duration) || 30,
           lessonId: parseInt(lessonId),
-          questionIds: item.questionIds || [],
+          questionIds: item.content?.map((q) => q.exerciseQuestionId) ?? [],
+
         };
         break;
       default:
         editData = {};
     }
     setFormData(editData);
+    console.log("🟡 formData.questionIds:", editData.questionIds);
     setIsEditing(item.vocabularyId || item.grammarId || item.exerciseId);
     setIsEditing(true);
 
   };
+  useEffect(() => {
+    console.log("🟢 formData (from useEffect):", formData);
+  }, [formData]);
 
   const resetForm = () => {
     // Reset form based on active tab
@@ -793,11 +801,10 @@ function ContentManagement() {
               <h3 className="font-medium text-lg mb-4">Exercise Questions</h3>
 
               {/* List of questions already added */}
-              {formData.questionIds?.length > 0 ? (
+              {formData.questions?.length > 0 ? (
                 <div className="mb-6">
                   <h4>Added Questions:</h4>
                   <div className="space-y-3">
-                    {/* Đây là phần cần kiểm tra kỹ nhất */}
                     {formData.questions?.map((question, qIndex) => (
                       <div key={qIndex} className="p-3 border rounded-md bg-gray-50">
                         <div className="flex justify-between">
@@ -809,7 +816,7 @@ function ContentManagement() {
                               setFormData({
                                 ...formData,
                                 questions: newQuestions,
-                                questionIds: newQuestions.map(q => q.id)
+                                questionIds: newQuestions.map(q => q.id).filter(Boolean),
                               });
                             }}
                           >
@@ -1206,6 +1213,10 @@ function ContentManagement() {
   const QuestionListModal = () => {
     if (!showQuestionListModal) return null;
 
+    const filteredQuestions = availableQuestions.filter(question => {
+      return !formData.questionIds?.includes(question.exerciseQuestionId);
+    });
+
     return (
       <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50">
         <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-4xl max-h-[80vh] overflow-auto">
@@ -1225,12 +1236,13 @@ function ContentManagement() {
             </div>
           ) : (
             <div className="space-y-3">
-              {availableQuestions.length > 0 ? (
-                availableQuestions.map((question) => (
+              {filteredQuestions.length > 0 ? (
+                filteredQuestions.map((question) => (
                   <div
                     key={question.exerciseQuestionId}
                     className="border rounded-lg p-4 hover:bg-gray-50 cursor-pointer"
                     onClick={() => {
+                      const questionId = question.exerciseQuestionId?.exerciseQuestionId;
                       setFormData(prev => ({
                         ...prev,
                         questionIds: [...(prev.questionIds || []), question.exerciseQuestionId],
@@ -1277,8 +1289,6 @@ function ContentManagement() {
               }}
               className="text-blue-600 hover:text-blue-800 flex items-center"
             >
-              <Plus size={16} className="mr-1" />
-              Create New Question
             </button>
 
             {/* Nút Cancel giờ ở bên PHẢI */}
@@ -1430,8 +1440,13 @@ function ContentManagement() {
                   },
                 ];
 
-                setFormData({ ...formData, questions: updatedQuestions });
-
+                setFormData((prev) => ({
+                  ...prev,
+                  questions: [...(prev.questions || []), {
+                    questionText: currentQuestion.questionText,
+                    answers: currentQuestion.answers,
+                  }],
+                }));
                 // Reset and close modal
                 setCurrentQuestion({
                   questionText: "",
@@ -1567,10 +1582,6 @@ function ContentManagement() {
         {/* Add/Edit Form */}
         {(isEditing || isAdding) && (
           <div className="p-6 border-b border-gray-200 bg-gray-50">
-            <h2 className="text-xl font-medium mb-4">
-              {isEditing ? "Edit Exercise" : "Add New Exercise"}
-              {/* Chỉ hiển thị 1 tiêu đề */}
-            </h2>
 
             <form onSubmit={isEditing ? handleEditSubmit : handleAddSubmit}>
               {renderForm()}
@@ -1583,12 +1594,15 @@ function ContentManagement() {
                 >
                   Cancel
                 </button>
-                <button
+                {(activeTab === "exercises") && (
+                  <button
                   type="submit"
                   className={`btn-primary ${isEditing ? 'bg-blue-600' : 'bg-green-600'}`}
                 >
                   {isEditing ? "Update Exercise" : "Create Exercise"}
                 </button>
+                )}
+                
               </div>
             </form>
           </div>
