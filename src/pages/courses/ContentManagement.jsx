@@ -248,7 +248,7 @@ function ContentManagement() {
   const fetchEmptyQuestions = async () => {
     setIsLoadingQuestions(true);
     try {
-      const response = await getQuestionEmpty('exercise');
+      const response = await getQuestionEmpty('exercise', currentPage + 1, 6);
 
       // Bước 1: Lấy danh sách questions từ response (theo đúng cấu trúc API)
       const questions = response.data?.content || [];
