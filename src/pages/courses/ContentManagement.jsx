@@ -435,6 +435,7 @@ function ContentManagement() {
           }
           await getLessonExercises();
           toast.success("Exercise added successfully!");
+          getLessonExercises();
           logAction = "Exercise Added";
           newItem = response;
         } catch (error) {
@@ -505,7 +506,6 @@ function ContentManagement() {
         break;
       case "exercises":
         const resExercise = await updateExercise(isEditing, formData);
-        fetchExercises();
         cancelAction();
         if (resExercise.status === "error") {
           const errorMap = {};
@@ -524,7 +524,6 @@ function ContentManagement() {
         setIsEditing(null);
         resetForm();
         setErrors({});
-        getExercises(); // nếu bạn có hàm này để reload danh sách
         logAction = "Exercise Updated";
         break;
     }
