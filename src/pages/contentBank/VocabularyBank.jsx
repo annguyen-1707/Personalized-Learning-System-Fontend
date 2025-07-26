@@ -336,7 +336,7 @@ export default function VocabularyBank() {
         <div className="card p-6 mb-6">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-xl font-semibold text-gray-900">
-              {isAdding ? "Add New Subject" : "Edit Subject"}
+              {isAdding ? "Add New Vocabulary" : "Edit Vocabulary"}
             </h2>
             <button
               onClick={cancelAction}

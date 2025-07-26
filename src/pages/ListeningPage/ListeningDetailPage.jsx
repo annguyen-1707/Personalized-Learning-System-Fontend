@@ -5,6 +5,7 @@ import { FiHeadphones, FiInfo } from 'react-icons/fi';
 import axios from "axios";
 import ListeningQuiz from "./components/ListeningQuiz";
 import AudioPlayer from "./components/AudioPlayer";
+import { User } from "lucide-react";
 
 function ListeningDetailPage() {
   const { contentListeningId } = useParams();
@@ -23,11 +24,13 @@ function ListeningDetailPage() {
     const fetchDetailAndQuestions = async () => {
       try {
         // Fetch listening detail
+        console.log("Fetching listening detail for ID:", contentListeningId);
         const res = await axios.get(`http://localhost:8080/content_listening/details/${contentListeningId}`);
-        console.log("Content listening details response:", res.data);
+        console.log("Listening detail fetched: res data data", res.data.data);
         setExercise(res.data.data);
         // Fetch questions for this listening (page=0 for first page)
-        const qRes = await axios.get(`http://localhost:8080/question/content_listening/${contentListeningId}?page=1&size=5`);
+        const qRes = await axios.get(`http://localhost:8080/question/content_listening/${contentListeningId}?page=1&size=6`);
+        console.log("Questions fetched: qRes data data", qRes.data.data);
         let questionsArr = [];
         if (qRes.data?.data?.content && Array.isArray(qRes.data.data.content)) {
           questionsArr = qRes.data.data.content;

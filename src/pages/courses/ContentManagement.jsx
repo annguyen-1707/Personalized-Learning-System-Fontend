@@ -249,7 +249,6 @@ function ContentManagement() {
     setIsLoadingQuestions(true);
     try {
       const response = await getQuestionEmpty('exercise');
-      console.log('[DEBUG] Raw API Response:', response);
 
       // Bước 1: Lấy danh sách questions từ response (theo đúng cấu trúc API)
       const questions = response.data?.content || [];
@@ -259,7 +258,6 @@ function ContentManagement() {
         question => question.exerciseId === null || question.exerciseId === undefined
       );
 
-      console.log('[DEBUG] Filtered Empty Questions:', emptyQuestions);
 
       setAvailableQuestions(emptyQuestions);
 
@@ -505,7 +503,8 @@ function ContentManagement() {
         break;
       case "exercises":
         const resExercise = await updateExercise(isEditing, formData);
-
+        fetchExercises();
+        cancelAction();
         if (resExercise.status === "error") {
           const errorMap = {};
           if (Array.isArray(resExercise.data)) {
@@ -580,7 +579,6 @@ function ContentManagement() {
 
   const startEdit = (item) => {
     let editData;
-
     switch (activeTab) {
       case "vocabulary":
         editData = {
@@ -609,24 +607,18 @@ function ContentManagement() {
       case "exercises":
         editData = {
           title: item.title,
-          duration: item.duration,
-          lessonId: item.lessonId || lessonId,
-          questions: (item.content || []).map((q) => ({
-            questionText: q.questionText,
-            answers: (q.answers || []).map((a) => ({
-              answerText: a.answerText,
-              correct: a.correct,
-            })),
-          })),
+          duration: parseInt(item.duration) || 30,
+          lessonId: parseInt(lessonId),
+          questionIds: item.questionIds || [],
         };
         break;
       default:
         editData = {};
     }
-
     setFormData(editData);
     setIsEditing(item.vocabularyId || item.grammarId || item.exerciseId);
-    setIsAdding(false);
+    setIsEditing(true);
+
   };
 
   const resetForm = () => {
@@ -801,54 +793,35 @@ function ContentManagement() {
               <h3 className="font-medium text-lg mb-4">Exercise Questions</h3>
 
               {/* List of questions already added */}
-              {formData.questions && formData.questions.length > 0 && (
+              {formData.questionIds?.length > 0 ? (
                 <div className="mb-6">
-                  <h4 className="text-sm font-medium text-gray-700 mb-2">
-                    Added Questions:
-                  </h4>
+                  <h4>Added Questions:</h4>
                   <div className="space-y-3">
-                    {formData.questions.map((question, qIndex) => (
-                      <div
-                        key={qIndex}
-                        className="p-3 border rounded-md bg-gray-50"
-                      >
+                    {/* Đây là phần cần kiểm tra kỹ nhất */}
+                    {formData.questions?.map((question, qIndex) => (
+                      <div key={qIndex} className="p-3 border rounded-md bg-gray-50">
                         <div className="flex justify-between">
-                          <div className="font-medium">
-                            {question.questionText}
-                          </div>
+                          <div>{question.questionText}</div>
                           <button
-                            type="button"
                             onClick={() => {
                               const newQuestions = [...formData.questions];
                               newQuestions.splice(qIndex, 1);
                               setFormData({
                                 ...formData,
                                 questions: newQuestions,
+                                questionIds: newQuestions.map(q => q.id)
                               });
                             }}
-                            className="text-red-500 hover:text-red-700"
                           >
-
                             <Trash2 size={16} />
                           </button>
-                        </div>
-                        <div className="mt-2 pl-4">
-                          {question.answers && question.answers.map((answer, aIndex) => (
-                            <div
-                              key={aIndex}
-                              className={`text-sm ${answer.correct ? 'text-green-600 font-medium' : 'text-gray-600'}`}
-                            >
-                              {String.fromCharCode(65 + aIndex)}. {answer.answerText}
-                              {answer.correct && (
-                                <span className="ml-1 text-xs text-green-500">(Correct)</span>
-                              )}
-                            </div>
-                          ))}
                         </div>
                       </div>
                     ))}
                   </div>
                 </div>
+              ) : (
+                <p className="text-gray-500">No questions added yet</p>
               )}
 
               {/* Add new question button */}
@@ -1592,16 +1565,14 @@ function ContentManagement() {
         </div>
 
         {/* Add/Edit Form */}
-        {(isAdding || isEditing) && (
+        {(isEditing || isAdding) && (
           <div className="p-6 border-b border-gray-200 bg-gray-50">
             <h2 className="text-xl font-medium mb-4">
-              {isAdding
-                ? `Add New ${activeTab.charAt(0).toUpperCase() + activeTab.slice(1)
-                }`
-                : `Edit ${activeTab.charAt(0).toUpperCase() + activeTab.slice(1)
-                }`}
+              {isEditing ? "Edit Exercise" : "Add New Exercise"}
+              {/* Chỉ hiển thị 1 tiêu đề */}
             </h2>
-            <form onSubmit={isAdding ? handleAddSubmit : handleEditSubmit}>
+
+            <form onSubmit={isEditing ? handleEditSubmit : handleAddSubmit}>
               {renderForm()}
 
               <div className="flex justify-end space-x-3">
@@ -1614,9 +1585,9 @@ function ContentManagement() {
                 </button>
                 <button
                   type="submit"
-                  className="btn-primary"
+                  className={`btn-primary ${isEditing ? 'bg-blue-600' : 'bg-green-600'}`}
                 >
-                  {isEditing ? "Update" : "Create"} Exercise
+                  {isEditing ? "Update Exercise" : "Create Exercise"}
                 </button>
               </div>
             </form>

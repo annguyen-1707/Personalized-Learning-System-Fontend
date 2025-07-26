@@ -125,7 +125,7 @@ I. Client
 
 <img width="1512" alt="Screenshot 2025-07-09 at 13 05 00" src="https://github.com/user-attachments/assets/e50635f8-641f-4e92-b3ce-6fb97207b987" />
 
-<img width="1512" alt="Screenshot 2025-07-09 at 13 09 00" src="https://github.com/user-attachments/assets/e0afb2b3-74b7-499d-8262-47f7f6a3ec83" />
+<img width="1512" height="982" alt="Screenshot 2025-07-21 at 14 28 54 (2)" src="https://github.com/user-attachments/assets/0d9977d9-17ec-493d-aa53-891d8129ed1e" />
 
 8 Profile
 
@@ -141,7 +141,10 @@ I. Client
 
 <img width="1180" alt="Screenshot 2025-07-09 at 13 17 30 (2)" src="https://github.com/user-attachments/assets/7da031fe-c2ee-4181-b8bd-5f93b99f886a" />
 
+<img width="605" height="442" alt="Screenshot 2025-07-21 at 14 17 21" src="https://github.com/user-attachments/assets/45eda2fe-d57f-4aef-a1e3-c34c6b62c1da" />
+
 II. Admin
+
 1 Dashboard
 
 ![image](https://github.com/user-attachments/assets/3b016c6f-54ac-48f0-8953-728d5f7fa11d)
@@ -176,7 +179,7 @@ II. Admin
 
 <img width="1512" alt="Screenshot 2025-07-09 at 13 46 54" src="https://github.com/user-attachments/assets/7c2a3ea0-9cf9-4cec-ad4b-f58a9395606a" />
 
-<img width="1512" alt="Screenshot 2025-07-09 at 13 48 02" src="https://github.com/user-attachments/assets/c8dca184-ee4c-4291-957d-21a5d3e8b8b5" />
+<img width="1512" height="982" alt="Screenshot 2025-07-21 at 14 31 44 (2)" src="https://github.com/user-attachments/assets/b57a191f-88df-45e4-9b56-8768581b4851" />
 
 
 5 Manage Content practice (Content manager & Staff))
@@ -187,7 +190,7 @@ II. Admin
 
 <img width="1512" alt="Screenshot 2025-07-09 at 20 25 19" src="https://github.com/user-attachments/assets/5d1462af-e8f8-4066-beab-7b4e35c7f5b9" />
 
-<img width="1512" alt="Screenshot 2025-07-09 at 20 25 34" src="https://github.com/user-attachments/assets/f4e5d2b5-3c3c-46f0-9277-1f90afebfa7a" />
+<img width="1512" height="982" alt="Screenshot 2025-07-21 at 14 24 23 (2)" src="https://github.com/user-attachments/assets/e67e737d-af53-473f-a6e7-a398fa1c1916" />
 
 5.2 Manage content speaking
 
@@ -195,7 +198,7 @@ II. Admin
 
 <img width="1512" alt="Screenshot 2025-07-09 at 20 26 05" src="https://github.com/user-attachments/assets/42bf8176-ee47-4bf0-b09e-2cf591b98a26" />
 
-<img width="1512" alt="Screenshot 2025-07-09 at 20 26 14" src="https://github.com/user-attachments/assets/1b117904-956b-4f36-b736-2547bd619df6" />
+<img width="1512" height="982" alt="Screenshot 2025-07-21 at 14 24 17 (2)" src="https://github.com/user-attachments/assets/69dd8c5c-6c34-46b9-bf27-8db864d58a67" />
 
 5.3 Manage content reading
 
@@ -219,13 +222,14 @@ II. Admin
 
 6.3 Question bank
 
-<img width="1512" alt="Screenshot 2025-07-09 at 20 33 09" src="https://github.com/user-attachments/assets/13d6467d-998c-43fb-ae94-8566a32f2038" />
+<img width="1512" height="982" alt="Screenshot 2025-07-21 at 14 24 38 (2)" src="https://github.com/user-attachments/assets/c80d062c-1e55-4338-9c84-0c7aea1f9c6e" />
 
-<img width="1512" alt="Screenshot 2025-07-09 at 20 33 41" src="https://github.com/user-attachments/assets/8754b8de-1223-476e-a5ad-a2fb4c72c4e8" />
+<img width="1512" height="982" alt="Screenshot 2025-07-21 at 14 24 40 (2)" src="https://github.com/user-attachments/assets/f320a306-c2c7-434e-8027-1722eb61e9af" />
 
 6.4 Dialogue bank
 
-<img width="1512" alt="Screenshot 2025-07-09 at 20 33 59" src="https://github.com/user-attachments/assets/2e7cfe3d-f93f-43ac-ae3c-7bc60084e1f0" />
+<img width="1512" height="982" alt="Screenshot 2025-07-21 at 14 24 47 (2)" src="https://github.com/user-attachments/assets/86d982f0-e11e-47ba-8dee-44f9a4d6e05a" />
 
-<img width="1512" alt="Screenshot 2025-07-09 at 20 34 09" src="https://github.com/user-attachments/assets/1878c473-6151-4a50-b141-9c56960f3b0d" />
+7 Manage Admin
 
+<img width="1512" height="982" alt="Screenshot 2025-07-21 at 14 28 23 (2)" src="https://github.com/user-attachments/assets/a78fc287-512a-4872-a331-39840aadfc2d" />
