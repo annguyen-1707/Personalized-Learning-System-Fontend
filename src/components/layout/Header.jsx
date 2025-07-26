@@ -38,7 +38,7 @@ function Header({ setSidebarOpen, onNotificationClick }) {
 
           {/* Search */}
 
-          {user?.roleName !== "PARENT"
+          {/* {user?.roleName !== "PARENT"
             && (
               <div className="flex-1 max-w-md mx-4 hidden md:flex">
                 <div className="w-full relative">
@@ -50,7 +50,7 @@ function Header({ setSidebarOpen, onNotificationClick }) {
                   />
                 </div>
               </div>
-            )}
+            )} */}
 
           {/* Right */}
           <div className="flex items-center space-x-4">
