@@ -73,7 +73,7 @@ function Dashboard() {
     getCouseraRate();
   }, [year], [selectedSubjectIds])
 
-  
+
   const [userProgressData, setUserProgressData] = useState({
     labels: [],
     datasets: [
@@ -253,6 +253,7 @@ function Dashboard() {
 
       {/* Stats Overview */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        {/* Total Users */}
         <div className="card p-6 flex items-start">
           <div className="rounded-md bg-primary-100 p-3 mr-4">
             <Users className="h-6 w-6 text-primary-600" />
@@ -261,22 +262,29 @@ function Dashboard() {
             <p className="text-sm font-medium text-gray-500">Total Users</p>
             <p className="text-2xl font-bold text-gray-900">{overview.totalUserNow}</p>
             <div className="flex items-center mt-1 text-xs">
-              {overview.totalUserCompareLastMonth >= 0 ? (
+              {overview.totalUserCompareLastMonth > 0 && (
                 <ArrowUp className="h-4 w-4 text-green-600 mr-1" />
-              ) : (
+              )}
+              {overview.totalUserCompareLastMonth < 0 && (
                 <ArrowDown className="h-4 w-4 text-red-600 mr-1" />
-              )}              <span className={
-                overview.totalUserCompareLastMonth >= 0
-                  ? "text-green-600"
-                  : "text-red-600"
+              )}
+              <span className={
+                overview.totalUserCompareLastMonth === 0
+                  ? "text-gray-500"
+                  : overview.totalUserCompareLastMonth > 0
+                    ? "text-green-600"
+                    : "text-red-600"
               }>
-                {overview.totalUserCompareLastMonth}
-                {overview.totalUserCompareLastMonth >= 0 ? " increase" : " decrease"} user
-              </span>              <span className="text-gray-500 ml-1">from last month</span>
+                {overview.totalUserCompareLastMonth === 0
+                  ? "0 user change"
+                  : `${overview.totalUserCompareLastMonth} ${overview.totalUserCompareLastMonth > 0 ? "increase" : "decrease"} user`}
+              </span>
+              <span className="text-gray-500 ml-1">from last month</span>
             </div>
           </div>
         </div>
 
+        {/* Active Subjects */}
         <div className="card p-6 flex items-start">
           <div className="rounded-md bg-secondary-100 p-3 mr-4">
             <Book className="h-6 w-6 text-secondary-600" />
@@ -285,22 +293,29 @@ function Dashboard() {
             <p className="text-sm font-medium text-gray-500">Active Subjects</p>
             <p className="text-2xl font-bold text-gray-900">{overview.totalSubjectNow}</p>
             <div className="flex items-center mt-1 text-xs">
-              {overview.totalSubjectCompareLastMonth >= 0 ? (
+              {overview.totalSubjectCompareLastMonth > 0 && (
                 <ArrowUp className="h-4 w-4 text-green-600 mr-1" />
-              ) : (
+              )}
+              {overview.totalSubjectCompareLastMonth < 0 && (
                 <ArrowDown className="h-4 w-4 text-red-600 mr-1" />
-              )}              <span className={
-                overview.totalSubjectCompareLastMonth >= 0
-                  ? "text-green-600"
-                  : "text-red-600"
+              )}
+              <span className={
+                overview.totalSubjectCompareLastMonth === 0
+                  ? "text-gray-500"
+                  : overview.totalSubjectCompareLastMonth > 0
+                    ? "text-green-600"
+                    : "text-red-600"
               }>
-                {overview.totalSubjectCompareLastMonth}
-                {overview.totalSubjectCompareLastMonth >= 0 ? " increase" : " decrease"} subject
-              </span>              <span className="text-gray-500 ml-1">from last month</span>
+                {overview.totalSubjectCompareLastMonth === 0
+                  ? "0 subject change"
+                  : `${overview.totalSubjectCompareLastMonth} ${overview.totalSubjectCompareLastMonth > 0 ? "increase" : "decrease"} subject`}
+              </span>
+              <span className="text-gray-500 ml-1">from last month</span>
             </div>
           </div>
         </div>
 
+        {/* Total Lessons */}
         <div className="card p-6 flex items-start">
           <div className="rounded-md bg-success-50 p-3 mr-4">
             <Layers className="h-6 w-6 text-success-700" />
@@ -309,22 +324,29 @@ function Dashboard() {
             <p className="text-sm font-medium text-gray-500">Total Lessons</p>
             <p className="text-2xl font-bold text-gray-900">{overview.totalLessonNow}</p>
             <div className="flex items-center mt-1 text-xs">
-              {overview.totalLessonCompareLastMonth >= 0 ? (
+              {overview.totalLessonCompareLastMonth > 0 && (
                 <ArrowUp className="h-4 w-4 text-green-600 mr-1" />
-              ) : (
+              )}
+              {overview.totalLessonCompareLastMonth < 0 && (
                 <ArrowDown className="h-4 w-4 text-red-600 mr-1" />
-              )}              <span className={
-                overview.totalLessonCompareLastMonth >= 0
-                  ? "text-green-600"
-                  : "text-red-600"
+              )}
+              <span className={
+                overview.totalLessonCompareLastMonth === 0
+                  ? "text-gray-500"
+                  : overview.totalLessonCompareLastMonth > 0
+                    ? "text-green-600"
+                    : "text-red-600"
               }>
-                {overview.totalLessonCompareLastMonth}
-                {overview.totalLessonCompareLastMonth >= 0 ? " increase" : " decrease"} lesson
-              </span>              <span className="text-gray-500 ml-1">from last month</span>
+                {overview.totalLessonCompareLastMonth === 0
+                  ? "0 lesson change"
+                  : `${overview.totalLessonCompareLastMonth} ${overview.totalLessonCompareLastMonth > 0 ? "increase" : "decrease"} lesson`}
+              </span>
+              <span className="text-gray-500 ml-1">from last month</span>
             </div>
           </div>
         </div>
 
+        {/* Average Completion */}
         <div className="card p-6 flex items-start">
           <div className="rounded-md bg-warning-50 p-3 mr-4">
             <Activity className="h-6 w-6 text-warning-700" />
@@ -332,24 +354,30 @@ function Dashboard() {
           <div>
             <p className="text-sm font-medium text-gray-500">Average Completion </p>
             <p className="text-2xl font-bold text-gray-900">{Math.floor(overview.completionRateSubjectNow)}%</p>
-
             <div className="flex items-center mt-1 text-xs">
-              {overview.completionRateSubjectCompareLastMonth >= 0 ? (
+              {overview.completionRateSubjectCompareLastMonth > 0 && (
                 <ArrowUp className="h-4 w-4 text-green-600 mr-1" />
-              ) : (
+              )}
+              {overview.completionRateSubjectCompareLastMonth < 0 && (
                 <ArrowDown className="h-4 w-4 text-red-600 mr-1" />
-              )}              <span className={
-                overview.completionRateSubjectCompareLastMonth >= 0
-                  ? "text-green-600"
-                  : "text-red-600"
+              )}
+              <span className={
+                overview.completionRateSubjectCompareLastMonth === 0
+                  ? "text-gray-500"
+                  : overview.completionRateSubjectCompareLastMonth > 0
+                    ? "text-green-600"
+                    : "text-red-600"
               }>
-                {Math.floor(overview.completionRateSubjectCompareLastMonth)}%
-                {overview.completionRateSubjectCompareLastMonth >= 0 ? " increase" : " decrease"}
-              </span>              <span className="text-gray-500 ml-1">from last month</span>
+                {overview.completionRateSubjectCompareLastMonth === 0
+                  ? "0% change"
+                  : `${Math.floor(overview.completionRateSubjectCompareLastMonth)}% ${overview.completionRateSubjectCompareLastMonth > 0 ? "increase" : "decrease"}`}
+              </span>
+              <span className="text-gray-500 ml-1">from last month</span>
             </div>
           </div>
         </div>
       </div>
+
 
       {/* Charts and Analytics */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">

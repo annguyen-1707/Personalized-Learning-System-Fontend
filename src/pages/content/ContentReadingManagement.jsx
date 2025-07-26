@@ -398,6 +398,10 @@ function ReadingContentManagement() {
                   <div style={{ marginTop: "10px" }}>
                     <audio key={previewAudio} controls>
                       <source src={previewAudio} type="audio/mpeg" />
+                      <source src={previewAudio} type="audio/mp4" />
+                      <source src={previewAudio} type="audio/mp4" />
+                      <source src={previewAudio} type="audio/ogg" />
+
                       Your browser does not support the audio element.
                     </audio>
                   </div>
@@ -532,6 +536,18 @@ function ReadingContentManagement() {
                         <source
                           src={`http://localhost:8080/audio/content_reading/${content.audioFile}`}
                           type="audio/mpeg"
+                        />
+                        <source
+                          src={`http://localhost:8080/audio/content_reading/${content.audioFile}`}
+                          type="audio/mp4"
+                        />
+                        <source
+                          src={`http://localhost:8080/audio/content_reading/${content.audioFile}`}
+                          type="audio/mp3"
+                        />
+                        <source
+                          src={`http://localhost:8080/audio/content_reading/${content.audioFile}`}
+                          type="audio/ogg"
                         />
                         Your browser does not support the audio element.
                       </audio>

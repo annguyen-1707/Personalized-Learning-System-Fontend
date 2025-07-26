@@ -104,7 +104,7 @@ const removeQuestionFromExercise = async(questionId) => {
 }
 
 const getQuestionEmpty = (type, page, size) => {
-    return axios.get(`/api/question/empty?type=${type}`);
+    return axios.get(`/api/question/empty?type=${type}&page=${page}&size=${size}`);
 }
 
 export {

@@ -7,9 +7,9 @@ const FeedbackWidget = () => {
     const [content, setContent] = useState('');
     const [rating, setRating] = useState(0);
     const location = useLocation();
-    const isAdminRoute = location.pathname.startsWith("/admin");
+    const hide = location.pathname.startsWith("/admin") || location.pathname.startsWith("/register1") || location.pathname.startsWith("/register2") || location.pathname.startsWith("/await-confirmation");
 
-    if (isAdminRoute) return null;
+    if (hide) return null;
 
     const handleSubmit = async () => {
         const accessToken = localStorage.getItem("accessToken");

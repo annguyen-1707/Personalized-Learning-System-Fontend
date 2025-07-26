@@ -64,7 +64,9 @@ function ContentManagement() {
   const [formData, setFormData] = useState({});
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(null);
   const [totalPages, setTotalPages] = useState(0);
+  const [totalPagesQuestion, setTotalPagesQuestion] = useState(0);
   const [currentPage, setCurrentPage] = useState(0);
+  const [currentPageQuestion, setCurrentPageQuestion] = useState(0);
   const [totalElements, setTotalElements] = useState(0);
   const [vocabularies, setVocabularies] = useState([]);
   const [levels, setLevels] = useState([]);
@@ -101,6 +103,12 @@ function ContentManagement() {
   const handlePageClick = (event) => {
     const selectedPage = event.selected;
     setCurrentPage(selectedPage);
+  };
+
+  const handlePageClickForQuestion = (event) => {
+    const selectedPage = event.selected;
+    setCurrentPageQuestion(selectedPage);
+    fetchEmptyQuestions(selectedPage);
   };
 
   const filteredVocabularies = (vocabularies || []).filter((vocabulary) => {
@@ -245,11 +253,11 @@ function ContentManagement() {
   };
 
   //getQuestionEmpty 
-  const fetchEmptyQuestions = async () => {
+  const fetchEmptyQuestions = async (page) => {
     setIsLoadingQuestions(true);
     try {
-      const response = await getQuestionEmpty('exercise');
-
+      const response = await getQuestionEmpty('exercise', page + 1, 6);
+      setTotalPagesQuestion(response.data.page.totalPages);
       // Bước 1: Lấy danh sách questions từ response (theo đúng cấu trúc API)
       const questions = response.data?.content || [];
 
@@ -257,8 +265,6 @@ function ContentManagement() {
       const emptyQuestions = questions.filter(
         question => question.exerciseId === null || question.exerciseId === undefined
       );
-
-
       setAvailableQuestions(emptyQuestions);
 
       if (emptyQuestions.length === 0) {
@@ -279,12 +285,6 @@ function ContentManagement() {
       toast.error(error.response?.data?.message || "Failed to load questions");
     } finally {
       setIsLoadingQuestions(false);
-    }
-  };
-
-  const getQuestionModal = async () => {
-    if (!showQuestionListModal) {
-      return null;
     }
   };
 
@@ -421,6 +421,7 @@ function ContentManagement() {
 
           response = await addExercise(exerciseData);
           console.log("Add exercise response:", response); // Debug logging
+          getLessonExercises();
           if (response && response.status === "error") {
             if (Array.isArray(response.data)) {
               const errorMap = {};
@@ -505,7 +506,7 @@ function ContentManagement() {
         break;
       case "exercises":
         const resExercise = await updateExercise(isEditing, formData);
-        fetchExercises();
+        getLessonExercises();
         cancelAction();
         if (resExercise.status === "error") {
           const errorMap = {};
@@ -525,7 +526,6 @@ function ContentManagement() {
         setIsEditing(null);
         resetForm();
         setErrors({});
-        getExercises(); // nếu bạn có hàm này để reload danh sách
         logAction = "Exercise Updated";
         break;
     }
@@ -798,53 +798,56 @@ function ContentManagement() {
             </div>
 
             {/* Question Builder */}
-            <div className="mt-4 border-t pt-4">
-              <h3 className="font-medium text-lg mb-4">Exercise Questions</h3>
+            {isAdding && (
+              <div className="mt-4 border-t pt-4">
+                <h3 className="font-medium text-lg mb-4">Exercise Questions</h3>
 
-              {/* List of questions already added */}
-              {formData.questions?.length > 0 ? (
-                <div className="mb-6">
-                  <h4>Added Questions:</h4>
-                  <div className="space-y-3">
-                    {formData.questions?.map((question, qIndex) => (
-                      <div key={qIndex} className="p-3 border rounded-md bg-gray-50">
-                        <div className="flex justify-between">
-                          <div>{question.questionText}</div>
-                          <button
-                            onClick={() => {
-                              const newQuestions = [...formData.questions];
-                              newQuestions.splice(qIndex, 1);
-                              setFormData({
-                                ...formData,
-                                questions: newQuestions,
-                                questionIds: newQuestions.map(q => q.id).filter(Boolean),
-                              });
-                            }}
-                          >
-                            <Trash2 size={16} />
-                          </button>
+                {/* List of questions already added */}
+                {formData.questions?.length > 0 ? (
+                  <div className="mb-6">
+                    <h4>Added Questions:</h4>
+                    <div className="space-y-3">
+                      {formData.questions?.map((question, qIndex) => (
+                        <div key={qIndex} className="p-3 border rounded-md bg-gray-50">
+                          <div className="flex justify-between">
+                            <div>{question.questionText}</div>
+                            <button
+                              onClick={() => {
+                                const newQuestions = [...formData.questions];
+                                newQuestions.splice(qIndex, 1);
+                                setFormData({
+                                  ...formData,
+                                  questions: newQuestions,
+                                  questionIds: newQuestions.map(q => q.id).filter(Boolean),
+                                });
+                              }}
+                            >
+                              <Trash2 size={16} />
+                            </button>
+                          </div>
                         </div>
-                      </div>
-                    ))}
+                      ))}
+                    </div>
                   </div>
-                </div>
-              ) : (
-                <p className="text-gray-500">No questions added yet</p>
-              )}
+                ) : (
+                  <p className="text-gray-500">No questions added yet</p>
+                )}
 
-              {/* Add new question button */}
-              <button
-                type="button"
-                onClick={() => {
-                  setShowQuestionListModal(true);
-                  fetchEmptyQuestions();
-                }}
-                className="btn-secondary flex items-center"
-              >
-                <Plus size={16} className="mr-1" />
-                Add New Question
-              </button>
-            </div>
+                {/* Add new question button */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowQuestionListModal(true);
+                    fetchEmptyQuestions(currentPageQuestion);
+                  }}
+                  className="btn-secondary flex items-center"
+                >
+                  <Plus size={16} className="mr-1" />
+                  Add New Question
+                </button>
+              </div>
+            )}
+
           </div>
         );
       default:
@@ -1280,6 +1283,28 @@ function ContentManagement() {
                   No questions available
                 </div>
               )}
+              <ReactPaginate
+                className="pagination mt-6 justify-center"
+                nextLabel="next >"
+                onPageChange={handlePageClickForQuestion}
+                pageRangeDisplayed={3}
+                marginPagesDisplayed={2}
+                pageCount={totalPagesQuestion}
+                forcePage={currentPageQuestion}
+                previousLabel="< previous"
+                pageClassName="page-item"
+                pageLinkClassName="page-link"
+                previousClassName="page-item"
+                previousLinkClassName="page-link"
+                nextClassName="page-item"
+                nextLinkClassName="page-link"
+                breakLabel="..."
+                breakClassName="page-item"
+                breakLinkClassName="page-link"
+                containerClassName="pagination"
+                activeClassName="active"
+                renderOnZeroPageCount={null}
+              />
             </div>
           )}
           <div className="mt-6 pt-4 border-t flex justify-between">
@@ -1583,10 +1608,6 @@ function ContentManagement() {
         {/* Add/Edit Form */}
         {(isEditing || isAdding) && (
           <div className="p-6 border-b border-gray-200 bg-gray-50">
-            <h2 className="text-xl font-medium mb-4">
-              {isEditing ? "Edit Exercise" : "Add New Exercise"}
-              {/* Chỉ hiển thị 1 tiêu đề */}
-            </h2>
 
             <form onSubmit={isEditing ? handleEditSubmit : handleAddSubmit}>
               {renderForm()}
@@ -1599,12 +1620,15 @@ function ContentManagement() {
                 >
                   Cancel
                 </button>
-                <button
-                  type="submit"
-                  className={`btn-primary ${isEditing ? 'bg-blue-600' : 'bg-green-600'}`}
-                >
-                  {isEditing ? "Update Exercise" : "Create Exercise"}
-                </button>
+                {(activeTab === "exercises") && (
+                  <button
+                    type="submit"
+                    className={`btn-primary ${isEditing ? 'bg-blue-600' : 'bg-green-600'}`}
+                  >
+                    {isEditing ? "Update Exercise" : "Create Exercise"}
+                  </button>
+                )}
+
               </div>
             </form>
           </div>
@@ -1623,6 +1647,7 @@ function ContentManagement() {
         pageClassName="page-item"
         pageLinkClassName="page-link"
         previousClassName="page-item"
+        forcePage={currentPage}
         previousLinkClassName="page-link"
         nextClassName="page-item"
         nextLinkClassName="page-link"
