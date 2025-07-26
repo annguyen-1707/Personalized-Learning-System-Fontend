@@ -421,6 +421,7 @@ function ContentManagement() {
 
           response = await addExercise(exerciseData);
           console.log("Add exercise response:", response); // Debug logging
+          getLessonExercises();
           if (response && response.status === "error") {
             if (Array.isArray(response.data)) {
               const errorMap = {};
@@ -435,7 +436,6 @@ function ContentManagement() {
           }
           await getLessonExercises();
           toast.success("Exercise added successfully!");
-          getLessonExercises();
           logAction = "Exercise Added";
           newItem = response;
         } catch (error) {
@@ -506,6 +506,7 @@ function ContentManagement() {
         break;
       case "exercises":
         const resExercise = await updateExercise(isEditing, formData);
+        getLessonExercises();
         cancelAction();
         if (resExercise.status === "error") {
           const errorMap = {};
