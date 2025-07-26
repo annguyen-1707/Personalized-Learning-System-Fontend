@@ -338,7 +338,8 @@ function ContentManagement() {
         setFormData({
           title: "",
           duration: "",
-          questionIds: [], // Initialize empty questions array    
+          questionIds: [],
+          questions: [],
           lessonId: lessonId,
         });
         break;
@@ -409,12 +410,13 @@ function ContentManagement() {
             setErrorMessages("At least one question is required");
             return;
           }
-          console.log("Form data before API call:", formData.questions);
+
           const exerciseData = {
             title: formData.title,
             duration: parseInt(formData.duration) || 30,
             lessonId: parseInt(lessonId),
             questionIds: formData.questionIds || [],
+
           };
 
           response = await addExercise(exerciseData);
@@ -605,21 +607,27 @@ function ContentManagement() {
         };
         break;
       case "exercises":
+        console.log("🔍 item in handleEdit (exercise):", item);
         editData = {
           title: item.title,
           duration: parseInt(item.duration) || 30,
           lessonId: parseInt(lessonId),
-          questionIds: item.questionIds || [],
+          questionIds: item.content?.map((q) => q.exerciseQuestionId) ?? [],
+
         };
         break;
       default:
         editData = {};
     }
     setFormData(editData);
+    console.log("🟡 formData.questionIds:", editData.questionIds);
     setIsEditing(item.vocabularyId || item.grammarId || item.exerciseId);
     setIsEditing(true);
 
   };
+  useEffect(() => {
+    console.log("🟢 formData.questionIds (from useEffect):", formData.questionIds);
+  }, [formData]);
 
   const resetForm = () => {
     // Reset form based on active tab
@@ -797,7 +805,6 @@ function ContentManagement() {
                 <div className="mb-6">
                   <h4>Added Questions:</h4>
                   <div className="space-y-3">
-                    {/* Đây là phần cần kiểm tra kỹ nhất */}
                     {formData.questions?.map((question, qIndex) => (
                       <div key={qIndex} className="p-3 border rounded-md bg-gray-50">
                         <div className="flex justify-between">
@@ -1205,7 +1212,6 @@ function ContentManagement() {
 
   const QuestionListModal = () => {
     if (!showQuestionListModal) return null;
-
     return (
       <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50">
         <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-4xl max-h-[80vh] overflow-auto">
@@ -1231,6 +1237,7 @@ function ContentManagement() {
                     key={question.exerciseQuestionId}
                     className="border rounded-lg p-4 hover:bg-gray-50 cursor-pointer"
                     onClick={() => {
+                      const questionId = question.exerciseQuestionId?.exerciseQuestionId;
                       setFormData(prev => ({
                         ...prev,
                         questionIds: [...(prev.questionIds || []), question.exerciseQuestionId],

@@ -236,7 +236,7 @@ export function DataProvider({ children }) {
 
   const addLesson = async (lesson) => {
     try {
-      if(lesson.videoSource === 'upload') {
+      if (lesson.videoSource === 'upload') {
         const res = await uploadVideoToYouTube(lesson.videoUrl, lesson.name);
         lesson.videoUrl = res.data;
       }
@@ -639,8 +639,13 @@ export function DataProvider({ children }) {
 
   const updateExercise = async (id, updatedItem) => {
     try {
+      const numericId = Number(id);
+      if (isNaN(numericId)) {
+        throw new Error(`Invalid exercise ID: ${id} (must be a number)`);
+      }
+
       const response = await fetch(
-        `http://localhost:8080/exercise-questions/${id}`,
+        `http://localhost:8080/exercise-questions/${numericId}`,
         {
           method: "PATCH",
           headers: {
@@ -650,13 +655,14 @@ export function DataProvider({ children }) {
           body: JSON.stringify(updatedItem),
         }
       );
+
       const data = await response.json();
+
       if (!response.ok) {
         setErrorMessage(data.message || "Failed to update exercise");
         throw new Error(data.message || "Failed to update exercise");
       }
 
-      // Return the updated exercise from the API response
       return data.data;
     } catch (error) {
       console.error("Error updating exercise:", error);
