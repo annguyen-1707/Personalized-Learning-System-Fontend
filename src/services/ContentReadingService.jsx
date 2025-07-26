@@ -92,7 +92,7 @@ const handleUpdateContent = async (id, data) => {
 }
 
 const getPageContentReading = async (page, size) => {
-    return axios.get(`/api/content_reading/public?page=${page}&size=${size}`)
+    return axios.get(`/api/content_reading?page=${page}&size=${size}`)
 }
 
 
