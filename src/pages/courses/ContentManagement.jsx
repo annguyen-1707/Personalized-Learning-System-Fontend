@@ -435,6 +435,7 @@ function ContentManagement() {
           }
           await getLessonExercises();
           toast.success("Exercise added successfully!");
+          getLessonExercises();
           logAction = "Exercise Added";
           newItem = response;
         } catch (error) {
@@ -505,7 +506,6 @@ function ContentManagement() {
         break;
       case "exercises":
         const resExercise = await updateExercise(isEditing, formData);
-        fetchExercises();
         cancelAction();
         if (resExercise.status === "error") {
           const errorMap = {};
@@ -524,7 +524,6 @@ function ContentManagement() {
         setIsEditing(null);
         resetForm();
         setErrors({});
-        getExercises(); // nếu bạn có hàm này để reload danh sách
         logAction = "Exercise Updated";
         break;
     }
@@ -797,53 +796,56 @@ function ContentManagement() {
             </div>
 
             {/* Question Builder */}
-            <div className="mt-4 border-t pt-4">
-              <h3 className="font-medium text-lg mb-4">Exercise Questions</h3>
+            {isAdding && (
+              <div className="mt-4 border-t pt-4">
+                <h3 className="font-medium text-lg mb-4">Exercise Questions</h3>
 
-              {/* List of questions already added */}
-              {formData.questions?.length > 0 ? (
-                <div className="mb-6">
-                  <h4>Added Questions:</h4>
-                  <div className="space-y-3">
-                    {formData.questions?.map((question, qIndex) => (
-                      <div key={qIndex} className="p-3 border rounded-md bg-gray-50">
-                        <div className="flex justify-between">
-                          <div>{question.questionText}</div>
-                          <button
-                            onClick={() => {
-                              const newQuestions = [...formData.questions];
-                              newQuestions.splice(qIndex, 1);
-                              setFormData({
-                                ...formData,
-                                questions: newQuestions,
-                                questionIds: newQuestions.map(q => q.id).filter(Boolean),
-                              });
-                            }}
-                          >
-                            <Trash2 size={16} />
-                          </button>
+                {/* List of questions already added */}
+                {formData.questions?.length > 0 ? (
+                  <div className="mb-6">
+                    <h4>Added Questions:</h4>
+                    <div className="space-y-3">
+                      {formData.questions?.map((question, qIndex) => (
+                        <div key={qIndex} className="p-3 border rounded-md bg-gray-50">
+                          <div className="flex justify-between">
+                            <div>{question.questionText}</div>
+                            <button
+                              onClick={() => {
+                                const newQuestions = [...formData.questions];
+                                newQuestions.splice(qIndex, 1);
+                                setFormData({
+                                  ...formData,
+                                  questions: newQuestions,
+                                  questionIds: newQuestions.map(q => q.id).filter(Boolean),
+                                });
+                              }}
+                            >
+                              <Trash2 size={16} />
+                            </button>
+                          </div>
                         </div>
-                      </div>
-                    ))}
+                      ))}
+                    </div>
                   </div>
-                </div>
-              ) : (
-                <p className="text-gray-500">No questions added yet</p>
-              )}
+                ) : (
+                  <p className="text-gray-500">No questions added yet</p>
+                )}
 
-              {/* Add new question button */}
-              <button
-                type="button"
-                onClick={() => {
-                  setShowQuestionListModal(true);
-                  fetchEmptyQuestions(currentPageQuestion);
-                }}
-                className="btn-secondary flex items-center"
-              >
-                <Plus size={16} className="mr-1" />
-                Add New Question
-              </button>
-            </div>
+                {/* Add new question button */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowQuestionListModal(true);
+                    fetchEmptyQuestions(currentPageQuestion);
+                  }}
+                  className="btn-secondary flex items-center"
+                >
+                  <Plus size={16} className="mr-1" />
+                  Add New Question
+                </button>
+              </div>
+            )}
+
           </div>
         );
       default:
