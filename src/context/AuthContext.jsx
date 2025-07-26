@@ -104,7 +104,7 @@ export function AuthProvider({ children }) {
       });
       localStorage.removeItem("isAdmin");
       localStorage.removeItem("accessToken");
-      navigate("/"); // ✅ điều hướng về login
+      navigate("/login"); // ✅ điều hướng về login
     } catch (error) {
       console.error("Logout failed:", error);
     }
