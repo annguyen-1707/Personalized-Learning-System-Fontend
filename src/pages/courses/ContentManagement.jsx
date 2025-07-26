@@ -64,7 +64,9 @@ function ContentManagement() {
   const [formData, setFormData] = useState({});
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(null);
   const [totalPages, setTotalPages] = useState(0);
+  const [totalPagesQuestion, setTotalPagesQuestion] = useState(0);
   const [currentPage, setCurrentPage] = useState(0);
+  const [currentPageQuestion, setCurrentPageQuestion] = useState(0);
   const [totalElements, setTotalElements] = useState(0);
   const [vocabularies, setVocabularies] = useState([]);
   const [levels, setLevels] = useState([]);
@@ -101,6 +103,12 @@ function ContentManagement() {
   const handlePageClick = (event) => {
     const selectedPage = event.selected;
     setCurrentPage(selectedPage);
+  };
+
+  const handlePageClickForQuestion = (event) => {
+    const selectedPage = event.selected;
+    setCurrentPageQuestion(selectedPage);
+    fetchEmptyQuestions(selectedPage);
   };
 
   const filteredVocabularies = (vocabularies || []).filter((vocabulary) => {
@@ -245,11 +253,11 @@ function ContentManagement() {
   };
 
   //getQuestionEmpty 
-  const fetchEmptyQuestions = async () => {
+  const fetchEmptyQuestions = async (page) => {
     setIsLoadingQuestions(true);
     try {
-      const response = await getQuestionEmpty('exercise', currentPage + 1, 6);
-
+      const response = await getQuestionEmpty('exercise', page + 1, 6);
+      setTotalPagesQuestion(response.data.page.totalPages);
       // Bước 1: Lấy danh sách questions từ response (theo đúng cấu trúc API)
       const questions = response.data?.content || [];
 
@@ -257,8 +265,6 @@ function ContentManagement() {
       const emptyQuestions = questions.filter(
         question => question.exerciseId === null || question.exerciseId === undefined
       );
-
-
       setAvailableQuestions(emptyQuestions);
 
       if (emptyQuestions.length === 0) {
@@ -279,12 +285,6 @@ function ContentManagement() {
       toast.error(error.response?.data?.message || "Failed to load questions");
     } finally {
       setIsLoadingQuestions(false);
-    }
-  };
-
-  const getQuestionModal = async () => {
-    if (!showQuestionListModal) {
-      return null;
     }
   };
 
@@ -836,7 +836,7 @@ function ContentManagement() {
                 type="button"
                 onClick={() => {
                   setShowQuestionListModal(true);
-                  fetchEmptyQuestions();
+                  fetchEmptyQuestions(currentPageQuestion);
                 }}
                 className="btn-secondary flex items-center"
               >
@@ -1279,6 +1279,28 @@ function ContentManagement() {
                   No questions available
                 </div>
               )}
+              <ReactPaginate
+                className="pagination mt-6 justify-center"
+                nextLabel="next >"
+                onPageChange={handlePageClickForQuestion}
+                pageRangeDisplayed={3}
+                marginPagesDisplayed={2}
+                pageCount={totalPagesQuestion}
+                forcePage={currentPageQuestion}
+                previousLabel="< previous"
+                pageClassName="page-item"
+                pageLinkClassName="page-link"
+                previousClassName="page-item"
+                previousLinkClassName="page-link"
+                nextClassName="page-item"
+                nextLinkClassName="page-link"
+                breakLabel="..."
+                breakClassName="page-item"
+                breakLinkClassName="page-link"
+                containerClassName="pagination"
+                activeClassName="active"
+                renderOnZeroPageCount={null}
+              />
             </div>
           )}
           <div className="mt-6 pt-4 border-t flex justify-between">
@@ -1596,13 +1618,13 @@ function ContentManagement() {
                 </button>
                 {(activeTab === "exercises") && (
                   <button
-                  type="submit"
-                  className={`btn-primary ${isEditing ? 'bg-blue-600' : 'bg-green-600'}`}
-                >
-                  {isEditing ? "Update Exercise" : "Create Exercise"}
-                </button>
+                    type="submit"
+                    className={`btn-primary ${isEditing ? 'bg-blue-600' : 'bg-green-600'}`}
+                  >
+                    {isEditing ? "Update Exercise" : "Create Exercise"}
+                  </button>
                 )}
-                
+
               </div>
             </form>
           </div>
@@ -1621,6 +1643,7 @@ function ContentManagement() {
         pageClassName="page-item"
         pageLinkClassName="page-link"
         previousClassName="page-item"
+        forcePage={currentPage}
         previousLinkClassName="page-link"
         nextClassName="page-item"
         nextLinkClassName="page-link"

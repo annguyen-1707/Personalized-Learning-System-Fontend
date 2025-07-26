@@ -85,6 +85,7 @@ function ExerciseManagement() {
   };
 
   const fetchAvailableQuestions = async (page) => {
+    console.log("page", page)
     const res = await getQuestionEmpty('exercise', page, size);
     console.log("res", res);
     if (res && res.data) {
