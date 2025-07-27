@@ -54,12 +54,12 @@ function ExerciseResultDetails() {
           </div>
 
           <div className="flex items-center space-x-6">
-            <div className="flex items-center text-gray-600">
+            {/* <div className="flex items-center text-gray-600">
               <FiClock className="mr-2" />
               <span className="font-mono text-lg">
                 {details?.totalTime}s used
               </span>
-            </div>
+            </div> */}
             <button
               onClick={() => navigate(-2)}
               className="text-sm text-primary-600 hover:underline flex items-center"

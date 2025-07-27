@@ -65,7 +65,7 @@ function DoExercise() {
           lessonId: exercise?.lessonId,
           content: exercise?.content,
         });
-        setTimeRemaining(exercise?.duration || 0); // Set initial time remaining
+        setTimeRemaining((exercise?.duration || 0) * 60); // Set initial time remaining
       } catch (error) {
         console.error("Error fetching exercise data:", error);
       }
@@ -114,9 +114,9 @@ function DoExercise() {
     }).length;
   };
 
-  const formatTime = (seconds) => {
-    const minutes = Math.floor(seconds / 60);
-    const remainingSeconds = seconds % 60;
+  const formatTime = (totalSeconds) => {
+    const minutes = Math.floor(totalSeconds / 60);
+    const remainingSeconds = totalSeconds % 60;
     return `${minutes.toString().padStart(2, "0")}:${remainingSeconds
       .toString()
       .padStart(2, "0")}`;
